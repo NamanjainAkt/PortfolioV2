@@ -23,12 +23,13 @@ model Project {
 }
 
 model Blog {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  slug      String   @unique
-  title     String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug          String   @unique
+  title         String
+  content       String
+  featuredImage String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model AdminAuth {

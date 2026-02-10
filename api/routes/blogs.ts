@@ -34,12 +34,13 @@ router.get('/:slug', async (req, res) => {
 // Create blog (Admin only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, slug, content } = req.body;
+    const { title, slug, content, featuredImage } = req.body;
     const blog = await prisma.blog.create({
       data: {
         title,
         slug,
         content,
+        featuredImage,
       },
     });
     res.json(blog);
@@ -51,13 +52,14 @@ router.post('/', authenticateToken, async (req, res) => {
 // Update blog (Admin only)
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { title, slug, content } = req.body;
+    const { title, slug, content, featuredImage } = req.body;
     const blog = await prisma.blog.update({
       where: { id: req.params.id },
       data: {
         title,
         slug,
         content,
+        featuredImage,
       },
     });
     res.json(blog);

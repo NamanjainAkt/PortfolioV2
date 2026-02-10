@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, ImageIcon } from 'lucide-react';
 
 interface BlogFormProps {
   initialData?: any;
@@ -12,12 +12,67 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
     title: initialData?.title || '',
     slug: initialData?.slug || '',
     content: initialData?.content || '',
+    featuredImage: initialData?.featuredImage || '',
   });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    setError('');
+
+    try {
+        const token = localStorage.getItem('token');
+        const signatureRes = await fetch('/api/upload/signature', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!signatureRes.ok) throw new Error('Failed to get upload signature');
+        
+        const { signature, timestamp, cloudName, apiKey } = await signatureRes.json();
+        
+        const file = files[0];
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('api_key', apiKey);
+        uploadFormData.append('timestamp', timestamp.toString());
+        uploadFormData.append('signature', signature);
+        uploadFormData.append('folder', 'portfolio/blogs');
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            method: 'POST',
+            body: uploadFormData
+        });
+
+        const data = await uploadRes.json();
+        if (data.secure_url) {
+            setFormData(prev => ({
+                ...prev,
+                featuredImage: data.secure_url
+            }));
+        }
+
+    } catch (err) {
+        console.error(err);
+        setError('Image upload failed');
+    } finally {
+        setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({
+        ...prev,
+        featuredImage: ''
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +141,48 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col h-full min-h-[400px]">
+          {/* Featured Image Upload */}
+          <div>
+            <label className="block text-secondary text-sm mb-2">Featured Image</label>
+            {formData.featuredImage ? (
+              <div className="relative">
+                <img 
+                  src={formData.featuredImage} 
+                  alt="Featured" 
+                  className="w-full h-48 object-cover rounded-lg border border-border"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-accent-crimson transition-colors bg-background">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  {uploading ? (
+                    <Loader2 size={24} className="text-accent-crimson animate-spin mb-2" />
+                  ) : (
+                    <ImageIcon size={24} className="text-secondary mb-2" />
+                  )}
+                  <p className="text-sm text-secondary">
+                    {uploading ? 'Uploading...' : 'Click to upload featured image'}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
+              </label>
+            )}
+          </div>
+
+          <div className="flex-1 flex flex-col h-full min-h-[300px]">
             <label className="block text-secondary text-sm mb-2">Content (Markdown)</label>
             <textarea
               name="content"

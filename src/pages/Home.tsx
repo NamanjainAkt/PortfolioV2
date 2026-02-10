@@ -1,21 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Code, Database, Server, Layers } from 'lucide-react';
+import { ArrowRight, Code, Database, Server, Layers, Github, Linkedin, Mail, Twitter, FileText, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
-};
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
+import Typewriter from '../components/Typewriter';
+import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
+import { TiltCard } from '../components/TiltCard';
+import { ParticleBackground } from '../components/ParticleBackground';
+import { MagneticSocialIcon } from '../components/MagneticSocialIcon';
 
 interface Project {
   id: string;
@@ -47,38 +38,126 @@ const Home = () => {
     fetchProjects();
   }, []);
 
+  const roles = [
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "React Native Developer"
+  ];
+
+  const skills = [
+    { name: "React", icon: Code },
+    { name: "Node.js", icon: Server },
+    { name: "Database", icon: Database },
+    { name: "System Design", icon: Layers },
+  ];
+
+  const socialLinks = [
+    { icon: Twitter, href: "https://twitter.com" },
+    { icon: Linkedin, href: "https://linkedin.com" },
+    { icon: Github, href: "https://github.com" },
+    { icon: Mail, href: "mailto:contact@example.com" },
+  ];
+
   return (
     <div className="pt-16">
       {/* Hero Section */}
-      <section className="min-h-[80vh] flex items-center justify-center container mx-auto px-4">
+      <section className="min-h-[85vh] flex items-center justify-center container mx-auto px-4 relative">
+        <ParticleBackground />
         <motion.div
           initial="initial"
           animate="animate"
-          variants={staggerContainer}
-          className="max-w-3xl text-center"
+          className="max-w-4xl text-center relative z-10"
         >
           <motion.h1
-            variants={fadeInUp}
-            className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-6xl md:text-8xl font-serif font-bold mb-6 tracking-tight drop-shadow-[0_0_15px_rgba(200,16,46,0.3)]"
           >
-            FORGED IN <span className="text-accent-crimson">SILENCE</span>
+            Na<span className="text-accent-crimson drop-shadow-[0_0_25px_rgba(200,16,46,0.6)]">man</span> Jain
           </motion.h1>
-          <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-secondary mb-10 max-w-2xl mx-auto leading-relaxed">
-            Building production-grade systems with high confidence, deep focus, and solitude-driven work ethic.
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-xl md:text-3xl font-mono text-white mb-6 h-8"
+          >
+            I'm a <Typewriter words={roles} typingSpeed={80} deletingSpeed={50} pauseTime={2000} className="text-accent-crimson" />
+          </motion.div>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-lg md:text-xl text-secondary mb-10 max-w-2xl mx-auto leading-relaxed"
+          >
+            I build <span className="text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded text-sm font-medium">Scalable</span>, high-performance AI applications and modern web solutions with a focus on exceptional <span className="text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded text-sm font-medium">User Experience</span> and robust <span className="text-purple-400 bg-purple-400/10 px-1.5 py-0.5 rounded text-sm font-medium">System Design</span>.
           </motion.p>
-          <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/projects"
-              className="px-8 py-3 bg-white text-black font-medium rounded hover:bg-gray-200 transition-colors flex items-center gap-2"
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="flex flex-wrap justify-center gap-6 mb-12"
+          >
+            {skills.map((skill, index) => (
+              <motion.div 
+                key={skill.name} 
+                className="flex items-center space-x-2 text-secondary hover:text-primary transition-colors cursor-default"
+                whileHover={{ scale: 1.05 }}
+              >
+                <skill.icon size={20} />
+                <span className="font-medium">{skill.name}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+          >
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-3 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
-              View Projects <ArrowRight size={18} />
-            </Link>
-            <Link
-              to="/contact"
-              className="px-8 py-3 border border-border text-primary font-medium rounded hover:bg-elevated transition-colors"
+              <FileText size={18} /> Resume / CV
+            </motion.button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                to="/contact"
+                className="px-8 py-3 border border-border text-primary font-bold rounded hover:bg-elevated transition-colors flex items-center gap-2"
+              >
+                <Mail size={18} /> Get in touch
+              </Link>
+            </motion.div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-3 bg-amber-700/20 text-amber-500 border border-amber-700/50 font-bold rounded hover:bg-amber-700/30 transition-colors flex items-center gap-2"
             >
-              Contact Me
-            </Link>
+              <Calendar size={18} /> Schedule Call
+            </motion.button>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
+            className="flex justify-center gap-4 text-secondary"
+          >
+            {socialLinks.map((social, index) => (
+              <MagneticSocialIcon 
+                key={index}
+                icon={social.icon}
+                href={social.href}
+                index={index}
+              />
+            ))}
           </motion.div>
         </motion.div>
       </section>
@@ -86,131 +165,135 @@ const Home = () => {
       {/* Tech Stack */}
       <section className="py-20 bg-surface/50 border-y border-border">
         <div className="container mx-auto px-4">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-3xl font-serif font-bold mb-12 text-center"
-          >
-            Core Technologies
-          </motion.h2>
+          <FadeInWhenVisible>
+            <h2 className="text-sm font-bold tracking-widest text-secondary uppercase text-center mb-4">
+              Tech Stack
+            </h2>
+          </FadeInWhenVisible>
+          
+          <FadeInWhenVisible delay={0.1}>
+            <h3 className="text-4xl font-serif font-bold text-center mb-4">
+              Skills
+            </h3>
+          </FadeInWhenVisible>
+          
+          <FadeInWhenVisible delay={0.2}>
+            <p className="text-secondary text-center mb-12">
+              The technologies I build with.
+            </p>
+          </FadeInWhenVisible>
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             {[
               { icon: <Code />, name: 'Frontend', items: 'React, Next.js, Tailwind' },
               { icon: <Server />, name: 'Backend', items: 'Node.js, Express, Prisma' },
-              { icon: <Database />, name: 'Database', items: 'MongoDB, PostgreSQL' },
-              { icon: <Layers />, name: 'DevOps', items: 'Docker, Vercel, AWS' },
-            ].map((tech, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="p-6 bg-elevated border border-border rounded-lg text-center hover:border-accent-crimson/50 transition-colors"
-              >
-                <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center mx-auto mb-4 text-accent-crimson">
-                  {tech.icon}
-                </div>
-                <h3 className="font-bold mb-2">{tech.name}</h3>
-                <p className="text-sm text-secondary">{tech.items}</p>
-              </motion.div>
+              { icon: <Database />, name: 'Database', items: 'PostgreSQL, MongoDB' },
+              { icon: <Layers />, name: 'DevOps', items: 'Docker, AWS, CI/CD' },
+            ].map((stack, index) => (
+              <FadeInWhenVisible key={index} delay={index * 0.1}>
+                <TiltCard tiltAmount={8}>
+                  <div className="p-6 bg-background border border-border rounded-lg hover:border-accent-crimson/50 transition-colors group">
+                    <div className="w-12 h-12 bg-elevated rounded-lg flex items-center justify-center mb-4 text-accent-crimson group-hover:scale-110 transition-transform duration-300">
+                      {stack.icon}
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{stack.name}</h3>
+                    <p className="text-secondary text-sm">{stack.items}</p>
+                  </div>
+                </TiltCard>
+              </FadeInWhenVisible>
             ))}
           </div>
+          
+          <FadeInWhenVisible delay={0.5}>
+            <div className="flex justify-center mt-12">
+              <div className="px-6 py-2 bg-elevated rounded-full border border-border text-sm text-secondary font-mono">
+                &lt;&gt; 23+ technologies in my arsenal
+              </div>
+            </div>
+          </FadeInWhenVisible>
         </div>
       </section>
 
-      {/* Experience Timeline (Simplified) */}
-      <section className="py-20 container mx-auto px-4">
-        <h2 className="text-3xl font-serif font-bold mb-12 text-center">Journey</h2>
-        <div className="max-w-3xl mx-auto space-y-12 relative border-l border-border ml-4 md:ml-auto md:pl-8">
-          {[
-            { role: 'Senior Developer', company: 'Tech Corp', year: '2023 - Present', desc: 'Leading frontend architecture and team mentorship.' },
-            { role: 'Full Stack Engineer', company: 'Startup Inc', year: '2021 - 2023', desc: 'Built MVP to scale, handled CI/CD and cloud infra.' },
-            { role: 'Frontend Developer', company: 'Web Agency', year: '2019 - 2021', desc: 'Delivered 20+ client projects with high-performance metrics.' },
-          ].map((exp, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="relative pl-8"
-            >
-              <div className="absolute -left-[5px] top-2 w-2.5 h-2.5 bg-accent-crimson rounded-full" />
-              <span className="text-sm text-accent-glow font-mono mb-1 block">{exp.year}</span>
-              <h3 className="text-xl font-bold">{exp.role}</h3>
-              <p className="text-secondary text-sm mb-2">{exp.company}</p>
-              <p className="text-tertiary">{exp.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured Projects Preview */}
-      <section className="py-20 bg-surface/30">
+      {/* Featured Projects */}
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-12">
-            <h2 className="text-3xl font-serif font-bold">Featured Work</h2>
-            <Link to="/projects" className="text-accent-crimson hover:underline text-sm font-medium">View All</Link>
+            <FadeInWhenVisible>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Featured Work</h2>
+                <p className="text-secondary max-w-xl">
+                  A selection of projects that demonstrate my ability to solve complex problems.
+                </p>
+              </div>
+            </FadeInWhenVisible>
+            
+            <FadeInWhenVisible delay={0.1}>
+              <Link 
+                to="/projects" 
+                className="hidden md:flex items-center text-accent-crimson hover:text-white transition-colors font-medium group"
+              >
+                View all projects 
+                <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </FadeInWhenVisible>
           </div>
-          
+
           {loading ? (
-             <div className="text-center text-secondary">Loading projects...</div>
+             <div className="text-center py-20 text-secondary">Loading projects...</div>
           ) : projects.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {projects.map((project, index) => (
-                <motion.div
-                    key={project.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group relative aspect-video bg-elevated border border-border rounded-lg overflow-hidden"
-                >
-                    {project.images && project.images.length > 0 ? (
-                        <img 
-                            src={project.images[0]} 
-                            alt={project.title}
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                    ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-tertiary bg-elevated">
-                            No Image
+            <div className="grid md:grid-cols-3 gap-8">
+              {projects.map((project, index) => (
+                <FadeInWhenVisible key={project.id} delay={index * 0.1}>
+                  <Link to={`/projects/${project.slug}`} className="group block h-full">
+                    <TiltCard tiltAmount={5} className="h-full">
+                      <div className="bg-surface border border-border rounded-lg overflow-hidden h-full hover:border-accent-crimson/50 transition-all duration-300 hover:shadow-lg hover:shadow-accent-crimson/10">
+                        <div className="aspect-video bg-elevated overflow-hidden">
+                          {project.images[0] ? (
+                            <img 
+                              src={project.images[0]} 
+                              alt={project.title} 
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-tertiary">
+                              <Code size={48} />
+                            </div>
+                          )}
                         </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-6 text-center">
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    <p className="text-sm text-gray-300 mb-4 line-clamp-2">{project.overview}</p>
-                    <Link 
-                        to={`/projects/${project.slug}`}
-                        className="text-accent-crimson text-sm font-medium hover:underline"
-                    >
-                        View Case Study &rarr;
-                    </Link>
-                    </div>
-                </motion.div>
-                ))}
+                        <div className="p-6">
+                          <h3 className="text-xl font-bold mb-3 group-hover:text-accent-crimson transition-colors">
+                            {project.title}
+                          </h3>
+                          <p className="text-secondary line-clamp-3 text-sm leading-relaxed">
+                            {project.overview}
+                          </p>
+                        </div>
+                      </div>
+                    </TiltCard>
+                  </Link>
+                </FadeInWhenVisible>
+              ))}
             </div>
           ) : (
-            <div className="text-center text-tertiary">
-                No projects found. <Link to="/admin" className="underline">Add some?</Link>
-            </div>
+            <FadeInWhenVisible>
+              <div className="text-center py-20 bg-surface/30 rounded-lg border border-border border-dashed">
+                <p className="text-secondary mb-4">No projects found. Add some from the Admin panel.</p>
+                <Link to="/admin" className="text-accent-crimson hover:underline">Go to Admin</Link>
+              </div>
+            </FadeInWhenVisible>
           )}
-        </div>
-      </section>
 
-      {/* Call to Action */}
-      <section className="py-32 container mx-auto px-4 text-center">
-        <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">Ready to Forge?</h2>
-        <p className="text-xl text-secondary mb-10 max-w-2xl mx-auto">
-          Open for high-impact opportunities and technical consulting.
-        </p>
-        <Link
-          to="/contact"
-          className="inline-block px-8 py-4 bg-accent-crimson text-white font-bold rounded hover:bg-red-700 transition-colors"
-        >
-          Initiate Communication
-        </Link>
+          <FadeInWhenVisible delay={0.4}>
+            <div className="mt-8 text-center md:hidden">
+              <Link 
+                to="/projects" 
+                className="inline-flex items-center text-accent-crimson hover:text-white transition-colors font-medium"
+              >
+                View all projects <ArrowRight size={18} className="ml-2" />
+              </Link>
+            </div>
+          </FadeInWhenVisible>
+        </div>
       </section>
     </div>
   );

@@ -28,9 +28,9 @@ export default {
         warning: "#F5A623",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"], // Placeholder, will need to import Inter or similar
-        serif: ["Playfair Display", "serif"], // Placeholder
-        mono: ["JetBrains Mono", "monospace"], // Placeholder
+        sans: ["Rajdhani", "sans-serif"],
+        serif: ["Orbitron", "sans-serif"],
+        mono: ["Share Tech Mono", "monospace"],
       },
     },
   },

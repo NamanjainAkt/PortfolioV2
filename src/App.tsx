@@ -1,5 +1,6 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -11,26 +12,71 @@ import Contact from './pages/Contact';
 import AdminModal from './components/AdminModal';
 import Admin from './pages/Admin';
 import BottomNav from './components/BottomNav';
+import ChatBot from './components/ChatBot';
+import LoadingScreen from './components/LoadingScreen';
+import { PageTransition } from './components/PageTransition';
+import { CustomCursor } from './components/CustomCursor';
+import { CommandPalette } from './components/CommandPalette';
+import { ScrollProgress } from './components/ScrollProgress';
+import { Spotlight } from './components/Spotlight';
+
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+};
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0">
-      <Navbar />
-      <BottomNav />
-      <AdminModal />
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:slug" element={<ProjectDetail />} />
-          <Route path="/blogs" element={<Blogs />} />
-          <Route path="/blogs/:slug" element={<BlogDetail />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/admin" element={<Admin />} />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
+    <>
+      <AnimatePresence mode="wait">
+        {isLoading && <LoadingScreen onComplete={() => {}} />}
+      </AnimatePresence>
+      
+      {!isLoading && (
+        <div className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0">
+          <CustomCursor />
+          <ScrollProgress />
+          <Spotlight />
+          <CommandPalette />
+          <ScrollToTop />
+          <Navbar />
+          <BottomNav />
+          <AdminModal />
+          <ChatBot />
+          <main className="flex-grow">
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+                <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
+                <Route path="/projects/:slug" element={<PageTransition><ProjectDetail /></PageTransition>} />
+                <Route path="/blogs" element={<PageTransition><Blogs /></PageTransition>} />
+                <Route path="/blogs/:slug" element={<PageTransition><BlogDetail /></PageTransition>} />
+                <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+                <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+              </Routes>
+            </AnimatePresence>
+          </main>
+          <Footer />
+        </div>
+      )}
+    </>
   );
 }
 
