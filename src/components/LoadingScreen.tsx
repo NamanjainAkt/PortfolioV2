@@ -368,7 +368,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
         >
           <div className="h-px w-12 bg-gradient-to-r from-transparent via-accent-crimson/50 to-transparent" />
           <span className="text-[10px] text-tertiary font-mono tracking-widest">
-            ARC REACTOR v1.0 // STARK INDUSTRIES
+            Portfolio V2 || NAMAN INDUSTRIES
           </span>
           <div className="h-px w-12 bg-gradient-to-r from-transparent via-accent-crimson/50 to-transparent" />
         </motion.div>

@@ -31,38 +31,34 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
 
     try {
         const token = localStorage.getItem('token');
-        const signatureRes = await fetch('/api/upload/signature', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (!signatureRes.ok) throw new Error('Failed to get upload signature');
-        
-        const { signature, timestamp, cloudName, apiKey } = await signatureRes.json();
-        
         const file = files[0];
         const uploadFormData = new FormData();
         uploadFormData.append('file', file);
-        uploadFormData.append('api_key', apiKey);
-        uploadFormData.append('timestamp', timestamp.toString());
-        uploadFormData.append('signature', signature);
         uploadFormData.append('folder', 'portfolio/blogs');
 
-        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        const uploadRes = await fetch('/api/upload', {
             method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
             body: uploadFormData
         });
 
         const data = await uploadRes.json();
-        if (data.secure_url) {
+        console.log('[Upload] Response:', { status: uploadRes.status, hasUrl: !!data.url, error: data.error });
+        
+        if (!uploadRes.ok || data.error) {
+            throw new Error(data.error || `Upload failed: ${uploadRes.status}`);
+        }
+        
+        if (data.url) {
             setFormData(prev => ({
                 ...prev,
-                featuredImage: data.secure_url
+                featuredImage: data.url
             }));
         }
 
-    } catch (err) {
-        console.error(err);
-        setError('Image upload failed');
+    } catch (err: any) {
+        console.error('[Upload] Error:', err);
+        setError(err.message || 'Image upload failed');
     } finally {
         setUploading(false);
     }
@@ -154,7 +150,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
                 <button
                   type="button"
                   onClick={handleRemoveImage}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                  className="absolute top-2 right-2 bg-warning text-white p-1 rounded-full hover:bg-warning/80 transition-colors"
                 >
                   <X size={16} />
                 </button>

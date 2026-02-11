@@ -36,33 +36,29 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
 
     try {
         const token = localStorage.getItem('token');
-        const signatureRes = await fetch('/api/upload/signature', {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        if (!signatureRes.ok) throw new Error('Failed to get upload signature');
-        
-        const { signature, timestamp, cloudName, apiKey } = await signatureRes.json();
-        
         const uploadedUrls = [];
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('api_key', apiKey);
-            formData.append('timestamp', timestamp.toString());
-            formData.append('signature', signature);
             formData.append('folder', 'portfolio');
 
-            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+            const uploadRes = await fetch('/api/upload', {
                 method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData
             });
 
             const data = await uploadRes.json();
-            if (data.secure_url) {
-                uploadedUrls.push(data.secure_url);
+            console.log('[Upload] Response:', { status: uploadRes.status, hasUrl: !!data.url, error: data.error });
+            
+            if (!uploadRes.ok || data.error) {
+                throw new Error(data.error || `Upload failed: ${uploadRes.status}`);
+            }
+            
+            if (data.url) {
+                uploadedUrls.push(data.url);
             }
         }
 
@@ -71,9 +67,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
             images: [...prev.images, ...uploadedUrls]
         }));
 
-    } catch (err) {
-        console.error(err);
-        setError('Image upload failed');
+    } catch (err: any) {
+        console.error('[Upload] Error:', err);
+        setError(err.message || 'Image upload failed');
     } finally {
         setUploading(false);
     }

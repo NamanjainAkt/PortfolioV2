@@ -1,27 +1,35 @@
-import { useEffect, useState } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useSpring } from 'framer-motion';
 
 export const CustomCursor = () => {
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
-  
-  const springConfig = { damping: 25, stiffness: 400 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+
+  const cursorXSpring = useSpring(0, { damping: 20, stiffness: 800, mass: 0.1 });
+  const cursorYSpring = useSpring(0, { damping: 20, stiffness: 800, mass: 0.1 });
+
+  const ringXSpring = useSpring(0, { damping: 30, stiffness: 200, mass: 0.5 });
+  const ringYSpring = useSpring(0, { damping: 30, stiffness: 200, mass: 0.5 });
+
+  const rafIdRef = useRef<number | null>(null);
+  const mousePosRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Check if device has pointer (not touch)
     const hasPointer = window.matchMedia('(pointer: fine)').matches;
     if (!hasPointer) return;
 
     setIsVisible(true);
 
+    const updateCursor = () => {
+      cursorXSpring.set(mousePosRef.current.x);
+      cursorYSpring.set(mousePosRef.current.y);
+      ringXSpring.set(mousePosRef.current.x);
+      ringYSpring.set(mousePosRef.current.y);
+      rafIdRef.current = requestAnimationFrame(updateCursor);
+    };
+
     const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
     };
 
     const handleMouseOver = (e: MouseEvent) => {
@@ -30,20 +38,22 @@ export const CustomCursor = () => {
       setIsHovering(!!isInteractive);
     };
 
-    window.addEventListener('mousemove', moveCursor);
-    window.addEventListener('mouseover', handleMouseOver);
+    rafIdRef.current = requestAnimationFrame(updateCursor);
+
+    window.addEventListener('mousemove', moveCursor, { passive: true });
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
 
     return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY]);
+  }, [cursorXSpring, cursorYSpring, ringXSpring, ringYSpring]);
 
   if (!isVisible) return null;
 
   return (
     <>
-      {/* Main cursor dot */}
       <motion.div
         className="fixed top-0 left-0 w-3 h-3 bg-accent-crimson rounded-full pointer-events-none z-[9999] mix-blend-difference"
         style={{
@@ -56,15 +66,14 @@ export const CustomCursor = () => {
           scale: isHovering ? 2.5 : 1,
           opacity: isHovering ? 0.8 : 1,
         }}
-        transition={{ duration: 0.15 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       />
-      
-      {/* Cursor ring */}
+
       <motion.div
         className="fixed top-0 left-0 w-8 h-8 border border-accent-crimson/50 rounded-full pointer-events-none z-[9998]"
         style={{
-          x: cursorXSpring,
-          y: cursorYSpring,
+          x: ringXSpring,
+          y: ringYSpring,
           translateX: '-50%',
           translateY: '-50%',
         }}
@@ -72,10 +81,9 @@ export const CustomCursor = () => {
           scale: isHovering ? 1.5 : 1,
           opacity: isHovering ? 0.5 : 0.3,
         }}
-        transition={{ duration: 0.2 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
       />
 
-      {/* Hide default cursor */}
       <style>{`
         * {
           cursor: none !important;

@@ -116,7 +116,7 @@ const AdminModal = () => {
               </div>
 
               {error && (
-                <p className={`text-sm text-center ${error.includes('initialized') ? 'text-accent-success' : 'text-accent-crimson'}`}>
+                <p className={`text-sm text-center ${error.includes('initialized') ? 'text-success' : 'text-accent-crimson'}`}>
                   {error}
                 </p>
               )}

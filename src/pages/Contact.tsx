@@ -114,11 +114,11 @@ const Contact = () => {
     w-full bg-elevated border-2 rounded-lg px-4 py-3 text-primary 
     transition-all duration-300 outline-none
     ${hasError 
-      ? 'border-red-500/50 focus:border-red-500' 
+      ? 'border-warning/50 focus:border-warning' 
       : focusedField === fieldName 
         ? 'border-accent-crimson' 
         : touched[fieldName] && !errors[fieldName as keyof FormErrors]
-          ? 'border-green-500/50 focus:border-green-500'
+          ? 'border-success/50 focus:border-success'
           : 'border-border focus:border-accent-crimson'
     }
   `;
@@ -179,13 +179,13 @@ const Contact = () => {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className="bg-green-900/20 border border-green-800 text-green-400 p-8 rounded-lg text-center"
+                    className="bg-success/10 border border-success/30 text-success p-8 rounded-lg text-center"
                   >
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                      className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
+                      className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4"
                     >
                       <Check size={32} className="text-white" />
                     </motion.div>
@@ -237,7 +237,7 @@ const Contact = () => {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center gap-1 mt-1 text-red-400 text-sm"
+                            className="flex items-center gap-1 mt-1 text-warning text-sm"
                           >
                             <AlertCircle size={14} />
                             {errors.name}
@@ -274,7 +274,7 @@ const Contact = () => {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center gap-1 mt-1 text-red-400 text-sm"
+                            className="flex items-center gap-1 mt-1 text-warning text-sm"
                           >
                             <AlertCircle size={14} />
                             {errors.email}
@@ -311,7 +311,7 @@ const Contact = () => {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center gap-1 mt-1 text-red-400 text-sm"
+                            className="flex items-center gap-1 mt-1 text-warning text-sm"
                           >
                             <AlertCircle size={14} />
                             {errors.message}

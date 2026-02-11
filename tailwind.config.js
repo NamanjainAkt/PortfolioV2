@@ -26,6 +26,7 @@ export default {
         border: "#2A2A2A",
         success: "#0D7C66",
         warning: "#F5A623",
+        glass: "#FFFFFF08",
       },
       fontFamily: {
         sans: ["Rajdhani", "sans-serif"],

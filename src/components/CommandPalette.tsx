@@ -194,7 +194,7 @@ export const CommandPalette = () => {
                           setIsOpen(false);
                           setSearchQuery('');
                         }}
-                        className={`w-full flex items-center gap-4 px-4 py-3.5 text-left transition-all duration-200 mx-2 rounded-lg w-[calc(100%-16px)] ${
+                        className={`flex items-center gap-4 px-4 py-3.5 text-left transition-all duration-200 mx-2 rounded-lg w-[calc(100%-16px)] ${
                           index === selectedIndex
                             ? 'bg-accent-crimson/10 text-accent-crimson'
                             : 'text-secondary hover:bg-elevated/50'
