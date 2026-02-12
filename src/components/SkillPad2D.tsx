@@ -2,8 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
+interface SkillIconProps {
+  size?: number | string;
+  className?: string;
+  strokeWidth?: number;
+  color?: string;
+  style?: React.CSSProperties;
+}
+
 interface SkillPad2DProps {
-  icon: LucideIcon;
+  icon: LucideIcon | React.ComponentType<SkillIconProps>;
   label: string;
   index: number;
   offset?: boolean;
@@ -105,23 +113,9 @@ const SkillPad2D: React.FC<SkillPad2DProps> = ({
           >
             <IconComponent 
               size={currentSize.icon} 
-              className="text-accent-glow transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(255,107,107,0.8)]"
-              strokeWidth={1.5}
+              className="transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(255,107,107,0.8)]"
+              color="currentColor"
             />
-            
-            {/* RGB split effect on hover */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <IconComponent 
-                size={currentSize.icon} 
-                className="text-red-500 absolute -left-0.5 top-0 opacity-40"
-                strokeWidth={1.5}
-              />
-              <IconComponent 
-                size={currentSize.icon} 
-                className="text-cyan-400 absolute left-0.5 top-0 opacity-40"
-                strokeWidth={1.5}
-              />
-            </div>
           </motion.div>
 
           {/* Label */}

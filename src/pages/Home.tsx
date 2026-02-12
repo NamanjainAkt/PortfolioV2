@@ -51,10 +51,9 @@ const Home = () => {
   ];
 
   const socialLinks = [
-    { icon: Twitter, href: "https://twitter.com" },
-    { icon: Linkedin, href: "https://linkedin.com" },
-    { icon: Github, href: "https://github.com" },
-    { icon: Mail, href: "mailto:contact@example.com" },
+    { icon: Linkedin, href: "https://linkedin.com/in/naman-jain-akt/" },
+    { icon: Github, href: "https://github.com/namanjainakt/" },
+    { icon: Mail, href: "mailto:namanjainakt@gmail.com" },
   ];
 
   return (

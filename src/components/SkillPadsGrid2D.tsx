@@ -1,26 +1,32 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Code, FileCode, Server, Database, Smartphone, 
-  Cloud, GitBranch, Container, Zap, Globe
-} from 'lucide-react';
+import TypeScript from '@/icons/skills/TypeScript';
+import ReactJs from '@/icons/skills/ReactJs';
+import NodeJs from '@/icons/skills/NodeJs';
+import Express from '@/icons/skills/Express';
+import MongoDb from '@/icons/skills/MongoDb';
+import ReactNative from '@/icons/skills/ReactNative';
+import Expo from '@/icons/skills/Expo';
+import Docker from '@/icons/skills/Docker';
+import Git from '@/icons/skills/Git';
+import Vercel from '@/icons/skills/Vercel';
 import SkillPad2D from './SkillPad2D';
 
 // Top 10 skills for main page - grouped by category
 const topSkills = [
   // Core Stack (5)
-  { icon: FileCode, label: 'TypeScript', category: 'Core' },
-  { icon: Code, label: 'React.js', category: 'Core' },
-  { icon: Server, label: 'Node.js', category: 'Core' },
-  { icon: Zap, label: 'Express', category: 'Core' },
-  { icon: Database, label: 'MongoDB', category: 'Core' },
+  { icon: TypeScript, label: 'TypeScript', category: 'Core' },
+  { icon: ReactJs, label: 'React.js', category: 'Core' },
+  { icon: NodeJs, label: 'Node.js', category: 'Core' },
+  { icon: Express, label: 'Express', category: 'Core' },
+  { icon: MongoDb, label: 'MongoDB', category: 'Core' },
   // Mobile (2)
-  { icon: Smartphone, label: 'React Native', category: 'Mobile' },
-  { icon: Globe, label: 'Expo', category: 'Mobile' },
+  { icon: ReactNative, label: 'React Native', category: 'Mobile' },
+  { icon: Expo, label: 'Expo', category: 'Mobile' },
   // DevOps & Tools (3)
-  { icon: Container, label: 'Docker', category: 'DevOps' },
-  { icon: GitBranch, label: 'Git', category: 'DevOps' },
-  { icon: Cloud, label: 'Vercel', category: 'DevOps' },
+  { icon: Docker, label: 'Docker', category: 'DevOps' },
+  { icon: Git, label: 'Git', category: 'DevOps' },
+  { icon: Vercel, label: 'Vercel', category: 'DevOps' },
 ];
 
 const SkillPadsGrid2D: React.FC = () => {
