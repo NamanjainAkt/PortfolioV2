@@ -10,19 +10,23 @@ import Expo from '@/icons/skills/Expo';
 import Docker from '@/icons/skills/Docker';
 import Git from '@/icons/skills/Git';
 import Vercel from '@/icons/skills/Vercel';
+import JavaScript from '@/icons/skills/JavaScript';
+import Jwt from '@/icons/skills/Jwt';
 import SkillPad2D from './SkillPad2D';
 
-// Top 10 skills for main page - grouped by category
+// Top 12 skills for main page - grouped by category
 const topSkills = [
-  // Core Stack (5)
+  // Core Stack (6)
+  { icon: JavaScript, label: 'JavaScript', category: 'Core' },
   { icon: TypeScript, label: 'TypeScript', category: 'Core' },
   { icon: ReactJs, label: 'React.js', category: 'Core' },
   { icon: NodeJs, label: 'Node.js', category: 'Core' },
   { icon: Express, label: 'Express', category: 'Core' },
   { icon: MongoDb, label: 'MongoDB', category: 'Core' },
-  // Mobile (2)
+  // Mobile & Auth (3)
   { icon: ReactNative, label: 'React Native', category: 'Mobile' },
   { icon: Expo, label: 'Expo', category: 'Mobile' },
+  { icon: Jwt, label: 'JWT Auth', category: 'Security' },
   // DevOps & Tools (3)
   { icon: Docker, label: 'Docker', category: 'DevOps' },
   { icon: Git, label: 'Git', category: 'DevOps' },
@@ -30,41 +34,48 @@ const topSkills = [
 ];
 
 const SkillPadsGrid2D: React.FC = () => {
-  // Split into two rows of 5
-  const row1 = topSkills.slice(0, 5);
-  const row2 = topSkills.slice(5, 10);
-
   return (
-    <div className="w-full">
-      {/* Grid Container - Responsive */}
-      <div className="flex flex-col items-center gap-4 md:gap-6 lg:gap-8">
-        {/* Row 1 - Core Stack */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          {row1.map((skill, index) => (
+    <div className="w-full max-w-7xl mx-auto px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8 lg:hidden">
+        {topSkills.map((skill, index) => (
+          <motion.div
+            key={skill.label}
+            className="flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.05 }}
+          >
             <SkillPad2D
-              key={skill.label}
               icon={skill.icon}
               label={skill.label}
               index={index}
-              offset={index % 2 === 1}
               size="md"
             />
-          ))}
-        </div>
+          </motion.div>
+        ))}
+      </div>
 
-        {/* Row 2 - Mobile & DevOps */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          {row2.map((skill, index) => (
-            <SkillPad2D
-              key={skill.label}
-              icon={skill.icon}
-              label={skill.label}
-              index={index + 5}
-              offset={index % 2 === 0}
-              size="md"
-            />
-          ))}
-        </div>
+      <div className="hidden lg:block columns-4 xl:columns-6" style={{ columnGap: '2rem' }}>
+        {topSkills.map((skill, index) => (
+          <motion.div
+            key={skill.label}
+            className="mb-12 break-inside-avoid"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <div className="flex justify-center">
+              <SkillPad2D
+                icon={skill.icon}
+                label={skill.label}
+                index={index}
+                size="md"
+              />
+            </div>
+          </motion.div>
+        ))}
       </div>
 
       {/* Decorative elements */}

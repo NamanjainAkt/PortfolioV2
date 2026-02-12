@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
+import FuturisticLogo from './FuturisticLogo';
 
 const Navbar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +18,11 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   const links = [
     { name: 'Home', path: '/' },
@@ -46,10 +54,10 @@ const Navbar = () => {
       <motion.div
         layout
         className={clsx(
-          'relative h-16 flex items-center justify-between overflow-hidden transition-all duration-300',
+          'relative h-14 md:h-16 flex items-center justify-between overflow-hidden transition-all duration-300',
           scrolled
-            ? 'rounded-full px-6'
-            : 'border-b border-border/50 px-4 container mx-auto'
+            ? 'rounded-full px-5 md:px-6'
+            : 'border-b border-border/50 px-4 md:px-8 container mx-auto'
         )}
         style={{
           background: scrolled
@@ -112,10 +120,12 @@ const Navbar = () => {
         {/* Content */}
         <Link 
           to="/" 
-          className="relative z-10 text-xl font-serif font-bold tracking-tight whitespace-nowrap"
+          className="relative z-10"
         >
-          NAMAN JAIN
+          <FuturisticLogo />
         </Link>
+
+        {/* Desktop Links */}
         <div className="relative z-10 hidden md:flex items-center gap-1">
           {links.map((link) => (
             <Link
@@ -150,7 +160,53 @@ const Navbar = () => {
             </Link>
           ))}
         </div>
+
+        {/* Mobile Menu Toggle */}
+        <div className="md:hidden relative z-10">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 text-primary focus:outline-none"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </motion.div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="absolute top-20 left-4 right-4 z-40 md:hidden overflow-hidden rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div className="flex flex-col p-4 gap-2">
+              {links.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={clsx(
+                    'px-6 py-4 rounded-xl transition-all duration-200 text-base font-medium',
+                    location.pathname === link.path
+                      ? 'bg-accent-crimson/20 text-accent-crimson border border-accent-crimson/30'
+                      : 'text-secondary hover:bg-white/5 hover:text-primary border border-transparent'
+                  )}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 };

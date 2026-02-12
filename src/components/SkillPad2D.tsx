@@ -22,31 +22,30 @@ const SkillPad2D: React.FC<SkillPad2DProps> = ({
   icon: IconComponent, 
   label, 
   index,
-  offset = false,
   size = 'md'
 }) => {
   // Responsive sizing
   const sizes = {
     sm: {
-      container: 'w-[120px] h-[120px] md:w-[140px] md:h-[140px]',
+      container: 'w-full aspect-square',
       icon: 28,
       label: 'text-[10px]',
       corner: 'w-2 h-2',
       padding: 'p-2'
     },
     md: {
-      container: 'w-[140px] h-[140px] md:w-[160px] md:h-[160px] lg:w-[180px] lg:h-[180px]',
-      icon: 36,
+      container: 'w-full aspect-square md:max-w-[160px] lg:max-w-[180px]',
+      icon: 32,
       label: 'text-[11px] md:text-xs',
       corner: 'w-2.5 h-2.5 md:w-3 md:h-3',
-      padding: 'p-3 md:p-4'
+      padding: 'p-4 md:p-5'
     },
     lg: {
-      container: 'w-[160px] h-[160px] md:w-[180px] md:h-[180px] lg:w-[200px] lg:h-[200px]',
-      icon: 44,
+      container: 'w-full aspect-square max-w-[160px] md:max-w-[180px] lg:max-w-[200px]',
+      icon: 40,
       label: 'text-xs md:text-sm',
       corner: 'w-3 h-3',
-      padding: 'p-4'
+      padding: 'p-5 md:p-6'
     }
   };
 
@@ -55,7 +54,6 @@ const SkillPad2D: React.FC<SkillPad2DProps> = ({
   return (
     <motion.div
       className={`relative flex flex-col items-center justify-center cursor-pointer group ${currentSize.container}`}
-      style={{ marginTop: offset ? '20px' : '0' }}
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
