@@ -1,32 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Code, Database, Server, Layers, Github, Linkedin, Mail, Twitter, FileText, Calendar } from 'lucide-react';
+import { ArrowRight, Code, Database, Server, Layers, Github, Linkedin, Mail, Twitter, FileText, Calendar, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Typewriter from '../components/Typewriter';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import { TiltCard } from '../components/TiltCard';
 import { ParticleBackground } from '../components/ParticleBackground';
 import { MagneticSocialIcon } from '../components/MagneticSocialIcon';
-
-interface Project {
-  id: string;
-  slug: string;
-  title: string;
-  overview: string;
-  images: string[];
-}
+import SkillPadsGrid2D from '../components/SkillPadsGrid2D';
+import SkillsModal from '../components/SkillsModal';
+import WorkExperience from '../components/WorkExperience';
+import ProjectCarousel3D from '../components/ProjectCarousel3D';
+import { Project } from '../types/project';
 
 const Home = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch('/api/projects');
+        const res = await fetch('/api/projects?limit=5&orderBy=displayOrder');
         const data = await res.json();
         if (Array.isArray(data)) {
-            setProjects(data.slice(0, 3));
+            setProjects(data);
         }
       } catch (error) {
         console.error('Failed to fetch projects');
@@ -162,134 +160,106 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Tech Stack */}
-      <section className="py-20 bg-surface/50 border-y border-border">
+      {/* Tech Stack - Holographic Skill Pads */}
+      <section className="py-20 md:py-32 bg-surface/30 border-y border-border overflow-hidden">
         <div className="container mx-auto px-4">
-          <FadeInWhenVisible>
-            <h2 className="text-sm font-bold tracking-widest text-secondary uppercase text-center mb-4">
-              Tech Stack
-            </h2>
-          </FadeInWhenVisible>
-          
-          <FadeInWhenVisible delay={0.1}>
-            <h3 className="text-4xl font-serif font-bold text-center mb-4">
-              Skills
-            </h3>
-          </FadeInWhenVisible>
-          
-          <FadeInWhenVisible delay={0.2}>
-            <p className="text-secondary text-center mb-12">
-              The technologies I build with.
-            </p>
-          </FadeInWhenVisible>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            {[
-              { icon: <Code />, name: 'Frontend', items: 'React, Next.js, Tailwind' },
-              { icon: <Server />, name: 'Backend', items: 'Node.js, Express, Prisma' },
-              { icon: <Database />, name: 'Database', items: 'PostgreSQL, MongoDB' },
-              { icon: <Layers />, name: 'DevOps', items: 'Docker, AWS, CI/CD' },
-            ].map((stack, index) => (
-              <FadeInWhenVisible key={index} delay={index * 0.1}>
-                <TiltCard tiltAmount={8}>
-                  <div className="p-6 bg-background border border-border rounded-lg hover:border-accent-crimson/50 transition-colors group">
-                    <div className="w-12 h-12 bg-elevated rounded-lg flex items-center justify-center mb-4 text-accent-crimson group-hover:scale-110 transition-transform duration-300">
-                      {stack.icon}
-                    </div>
-                    <h3 className="text-xl font-bold mb-2">{stack.name}</h3>
-                    <p className="text-secondary text-sm">{stack.items}</p>
-                  </div>
-                </TiltCard>
-              </FadeInWhenVisible>
-            ))}
+          {/* Header */}
+          <div className="text-center mb-12 md:mb-16">
+            <FadeInWhenVisible>
+              <span className="inline-block px-4 py-1.5 mb-4 text-xs font-mono text-accent-glow uppercase tracking-[0.3em] border border-accent-crimson/30 rounded-full bg-accent-crimson/5">
+                Tech Stack
+              </span>
+            </FadeInWhenVisible>
+            
+            <FadeInWhenVisible delay={0.1}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4">
+                Skills
+              </h2>
+            </FadeInWhenVisible>
+            
+            <FadeInWhenVisible delay={0.2}>
+              <p className="text-secondary text-base md:text-lg max-w-xl mx-auto mb-2">
+                My core technologies for full-stack + mobile development
+              </p>
+            </FadeInWhenVisible>
           </div>
+
+          {/* Skill Pads Grid */}
+          <FadeInWhenVisible delay={0.3}>
+            <SkillPadsGrid2D />
+          </FadeInWhenVisible>
           
-          <FadeInWhenVisible delay={0.5}>
-            <div className="flex justify-center mt-12">
-              <div className="px-6 py-2 bg-elevated rounded-full border border-border text-sm text-secondary font-mono">
-                &lt;&gt; 23+ technologies in my arsenal
-              </div>
+          {/* View All Skills Button */}
+          <FadeInWhenVisible delay={0.6}>
+            <div className="flex justify-center mt-12 md:mt-16">
+              <motion.button
+                onClick={() => setIsSkillsModalOpen(true)}
+                className="group flex items-center gap-3 px-8 py-4 bg-elevated border border-accent-crimson/30 rounded-lg hover:border-accent-crimson hover:bg-accent-crimson/10 transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span className="font-mono text-sm text-secondary group-hover:text-primary transition-colors">
+                  &lt;&gt;
+                </span>
+                <span className="text-secondary group-hover:text-primary transition-colors font-medium">
+                  View all 20+ skills
+                </span>
+                <ChevronRight 
+                  size={18} 
+                  className="text-accent-crimson group-hover:translate-x-1 transition-transform" 
+                />
+              </motion.button>
             </div>
           </FadeInWhenVisible>
         </div>
       </section>
 
+      {/* Work Experience */}
+      <WorkExperience />
+
+      {/* Skills Modal */}
+      <SkillsModal 
+        isOpen={isSkillsModalOpen} 
+        onClose={() => setIsSkillsModalOpen(false)} 
+      />
+
       {/* Featured Projects */}
-      <section className="py-20">
+      <section className="py-20 md:py-32 bg-surface/30 border-y border-border">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-end mb-12">
+          <div className="text-center mb-16">
             <FadeInWhenVisible>
-              <div>
-                <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Featured Work</h2>
-                <p className="text-secondary max-w-xl">
-                  A selection of projects that demonstrate my ability to solve complex problems.
-                </p>
-              </div>
+              <span className="inline-block px-4 py-1.5 mb-4 text-xs font-mono text-accent-glow uppercase tracking-[0.3em] border border-accent-crimson/30 rounded-full bg-accent-crimson/5">
+                Portfolio
+              </span>
             </FadeInWhenVisible>
             
             <FadeInWhenVisible delay={0.1}>
-              <Link 
-                to="/projects" 
-                className="hidden md:flex items-center text-accent-crimson hover:text-white transition-colors font-medium group"
-              >
-                View all projects 
-                <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4">
+                Featured Work
+              </h2>
+            </FadeInWhenVisible>
+            
+            <FadeInWhenVisible delay={0.2}>
+              <p className="text-secondary text-base md:text-lg max-w-2xl mx-auto">
+                A selection of projects that demonstrate my ability to solve complex problems
+              </p>
             </FadeInWhenVisible>
           </div>
 
           {loading ? (
              <div className="text-center py-20 text-secondary">Loading projects...</div>
-          ) : projects.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {projects.map((project, index) => (
-                <FadeInWhenVisible key={project.id} delay={index * 0.1}>
-                  <Link to={`/projects/${project.slug}`} className="group block h-full">
-                    <TiltCard tiltAmount={5} className="h-full">
-                      <div className="bg-surface border border-border rounded-lg overflow-hidden h-full hover:border-accent-crimson/50 transition-all duration-300 hover:shadow-lg hover:shadow-accent-crimson/10">
-                        <div className="aspect-video bg-elevated overflow-hidden">
-                          {project.images[0] ? (
-                            <img 
-                              src={project.images[0]} 
-                              alt={project.title} 
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-tertiary">
-                              <Code size={48} />
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-6">
-                          <h3 className="text-xl font-bold mb-3 group-hover:text-accent-crimson transition-colors">
-                            {project.title}
-                          </h3>
-                          <p className="text-secondary line-clamp-3 text-sm leading-relaxed">
-                            {project.overview}
-                          </p>
-                        </div>
-                      </div>
-                    </TiltCard>
-                  </Link>
-                </FadeInWhenVisible>
-              ))}
-            </div>
           ) : (
-            <FadeInWhenVisible>
-              <div className="text-center py-20 bg-surface/30 rounded-lg border border-border border-dashed">
-                <p className="text-secondary mb-4">No projects found. Add some from the Admin panel.</p>
-                <Link to="/admin" className="text-accent-crimson hover:underline">Go to Admin</Link>
-              </div>
-            </FadeInWhenVisible>
+            <ProjectCarousel3D projects={projects} />
           )}
 
           <FadeInWhenVisible delay={0.4}>
-            <div className="mt-8 text-center md:hidden">
+            <div className="mt-16 text-center">
               <Link 
                 to="/projects" 
-                className="inline-flex items-center text-accent-crimson hover:text-white transition-colors font-medium"
+                className="inline-flex items-center px-8 py-4 border border-border rounded-lg hover:border-accent-crimson hover:text-accent-crimson transition-colors font-medium group"
               >
-                View all projects <ArrowRight size={18} className="ml-2" />
+                View all projects 
+                <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </FadeInWhenVisible>

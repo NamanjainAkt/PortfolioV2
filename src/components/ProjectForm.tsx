@@ -16,7 +16,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
     solution: initialData?.solution || '',
     techStack: initialData?.techStack?.join(', ') || '',
     githubUrl: initialData?.githubUrl || '',
-    demoUrl: initialData?.demoUrl || '',
+    liveUrl: initialData?.liveUrl || '',
     images: initialData?.images || [] as string[],
   });
   const [loading, setLoading] = useState(false);
@@ -213,8 +213,8 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
             <div>
               <label className="block text-secondary text-sm mb-2">Live Demo URL</label>
               <input
-                name="demoUrl"
-                value={formData.demoUrl}
+                name="liveUrl"
+                value={formData.liveUrl}
                 onChange={handleChange}
                 className="w-full bg-background border border-border rounded px-4 py-2 text-primary focus:border-accent-crimson outline-none"
               />

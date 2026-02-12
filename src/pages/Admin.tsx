@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash, LogOut, Edit } from 'lucide-react';
+import { Plus, Trash, LogOut, Edit, GripVertical } from 'lucide-react';
 import ProjectForm from '../components/ProjectForm';
 import BlogForm from '../components/BlogForm';
+import SortableProjectList from '../components/admin/SortableProjectList';
+import { Project } from '../types/project';
 
 const Admin = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'projects' | 'blogs'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blogs' | 'reorder'>('projects');
   const [items, setItems] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modal states
@@ -20,8 +23,46 @@ const Admin = () => {
       navigate('/');
       return;
     }
-    fetchItems();
+    if (activeTab === 'reorder') {
+      fetchProjects();
+    } else {
+      fetchItems();
+    }
   }, [activeTab]);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/projects?orderBy=displayOrder');
+      const data = await res.json();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Failed to fetch projects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReorder = async (reorderedProjects: Project[]) => {
+    const token = localStorage.getItem('token');
+    const updates = reorderedProjects.map((p, index) => ({
+      id: p.id,
+      displayOrder: index,
+    }));
+
+    const res = await fetch('/api/projects/reorder', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ projects: updates }),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to reorder');
+    }
+  };
 
   const fetchItems = async () => {
     setLoading(true);
@@ -93,19 +134,36 @@ const Admin = () => {
         >
           Blogs
         </button>
-      </div>
-
-      <div className="mb-6">
-        <button 
-          onClick={handleCreate}
-          className="bg-white text-black px-4 py-2 rounded font-medium flex items-center hover:bg-gray-200 transition-colors"
+        <button
+          onClick={() => setActiveTab('reorder')}
+          className={`pb-2 px-4 flex items-center gap-2 ${activeTab === 'reorder' ? 'border-b-2 border-accent-crimson text-primary' : 'text-secondary'}`}
         >
-          <Plus size={18} className="mr-2" /> Add New {activeTab === 'projects' ? 'Project' : 'Blog'}
+          <GripVertical size={16} />
+          Reorder
         </button>
       </div>
 
+      {activeTab !== 'reorder' && (
+        <div className="mb-6">
+          <button 
+            onClick={handleCreate}
+            className="bg-white text-black px-4 py-2 rounded font-medium flex items-center hover:bg-gray-200 transition-colors"
+          >
+            <Plus size={18} className="mr-2" /> Add New {activeTab === 'projects' ? 'Project' : 'Blog'}
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="text-secondary">Loading...</div>
+      ) : activeTab === 'reorder' ? (
+        <div>
+          <h2 className="text-xl font-bold mb-4">Reorder Projects</h2>
+          <SortableProjectList 
+            projects={projects} 
+            onReorder={handleReorder}
+          />
+        </div>
       ) : (
         <div className="space-y-4">
           {items.map((item) => (

@@ -11,6 +11,7 @@ import BlogDetail from './pages/BlogDetail';
 import Contact from './pages/Contact';
 import AdminModal from './components/AdminModal';
 import Admin from './pages/Admin';
+import Test from './pages/Test';
 import BottomNav from './components/BottomNav';
 import ChatBot from './components/ChatBot';
 import LoadingScreen from './components/LoadingScreen';
@@ -70,6 +71,7 @@ function App() {
                 <Route path="/blogs/:slug" element={<PageTransition><BlogDetail /></PageTransition>} />
                 <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
                 <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+                <Route path="/test" element={<PageTransition><Test /></PageTransition>} />
               </Routes>
             </AnimatePresence>
           </main>

@@ -16,7 +16,7 @@ interface Project {
   techStack: string[];
   images: string[];
   githubUrl: string;
-  demoUrl: string;
+  liveUrl: string;
 }
 
 const ProjectDetail = () => {
@@ -123,9 +123,9 @@ const ProjectDetail = () => {
               <Github size={20} className="mr-2" /> Repository
             </motion.a>
           )}
-          {project.demoUrl && (
+          {project.liveUrl && (
             <motion.a 
-              href={project.demoUrl} 
+              href={project.liveUrl} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="flex items-center px-6 py-3 bg-white text-black font-medium rounded hover:bg-gray-200 transition-colors"
