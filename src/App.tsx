@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import Footer2 from './components/Footer2';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
@@ -11,7 +12,6 @@ import BlogDetail from './pages/BlogDetail';
 import Contact from './pages/Contact';
 import AdminModal from './components/AdminModal';
 import Admin from './pages/Admin';
-import Test from './pages/Test';
 import BottomNav from './components/BottomNav';
 import ChatBot from './components/ChatBot';
 import LoadingScreen from './components/LoadingScreen';
@@ -44,6 +44,8 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  const isHome = location.pathname === '/';
+
   return (
     <>
       <AnimatePresence mode="wait">
@@ -71,11 +73,10 @@ function App() {
                 <Route path="/blogs/:slug" element={<PageTransition><BlogDetail /></PageTransition>} />
                 <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
                 <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
-                <Route path="/test" element={<PageTransition><Test /></PageTransition>} />
               </Routes>
             </AnimatePresence>
           </main>
-          <Footer />
+          {isHome ? <Footer /> : <Footer2 />}
         </div>
       )}
     </>

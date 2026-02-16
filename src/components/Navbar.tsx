@@ -122,7 +122,7 @@ const Navbar = () => {
           to="/" 
           className="relative z-10"
         >
-          <FuturisticLogo />
+          <FuturisticLogo scrolled={scrolled} />
         </Link>
 
         {/* Desktop Links */}

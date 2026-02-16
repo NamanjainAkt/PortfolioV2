@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Briefcase, Calendar, MapPin, ChevronDown } from 'lucide-react';
+import React, { useRef } from 'react';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { Terminal, Calendar, MapPin, Target, Zap, Circle } from 'lucide-react';
+import { FadeInWhenVisible } from './FadeInWhenVisible';
 
 interface Experience {
   id: number;
   role: string;
   company: string;
   location: string;
-  startMonth: string;
-  startYear: string;
-  endMonth: string;
-  endYear: string;
+  period: string;
   isCurrent: boolean;
   description: string;
   achievements: string[];
   technologies: string[];
+  type: string;
 }
 
 const experiences: Experience[] = [
@@ -23,180 +22,180 @@ const experiences: Experience[] = [
     role: "Full Stack Developer",
     company: "TechCorp Inc.",
     location: "San Francisco, CA",
-    startMonth: "March",
-    startYear: "2022",
-    endMonth: "",
-    endYear: "",
+    period: "2022 - Present",
     isCurrent: true,
-    description: "Leading development of scalable web applications and microservices architecture. Managing a team of 5 developers and collaborating with cross-functional teams to deliver high-impact features.",
+    type: "Full-time",
+    description: "Architecting high-performance web solutions and leading core infrastructure initiatives.",
     achievements: [
-      "Led team of 5 developers in agile environment",
-      "Improved application performance by 40% through optimization",
-      "Implemented CI/CD pipeline reducing deployment time by 60%",
-      "Architected microservices handling 1M+ daily requests"
+      "Orchestrated microservices architecture handling 1.5M+ daily requests.",
+      "Engineered automated CI/CD workflows, slashing deployment latency by 65%.",
+      "Pioneered an internal UI framework adopted by 12+ cross-functional teams."
     ],
-    technologies: ["React", "Node.js", "MongoDB", "AWS", "Docker", "TypeScript"]
+    technologies: ["React", "Node.js", "MongoDB", "TypeScript", "AWS"]
   },
   {
     id: 2,
-    role: "Frontend Developer",
+    role: "Frontend Specialist",
     company: "StartupXYZ",
     location: "New York, NY",
-    startMonth: "June",
-    startYear: "2020",
-    endMonth: "February",
-    endYear: "2022",
+    period: "2020 - 2022",
     isCurrent: false,
-    description: "Developed customer-facing dashboard and improved overall UI/UX. Worked closely with design team to implement responsive interfaces and optimize user experience.",
+    type: "Remote",
+    description: "Focused on building immersive user interfaces and optimized design systems.",
     achievements: [
-      "Built customer dashboard used by 50K+ users",
-      "Reduced page load time by 35%",
-      "Implemented real-time data visualization",
-      "Created component library used across company"
+      "Developed a real-time analytics dashboard used by 50K+ enterprise users.",
+      "Reduced main bundle size by 45% using code-splitting techniques.",
+      "Implemented WCAG 2.1 accessibility standards across the product suite."
     ],
-    technologies: ["Vue.js", "Firebase", "JavaScript", "Chart.js", "Sass"]
+    technologies: ["Vue.js", "Tailwind CSS", "JavaScript", "Redux"]
   }
 ];
 
-const WorkExperience: React.FC = () => {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+const ExperienceItem = ({ exp, index }: { exp: Experience; index: number }) => {
+  return (
+    <div className="relative pl-8 md:pl-12 pb-12 last:pb-0">
+      {/* Timeline Node */}
+      <div className="absolute left-0 top-0 mt-1.5 -translate-x-1/2 z-20">
+        <div className="w-4 h-4 rounded-full bg-[#050505] border-2 border-white/10 flex items-center justify-center">
+          <motion.div 
+            whileInView={{ scale: [0, 1.2, 1] }}
+            className={`w-1.5 h-1.5 rounded-full ${exp.isCurrent ? 'bg-accent-crimson shadow-[0_0_10px_rgba(200,16,46,0.8)]' : 'bg-tertiary'}`} 
+          />
+        </div>
+      </div>
 
-  const toggleExperience = (id: number) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        className="group"
+      >
+        <div className="relative bg-elevated/30 backdrop-blur-sm border border-white/5 rounded-xl p-5 md:p-6 transition-all duration-300 group-hover:border-accent-crimson/20 group-hover:bg-elevated/50">
+          {/* Header Row */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4 border-b border-white/5 pb-4">
+            <div>
+              <h3 className="text-lg md:text-xl font-serif font-bold text-white group-hover:text-accent-crimson transition-colors">
+                {exp.role}
+              </h3>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-accent-glow font-mono text-xs uppercase tracking-wider">{exp.company}</span>
+                <span className="text-white/10 text-[10px]">•</span>
+                <span className="text-[10px] text-tertiary font-mono uppercase">{exp.type}</span>
+              </div>
+            </div>
+            <div className="flex flex-col md:items-end">
+              <div className="flex items-center gap-2 text-accent-crimson font-mono text-xs font-bold whitespace-nowrap">
+                <Calendar size={12} />
+                {exp.period}
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] text-tertiary mt-1">
+                <MapPin size={10} />
+                {exp.location}
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="space-y-4">
+            <p className="text-secondary text-xs md:text-sm leading-relaxed border-l-2 border-accent-crimson/20 pl-4">
+              {exp.description}
+            </p>
+
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+              {exp.achievements.map((ach, i) => (
+                <li key={i} className="flex gap-2.5 text-[11px] md:text-xs text-secondary group-hover:text-primary transition-colors leading-snug">
+                  <Target size={12} className="text-accent-crimson mt-0.5 shrink-0" />
+                  <span>{ach}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* Tech Stack - Compact */}
+            <div className="flex flex-wrap gap-1.5 pt-2">
+              {exp.technologies.map(tech => (
+                <span key={tech} className="px-2 py-0.5 text-[9px] font-mono text-tertiary bg-white/[0.02] border border-white/5 rounded transition-all group-hover:border-accent-crimson/30 group-hover:text-secondary">
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const WorkExperience: React.FC = () => {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end center"]
+  });
+
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   return (
-    <section className="py-20 md:py-32 bg-surface/30 border-y border-border">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <span className="inline-block px-4 py-1.5 mb-4 text-xs font-mono text-accent-glow uppercase tracking-[0.3em] border border-accent-crimson/30 rounded-full bg-accent-crimson/5">
-            Career Journey
-          </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4">
-            Work Experience
-          </h2>
-          <p className="text-secondary text-base md:text-lg max-w-2xl mx-auto">
-            My professional journey building impactful products
-          </p>
-        </motion.div>
+    <section ref={containerRef} className="py-16 md:py-24 relative overflow-hidden bg-[#050505]">
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(rgba(200, 16, 46, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(200, 16, 46, 0.3) 1px, transparent 1px)`,
+          backgroundSize: '80px 80px'
+        }}
+      />
 
-        {/* Experience Cards - Accordion Style */}
-        <div className="space-y-4">
-          {experiences.map((exp, index) => (
-            <motion.div
-              key={exp.id}
-              className="bg-background border border-border rounded-xl overflow-hidden hover:border-accent-crimson/30 transition-colors"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              viewport={{ once: true }}
-            >
-              {/* Clickable Header */}
-              <button
-                onClick={() => toggleExperience(exp.id)}
-                className="w-full p-6 md:p-8 text-left flex items-start justify-between gap-4"
-              >
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
-                    <h3 className="text-xl md:text-2xl font-bold">{exp.role}</h3>
-                    
-                    {/* Date */}
-                    <div className="flex items-center gap-2 px-3 py-1 bg-accent-crimson/10 rounded-full border border-accent-crimson/20 shrink-0">
-                      <Calendar size={14} className="text-accent-crimson" />
-                      <span className="text-sm font-mono text-accent-glow">
-                        {exp.startMonth} {exp.startYear} - {exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-4 text-secondary mb-4">
-                    <span className="flex items-center gap-2">
-                      <Briefcase size={16} className="text-accent-crimson" />
-                      {exp.company}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin size={16} className="text-accent-crimson" />
-                      {exp.location}
-                    </span>
-                  </div>
-
-                  {/* Technologies - Always Visible */}
-                  <div className="flex flex-wrap gap-2">
-                    {exp.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-3 py-1.5 text-sm bg-elevated text-secondary rounded-full border border-border"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Chevron */}
-                <motion.div
-                  animate={{ rotate: expandedId === exp.id ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="shrink-0 mt-1"
-                >
-                  <ChevronDown size={24} className="text-secondary" />
-                </motion.div>
-              </button>
-
-              {/* Expandable Content */}
-              <AnimatePresence initial={false}>
-                {expandedId === exp.id && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                  >
-                    <div className="px-6 md:px-8 pb-6 md:pb-8 border-t border-border pt-6">
-                      {/* Description */}
-                      <p className="text-secondary mb-6 leading-relaxed">
-                        {exp.description}
-                      </p>
-
-                      {/* Achievements */}
-                      <div>
-                        <h4 className="text-sm font-bold uppercase tracking-wider text-tertiary mb-3">
-                          Key Achievements
-                        </h4>
-                        <ul className="space-y-2">
-                          {exp.achievements.map((achievement, idx) => (
-                            <li key={idx} className="flex items-start gap-3 text-secondary">
-                              <span className="text-accent-crimson mt-1">▸</span>
-                              {achievement}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
+      <div className="container mx-auto px-4 max-w-4xl relative z-10">
+        {/* Compact Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-16 gap-4">
+          <div className="text-left">
+            <FadeInWhenVisible>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-px w-8 bg-accent-crimson" />
+                <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.4em]">Chronology</span>
+              </div>
+            </FadeInWhenVisible>
+            <FadeInWhenVisible delay={0.1}>
+              <h2 className="text-4xl md:text-5xl font-serif font-black tracking-tight leading-none uppercase">
+                CAREER <span className="text-accent-crimson">PATH</span>
+              </h2>
+            </FadeInWhenVisible>
+          </div>
+          <FadeInWhenVisible delay={0.2}>
+            <p className="text-tertiary text-sm font-light italic max-w-xs md:text-right border-l md:border-l-0 md:border-r border-accent-crimson/20 px-4">
+              "Building milestones, one commit at a time."
+            </p>
+          </FadeInWhenVisible>
         </div>
 
-        {/* Decorative element */}
-        <motion.div 
-          className="flex justify-center mt-12"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          viewport={{ once: true }}
-        >
-          <div className="h-px w-32 bg-gradient-to-r from-transparent via-accent-crimson to-transparent" />
-        </motion.div>
+        {/* Timeline Container */}
+        <div className="relative ml-2 md:ml-4">
+          {/* Animated Timeline Line */}
+          <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/5">
+            <motion.div 
+              style={{ scaleY }}
+              className="absolute top-0 left-0 right-0 origin-top bg-accent-crimson shadow-[0_0_10px_rgba(200,16,46,0.5)]"
+            />
+          </div>
+
+          {/* Experience List */}
+          <div className="relative z-10">
+            {experiences.map((exp, index) => (
+              <ExperienceItem key={exp.id} exp={exp} index={index} />
+            ))}
+          </div>
+        </div>
+
+        {/* Footer Accent */}
+        <div className="mt-12 flex justify-start pl-2 md:pl-4">
+          <div className="flex flex-col items-center">
+            <div className="w-1 h-1 rounded-full bg-accent-crimson animate-pulse" />
+            <div className="w-px h-12 bg-gradient-to-b from-accent-crimson to-transparent" />
+          </div>
+        </div>
       </div>
     </section>
   );

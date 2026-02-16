@@ -12,6 +12,7 @@ export interface Project {
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
+  category?: string;
 }
 
 export type ViewMode = 'tiles' | 'carousel' | 'masonry' | 'bento' | 'timeline';

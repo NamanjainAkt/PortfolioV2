@@ -1,120 +1,81 @@
-import { motion, Variants } from 'framer-motion';
-import { Github, Linkedin, Mail, Twitter } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Github, Linkedin, Mail, Twitter, ArrowUp } from 'lucide-react';
 
-const NameFooter = () => {
+const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const socialLinks = [
-    { name: 'GitHub', icon: Github, href: 'https://github.com' },
-    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
+    { name: 'GitHub', icon: Github, href: 'https://github.com/namanjainakt/' },
+    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/in/naman-jain-akt/' },
     { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
-    { name: 'Email', icon: Mail, href: 'mailto:contact@example.com' },
+    { name: 'Email', icon: Mail, href: 'mailto:namanjainakt@gmail.com' },
   ];
 
-  const name = 'NAMAN JAIN';
+  const name = "NAMAN JAIN";
 
   return (
-    <footer className="relative h-[50vh] min-h-[450px] flex flex-col items-center justify-center bg-background overflow-hidden border-t border-border/30">
-      <div className="absolute inset-0">
-        <div 
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(107, 107, 107, 0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(107, 107, 107, 0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: '60px 60px',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent-crimson/5 via-transparent to-transparent" />
-      </div>
+    <footer className="relative py-24 bg-[#050505] overflow-hidden border-t border-white/5">
+      <div className="container mx-auto px-4 flex flex-col items-center">
+        
+        {/* Massive Name / Scroll to Top */}
+        <button 
+          onClick={scrollToTop}
+          className="group relative cursor-pointer mb-12"
+        >
+          <div className="relative flex overflow-hidden">
+            {name.split('').map((char, i) => (
+              <motion.span
+                key={i}
+                initial={{ y: 0 }}
+                whileHover={{ y: -20, color: '#C8102E' }}
+                transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                className="text-6xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-serif font-black tracking-tighter text-white leading-none inline-block select-none"
+              >
+                {char === ' ' ? '\u00A0' : char}
+              </motion.span>
+            ))}
+          </div>
+          
+          {/* Hover Indicator */}
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+            <ArrowUp size={24} className="text-accent-crimson animate-bounce" />
+            <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.5em]">Back to Top</span>
+          </div>
+        </button>
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-accent-crimson/20 rounded-full"
-            initial={{
-              x: Math.random() * 100 + '%',
-              y: Math.random() * 100 + '%',
-            }}
-            animate={{
-              y: [null, Math.random() * -300 + 'px'],
-              opacity: [0, 0.4, 0],
-            }}
-            transition={{
-              duration: Math.random() * 15 + 15,
-              repeat: Infinity,
-              delay: Math.random() * 10,
-              ease: 'linear',
-            }}
-          />
-        ))}
-      </div>
-
-      <motion.button
-        onClick={scrollToTop}
-        className="relative group cursor-pointer focus:outline-none"
-        whileHover="hover"
-        initial="initial"
-      >
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-0 group-hover:w-48 h-0.5 bg-gradient-to-r from-transparent via-accent-crimson to-transparent transition-all duration-500 ease-out" />
-
-        <div className="relative flex gap-1">
-          {name.split('').map((char, index) => (
-            <motion.span
-              key={index}
-              className="text-7xl md:text-8xl lg:text-9xl font-sans font-bold tracking-widest text-primary select-none relative"
-              initial={{ y: 0, opacity: 0.7 }}
-              whileHover={{ 
-                y: -15,
-                opacity: 1,
-                textShadow: `
-                  0 0 20px rgba(220, 38, 38, 0.8),
-                  0 0 40px rgba(220, 38, 38, 0.6),
-                  0 0 60px rgba(220, 38, 38, 0.4)
-                `,
-              }}
-              transition={{
-                duration: 0.4,
-                ease: 'easeOut',
-                delay: index * 0.03,
-              }}
+        {/* Social Links */}
+        <div className="flex gap-8 md:gap-12 relative z-10">
+          {socialLinks.map((social, index) => (
+            <motion.a
+              key={social.name}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-tertiary hover:text-white transition-all duration-300"
+              whileHover={{ y: -5, scale: 1.1 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
             >
-              {char}
-            </motion.span>
+              <social.icon size={24} strokeWidth={1.5} />
+            </motion.a>
           ))}
         </div>
-      </motion.button>
 
-      <div className="flex gap-8 mt-20 relative z-10">
-        {socialLinks.map((social) => (
-          <motion.a
-            key={social.name}
-            href={social.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-4 text-tertiary hover:text-white transition-colors duration-300"
-            whileHover={{ scale: 1.15, y: -4 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <social.icon size={24} />
-          </motion.a>
-        ))}
+        {/* Minimal Copyright */}
+        <div className="mt-20 text-[9px] font-mono text-tertiary/30 uppercase tracking-[0.5em]">
+          © 2026 Developed by Naman Jain
+        </div>
       </div>
 
-      <motion.div
-        className="absolute bottom-8 text-tertiary/50 text-xs tracking-[0.3em] uppercase"
-        animate={{ opacity: [0.3, 0.7, 0.3] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        Click to scroll up
-      </motion.div>
+      {/* Atmospheric Background Glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[20%] bg-accent-crimson/5 blur-[120px] pointer-events-none" />
     </footer>
   );
 };
 
-export default NameFooter;
+export default Footer;

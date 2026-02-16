@@ -1,163 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 
-const FuturisticLogo = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+interface FuturisticLogoProps {
+  scrolled?: boolean;
+}
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 80);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const logoStyle: React.CSSProperties = {
-    position: 'relative',
-    width: isScrolled ? '180px' : '120px',
-    height: isScrolled ? '40px' : '60px',
-    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-  };
-
-  const hexContainerStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '50%',
-    left: 0,
-    transform: 'translateY(-50%)',
-    width: '100%',
-    height: '100%',
-    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-    opacity: isScrolled ? 0 : 1,
-    pointerEvents: isScrolled ? 'none' : 'auto',
-  };
-
+const FuturisticLogo: React.FC<FuturisticLogoProps> = ({ scrolled = false }) => {
   return (
-    <div 
-      className="logo-container"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <Link to="/" style={{ textDecoration: 'none', position: 'relative', display: 'block' }}>
-        <div style={logoStyle}>
-          {/* Hexagon Container */}
-          <div style={hexContainerStyle}>
-            <div className="hexagon">
-              <div 
-                className="hex-shape"
-                style={{
-                  animation: isHovered ? 'hexRotate 2s linear infinite' : 'hexRotate 8s linear infinite',
-                }}
-              />
-              <div className="hex-inner" />
-              <div 
-                className="nj-letters"
-                style={{
-                  animation: isHovered ? 'textGlow 0.5s ease-in-out' : 'textGlow 2s ease-in-out infinite',
-                }}
-              >
-                NJ
-              </div>
-              <div className="scan-line" />
-            </div>
-            
-            {/* Corner Accents */}
-            <div className="corner-accent tl" />
-            <div className="corner-accent tr" />
-            <div className="corner-accent bl" />
-            <div className="corner-accent br" />
-            
-            {/* Particles */}
-            <div className="particles">
-              <div className="particle" style={{ animationDelay: '0s' }} />
-              <div className="particle" style={{ animationDelay: '0.8s' }} />
-              <div className="particle" style={{ animationDelay: '1.6s' }} />
-              <div className="particle" style={{ animationDelay: '2.4s' }} />
-            </div>
-          </div>
-          
-          {/* Full Name (appears on scroll) */}
-          <div 
-            className="full-name"
-            style={{
-              opacity: isScrolled ? 1 : 0,
-              letterSpacing: isScrolled ? '4px' : '2px',
-            }}
-          >
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.1s' : '0s',
-              display: 'inline-block'
-            }}>N</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.15s' : '0s',
-              display: 'inline-block'
-            }}>A</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.2s' : '0s',
-              display: 'inline-block'
-            }}>M</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.25s' : '0s',
-              display: 'inline-block'
-            }}>A</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.3s' : '0s',
-              display: 'inline-block'
-            }}>N</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.35s' : '0s',
-              display: 'inline-block'
-            }}></span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.4s' : '0s',
-              display: 'inline-block'
-            }}>J</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.45s' : '0s',
-              display: 'inline-block'
-            }}>A</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.5s' : '0s',
-              display: 'inline-block'
-            }}>I</span>
-            <span style={{ 
-              opacity: isScrolled ? 1 : 0,
-              transform: isScrolled ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              transitionDelay: isScrolled ? '0.55s' : '0s',
-              display: 'inline-block'
-            }}>N</span>
-          </div>
+    <div className="group flex items-center gap-3 select-none py-1">
+      {/* Icon portion */}
+      <div className="relative flex items-center justify-center">
+        {/* Modern geometric frame */}
+        <div className={`
+          border-[1.5px] border-white/20 transition-all duration-700 ease-out
+          group-hover:border-accent-crimson group-hover:rotate-[135deg]
+          ${scrolled ? 'w-8 h-8 rounded-md' : 'w-10 h-10 rounded-sm'}
+        `} />
+        
+        {/* Initials */}
+        <div className={`
+          absolute inset-0 font-serif font-black tracking-tighter flex items-center justify-center transition-all duration-500
+          ${scrolled ? 'text-lg' : 'text-2xl'}
+        `}>
+          <span className="text-primary group-hover:text-white transition-colors duration-300">N</span>
+          <span className="text-accent-crimson">J</span>
         </div>
-      </Link>
+
+        {/* Subtle glow effect on hover */}
+        <div className="absolute inset-0 bg-accent-crimson/0 group-hover:bg-accent-crimson/10 blur-xl transition-all duration-500 rounded-full pointer-events-none" />
+      </div>
+
+      {/* Text portion */}
+      <div className={`
+        flex flex-col justify-center transition-all duration-500 ease-in-out overflow-hidden
+        ${scrolled ? 'max-w-0 opacity-0 -translate-x-4' : 'max-w-xs opacity-100 translate-x-0'}
+      `}>
+        <div className="flex items-center gap-2">
+          <span className="font-serif text-xl font-extrabold uppercase tracking-widest text-primary">
+            NAMAN
+          </span>
+          <span className="font-serif text-xl font-light uppercase tracking-widest text-secondary group-hover:text-accent-crimson transition-colors duration-300">
+            JAIN
+          </span>
+        </div>
+        <div className="h-[1px] w-0 group-hover:w-full bg-gradient-to-r from-accent-crimson to-transparent transition-all duration-700 ease-in-out" />
+        <span className="font-sans text-[9px] uppercase tracking-[0.4em] text-tertiary mt-0.5">
+          Software Engineer
+        </span>
+      </div>
     </div>
   );
 };

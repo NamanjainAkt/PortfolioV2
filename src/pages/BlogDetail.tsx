@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { ArrowLeft, Sun, Moon, Clock, BookOpen, List } from 'lucide-react';
+import { ArrowLeft, Clock, List, Type, Palette, Maximize2, Terminal, ChevronRight, Share2, Bookmark } from 'lucide-react';
 import clsx from 'clsx';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 
@@ -16,6 +16,7 @@ interface Blog {
   content: string;
   featuredImage?: string;
   createdAt: string;
+  category?: string;
 }
 
 interface Heading {
@@ -29,16 +30,27 @@ const BlogDetail = () => {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeHeading, setActiveHeading] = useState<string>('');
-  const [showToc, setShowToc] = useState(true);
-  
-  // Persistent Reading Mode
-  const [readingMode, setReadingMode] = useState<'slate' | 'warm'>(() => {
-    return (localStorage.getItem('readingMode') as 'slate' | 'warm') || 'slate';
-  });
+
+  // Reader Customization State
+  const [theme, setTheme] = useState<'slate' | 'warm' | 'cyber'>(() => (localStorage.getItem('blogTheme') as any) || 'slate');
+  const [fontFamily, setFontFamily] = useState<'sans' | 'serif' | 'mono'>(() => (localStorage.getItem('blogFont') as any) || 'sans');
+  const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg'>(() => (localStorage.getItem('blogFontSize') as any) || 'md');
+
+  // Parallax Logic
+  const targetRef = useRef(null);
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 800], [0, 300]);
+  const opacity = useTransform(scrollY, [0, 500], [1, 0]);
+  const titleY = useTransform(scrollY, [0, 500], [0, -100]);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   useEffect(() => {
-    localStorage.setItem('readingMode', readingMode);
-  }, [readingMode]);
+    localStorage.setItem('blogTheme', theme);
+    localStorage.setItem('blogFont', fontFamily);
+    localStorage.setItem('blogFontSize', fontSize);
+  }, [theme, fontFamily, fontSize]);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -54,410 +66,297 @@ const BlogDetail = () => {
         setLoading(false);
       }
     };
-
     fetchBlog();
+    window.scrollTo(0, 0);
   }, [slug]);
 
-  // Extract headings from markdown content
   const headings = useMemo<Heading[]>(() => {
     if (!blog?.content) return [];
-    
     const headingRegex = /^(#{1,6})\s+(.+)$/gm;
     const matches: Heading[] = [];
     let match;
-    
     while ((match = headingRegex.exec(blog.content)) !== null) {
-      const level = match[1].length;
       const text = match[2].trim();
       const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-      matches.push({ id, text, level });
+      matches.push({ id, text, level: match[1].length });
     }
-    
     return matches;
   }, [blog?.content]);
 
-  // Scroll to heading
-  const scrollToHeading = (headingId: string) => {
-    const element = document.getElementById(headingId);
-    if (element) {
-      const offset = 100;
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: elementPosition - offset,
-        behavior: 'smooth'
-      });
-      setActiveHeading(headingId);
+  const scrollToHeading = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+      setActiveHeading(id);
     }
   };
 
-  // Track active heading on scroll
   useEffect(() => {
-    if (headings.length === 0) return;
-
-    const observerCallback: IntersectionObserverCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveHeading(entry.target.id);
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, {
-      rootMargin: '-100px 0px -70% 0px',
-      threshold: 0
+    if (!headings.length) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => { if (entry.isIntersecting) setActiveHeading(entry.target.id); });
+    }, { rootMargin: '-100px 0px -70% 0px', threshold: 0 });
+    headings.forEach((h) => {
+      const el = document.getElementById(h.id);
+      if (el) observer.observe(el);
     });
-
-    headings.forEach((heading) => {
-      const element = document.getElementById(heading.id);
-      if (element) observer.observe(element);
-    });
-
     return () => observer.disconnect();
   }, [headings]);
 
-  // Calculate reading time
-  const getReadingTime = (content: string) => {
-    const words = content.split(/\s+/).length;
-    const minutes = Math.ceil(words / 200);
-    return `${minutes} min read`;
-  };
-
-  // Add IDs to headings in markdown
-  const addHeadingIds = (content: string): string => {
-    return content.replace(/^(#{1,6})\s+(.+)$/gm, (match, hashes, text) => {
-      const id = text.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-      return `${hashes} ${text}\n<a id="${id}"></a>`;
-    });
-  };
-
   if (loading) return (
-    <div className="pt-32 text-center text-secondary min-h-screen">
-      <BookOpen size={48} className="mx-auto mb-4 animate-pulse" />
-      <p>Loading...</p>
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="w-10 h-10 border-2 border-accent-crimson/20 border-t-accent-crimson rounded-full animate-spin" />
     </div>
   );
   
-  if (!blog) return (
-    <div className="pt-32 text-center text-secondary min-h-screen">
-      <BookOpen size={48} className="mx-auto mb-4" />
-      <p className="text-xl mb-4">Blog not found</p>
-      <Link to="/blogs" className="text-accent-crimson hover:underline">
-        Back to writings
-      </Link>
-    </div>
-  );
+  if (!blog) return <div className="pt-32 text-center text-secondary min-h-screen font-mono">Protocol Null</div>;
 
-  const modeStyles = {
-    slate: {
-      container: 'bg-background text-primary',
-      prose: 'prose-invert',
-      tocBg: 'bg-surface/80',
-      tocBorder: 'border-border',
-      tocText: 'text-secondary',
-      tocActive: 'text-accent-crimson',
-      codeBg: 'bg-elevated/50',
-    },
-    warm: {
-      container: 'bg-[#fdf6e3] text-[#433422]',
-      prose: 'prose-stone',
-      tocBg: 'bg-[#eee8d5]/80',
-      tocBorder: 'border-[#d3cbb8]',
-      tocText: 'text-[#586e75]',
-      tocActive: 'text-[#b58900]',
-      codeBg: 'bg-[#eee8d5]/50',
-    },
+  const themeClasses = {
+    slate: 'bg-[#0A0A0A] text-[#EDEDED] selection:bg-white/20',
+    warm: 'bg-[#FDF6E3] text-[#433422] selection:bg-[#b58900]/20',
+    cyber: 'bg-[#050505] text-accent-glow selection:bg-accent-crimson/30'
   };
 
-  const typographyStyles = {
-    slate: {
-      fontFamily: 'font-sans',
-      lineHeight: 'leading-relaxed',
-      paragraphSpacing: 'prose-p:my-6',
-    },
-    warm: {
-      fontFamily: 'font-serif',
-      lineHeight: 'leading-loose',
-      paragraphSpacing: 'prose-p:my-8 prose-p:text-lg',
-    },
-  };
-
-  const processedContent = addHeadingIds(blog.content);
+  const fontClasses = { sans: 'font-sans', serif: 'font-serif', mono: 'font-mono' };
+  const sizeClasses = { sm: 'prose-sm', md: 'prose-base', lg: 'prose-lg md:prose-xl' };
 
   return (
-    <div className={clsx('min-h-screen transition-colors duration-500', modeStyles[readingMode].container)}>
-      {/* Hero Section with Featured Image */}
-      {blog.featuredImage && (
-        <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
-          <img 
-            src={blog.featuredImage} 
-            alt={blog.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        </div>
-      )}
+    <div className={clsx('min-h-screen transition-all duration-700 relative overflow-x-hidden', themeClasses[theme])}>
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-accent-crimson z-[100] origin-left" style={{ scaleX }} />
 
-      <div className="relative">
-        {/* Main Content */}
-        <div className={clsx(
-          'container mx-auto px-4 pt-8 pb-20 relative z-10 transition-all duration-500',
-          showToc && headings.length > 0 ? 'max-w-4xl mr-auto lg:mr-[320px] xl:mx-auto xl:max-w-4xl' : 'max-w-3xl'
-        )}>
+      {/* Parallax Hero Section */}
+      <section className="relative h-[80vh] md:h-[90vh] flex items-center justify-center overflow-hidden">
+        <motion.div style={{ y }} className="absolute inset-0 z-0">
+          {blog.featuredImage ? (
+            <>
+              <img src={blog.featuredImage} className="w-full h-[120%] object-cover saturate-[0.8] brightness-[0.4]" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/40 to-current opacity-100" />
+              <div className="absolute inset-0 shadow-[inset_0_0_200px_rgba(0,0,0,0.9)]" />
+            </>
+          ) : (
+            <div className="w-full h-full bg-[#111]" />
+          )}
+        </motion.div>
+
+        <motion.div style={{ opacity, y: titleY }} className="container mx-auto px-4 relative z-10 text-center">
           <FadeInWhenVisible>
-            <div className="flex justify-between items-center mb-8">
-              <Link 
-                to="/blogs" 
-                className={clsx(
-                  'flex items-center text-sm font-medium transition-colors group px-4 py-2 rounded-full border backdrop-blur-sm',
-                  readingMode === 'slate' 
-                    ? 'hover:text-accent-crimson bg-surface/80 border-border' 
-                    : 'hover:text-[#b58900] bg-[#eee8d5]/80 border-[#d3cbb8]'
-                )}
-              >
-                <ArrowLeft size={16} className="mr-2 group-hover:-translate-x-1 transition-transform" /> 
-                Back to Writings
-              </Link>
-              <div className="flex items-center gap-2">
-                {headings.length > 0 && (
-                  <motion.button
-                    onClick={() => setShowToc(!showToc)}
-                    className={clsx(
-                      'p-2 rounded-full border transition-colors backdrop-blur-sm lg:hidden',
-                      readingMode === 'slate'
-                        ? 'border-border hover:bg-elevated bg-surface/80'
-                        : 'border-[#d3cbb8] hover:bg-[#eee8d5] bg-[#fdf6e3]/80'
-                    )}
-                    title="Toggle Table of Contents"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <List size={18} />
-                  </motion.button>
-                )}
-                <motion.button
-                  onClick={() => setReadingMode(readingMode === 'slate' ? 'warm' : 'slate')}
-                  className={clsx(
-                    'p-2 rounded-full border transition-colors backdrop-blur-sm',
-                    readingMode === 'slate'
-                      ? 'border-border hover:bg-elevated bg-surface/80'
-                      : 'border-[#d3cbb8] hover:bg-[#eee8d5] bg-[#fdf6e3]/80'
-                  )}
-                  title="Toggle Reading Mode"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {readingMode === 'slate' ? <Sun size={18} /> : <Moon size={18} />}
-                </motion.button>
-              </div>
+            <div className="inline-flex items-center gap-4 mb-8">
+              <span className="px-4 py-1.5 bg-accent-crimson/20 border border-accent-crimson/30 rounded-full text-[10px] font-mono text-white uppercase font-black tracking-[0.3em] backdrop-blur-md">
+                {blog.category || 'Architecture'}
+              </span>
+              <div className="w-1 h-1 rounded-full bg-accent-crimson" />
+              <span className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-70 text-white">{format(new Date(blog.createdAt), 'MMMM dd, yyyy')}</span>
             </div>
           </FadeInWhenVisible>
 
-          <article>
-            <FadeInWhenVisible delay={0.1}>
-              <header className="mb-12">
-                <div className={clsx(
-                  'flex items-center gap-4 text-sm mb-6',
-                  readingMode === 'slate' ? 'text-secondary' : 'text-[#586e75]'
-                )}>
-                  <span className={clsx(
-                    'px-3 py-1 rounded-full font-medium',
-                    readingMode === 'slate' 
-                      ? 'bg-accent-crimson/10 text-accent-crimson' 
-                      : 'bg-[#b58900]/10 text-[#b58900]'
-                  )}>
-                    Article
-                  </span>
-                  <span>{format(new Date(blog.createdAt), 'MMMM d, yyyy')}</span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                    {getReadingTime(blog.content)}
-                  </span>
-                </div>
-                <h1 className={clsx(
-                  'text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight',
-                  typographyStyles[readingMode].fontFamily
-                )}>
-                  {blog.title}
-                </h1>
-                {!blog.featuredImage && (
-                  <div className={clsx(
-                    'w-20 h-1 rounded-full',
-                    readingMode === 'slate' ? 'bg-accent-crimson' : 'bg-[#b58900]'
-                  )} />
-                )}
-              </header>
-            </FadeInWhenVisible>
+          <FadeInWhenVisible delay={0.1}>
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter leading-[0.85] uppercase text-white drop-shadow-2xl">
+              {blog.title}
+            </h1>
+          </FadeInWhenVisible>
+        </motion.div>
 
-            <FadeInWhenVisible delay={0.2}>
-              <div className={clsx(
-                "prose prose-lg max-w-none prose-headings:font-serif prose-code:font-mono prose-img:rounded-lg",
-                typographyStyles[readingMode].lineHeight,
-                typographyStyles[readingMode].paragraphSpacing,
-                modeStyles[readingMode].prose
-              )}>
-                <ReactMarkdown
-                  components={{
-                    code({className, children}) {
-                      const match = /language-(\w+)/.exec(className || '');
-                      return match ? (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-40">
+          <div className="w-px h-12 bg-gradient-to-b from-transparent to-white" />
+          <span className="text-[8px] font-mono uppercase tracking-[0.5em] text-white">Scroll to Decrypt</span>
+        </div>
+      </section>
+
+      {/* Main Content Layout */}
+      <div className="container mx-auto px-4 relative z-10 mt-20 pb-40">
+        <div className="flex flex-col lg:grid lg:grid-cols-[300px_1fr_300px] gap-12 lg:gap-20">
+          
+          {/* LEFT SIDE: Editor Controls */}
+          <aside className="order-2 lg:order-1">
+            <div className="sticky top-32 space-y-8">
+              <Link to="/blogs" className="inline-flex items-center gap-3 text-[10px] font-mono opacity-50 hover:opacity-100 hover:text-accent-crimson transition-all uppercase tracking-[0.4em] group mb-4">
+                <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Archives
+              </Link>
+
+              <div className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 backdrop-blur-xl space-y-10 shadow-2xl">
+                <div className="flex items-center gap-3 text-accent-crimson">
+                  <Terminal size={16} />
+                  <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em]">Reader Config</span>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Theme Selector */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-widest opacity-40">
+                      <Palette size={12} /> Environment
+                    </div>
+                    <div className="flex gap-2">
+                      {['slate', 'warm', 'cyber'].map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setTheme(t as any)}
+                          className={clsx(
+                            'flex-1 h-10 rounded-xl border transition-all relative overflow-hidden',
+                            theme === t ? 'border-accent-crimson bg-accent-crimson/10 shadow-[0_0_15px_rgba(200,16,46,0.2)]' : 'border-white/5 hover:border-white/20'
+                          )}
+                        >
+                          <div className={clsx('w-3 h-3 mx-auto rounded-full', t === 'slate' ? 'bg-[#0A0A0A]' : t === 'warm' ? 'bg-[#FDF6E3]' : 'bg-[#050505] border border-accent-crimson')} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Font Selector */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-widest opacity-40">
+                      <Type size={12} /> Typeface
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {['sans', 'serif', 'mono'].map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => setFontFamily(f as any)}
+                          className={clsx(
+                            'w-full py-3 px-4 rounded-xl border text-[10px] uppercase text-left transition-all font-mono',
+                            fontFamily === f ? 'border-accent-crimson bg-accent-crimson/10 text-accent-crimson' : 'border-white/5 text-tertiary hover:border-white/20'
+                          )}
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Size Selector */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-widest opacity-40">
+                      <Maximize2 size={12} /> Magnitude
+                    </div>
+                    <div className="flex gap-2">
+                      {['sm', 'md', 'lg'].map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setFontSize(s as any)}
+                          className={clsx(
+                            'flex-1 py-3 rounded-xl border text-[10px] uppercase transition-all font-mono',
+                            fontSize === s ? 'border-accent-crimson bg-accent-crimson/10 text-accent-crimson' : 'border-white/5 text-tertiary hover:border-white/20'
+                          )}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* CENTER COLUMN: Content Area */}
+          <main className="order-1 lg:order-2">
+            <div className={clsx(
+              'mx-auto transition-all duration-500 prose max-w-none',
+              theme === 'slate' ? 'prose-invert prose-crimson' : theme === 'warm' ? 'prose-stone' : 'prose-invert prose-red',
+              fontClasses[fontFamily],
+              sizeClasses[fontSize],
+              'prose-headings:uppercase prose-headings:font-black prose-headings:tracking-tighter prose-p:font-light prose-p:leading-loose prose-p:text-lg md:prose-p:text-xl prose-img:rounded-[2.5rem] prose-img:border prose-img:border-white/5 prose-blockquote:border-l-4 prose-blockquote:border-accent-crimson prose-blockquote:bg-white/[0.02] prose-blockquote:rounded-r-2xl prose-a:text-accent-crimson prose-a:no-underline hover:prose-a:underline'
+            )}>
+              <ReactMarkdown
+                components={{
+                  code({className, children}) {
+                    const match = /language-(\w+)/.exec(className || '');
+                    return match ? (
+                      <div className="my-12 rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-[#0A0A0A]">
+                        <div className="bg-white/5 px-6 py-3 flex items-center justify-between border-b border-white/5">
+                          <div className="flex items-center gap-2">
+                            <Terminal size={12} className="text-accent-crimson" />
+                            <span className="text-[10px] font-mono uppercase tracking-widest opacity-50">{match[1]}</span>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-red-500/30" />
+                            <div className="w-2 h-2 rounded-full bg-yellow-500/30" />
+                            <div className="w-2 h-2 rounded-full bg-green-500/30" />
+                          </div>
+                        </div>
                         <SyntaxHighlighter
                           style={vscDarkPlus}
                           language={match[1]}
                           PreTag="div"
+                          className="!m-0 !p-8 !bg-transparent"
                         >
                           {String(children).replace(/\n$/, '')}
                         </SyntaxHighlighter>
-                      ) : (
-                        <code className={clsx(`${className} px-1 py-0.5 rounded text-sm`, modeStyles[readingMode].codeBg)}>
-                          {children}
-                        </code>
-                      )
-                    },
-                    h1: ({children, ...props}) => {
-                      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                      return <h1 id={id} {...props}>{children}</h1>;
-                    },
-                    h2: ({children, ...props}) => {
-                      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                      return <h2 id={id} {...props}>{children}</h2>;
-                    },
-                    h3: ({children, ...props}) => {
-                      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                      return <h3 id={id} {...props}>{children}</h3>;
-                    },
-                  }}
-                >
-                  {processedContent}
-                </ReactMarkdown>
-              </div>
-            </FadeInWhenVisible>
+                      </div>
+                    ) : (
+                      <code className="px-1.5 py-0.5 rounded font-mono text-[0.9em] bg-accent-crimson/10 text-accent-crimson border border-accent-crimson/20">
+                        {children}
+                      </code>
+                    )
+                  },
+                  h1: ({children}) => {
+                    const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                    return <h1 id={id} className="pt-12 mb-8 flex items-center gap-4 group"><span className="text-accent-crimson opacity-20 group-hover:opacity-100 transition-opacity font-mono">#</span>{children}</h1>;
+                  },
+                  h2: ({children}) => {
+                    const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+                    return <h2 id={id} className="pt-12 mb-6 flex items-center gap-4 group"><span className="text-accent-crimson opacity-20 group-hover:opacity-100 transition-opacity font-mono">##</span>{children}</h2>;
+                  }
+                }}
+              >
+                {blog.content}
+              </ReactMarkdown>
+            </div>
 
-            {/* Article Footer */}
-            <FadeInWhenVisible delay={0.3}>
-              <div className={clsx(
-                'mt-16 pt-8 border-t',
-                readingMode === 'slate' ? 'border-border' : 'border-[#d3cbb8]'
-              )}>
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                  <p className={clsx(
-                    'text-sm',
-                    readingMode === 'slate' ? 'text-secondary' : 'text-[#586e75]'
-                  )}>
-                    Published on {format(new Date(blog.createdAt), 'MMMM d, yyyy')}
-                  </p>
-                  <Link 
-                    to="/blogs" 
-                    className={clsx(
-                      'hover:underline flex items-center gap-2',
-                      readingMode === 'slate' ? 'text-accent-crimson' : 'text-[#b58900]'
-                    )}
-                  >
-                    Read more articles
-                    <ArrowLeft size={16} className="rotate-180" />
-                  </Link>
+            {/* Bottom Meta */}
+            <div className="mt-32 pt-12 border-t border-current/10 flex justify-between items-center opacity-40">
+              <div className="flex items-center gap-4">
+                <Terminal size={16} />
+                <span className="text-[10px] font-mono uppercase tracking-widest">Protocol EOF</span>
+              </div>
+              <div className="flex gap-6">
+                <button className="text-tertiary hover:text-accent-crimson transition-colors"><Share2 size={18} /></button>
+                <button className="text-tertiary hover:text-accent-crimson transition-colors"><Bookmark size={18} /></button>
+              </div>
+            </div>
+          </main>
+
+          {/* RIGHT SIDE: Table of Contents */}
+          <aside className="order-3 hidden lg:block">
+            <div className="sticky top-32 space-y-8">
+              <div className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 backdrop-blur-xl shadow-2xl">
+                <div className="flex items-center gap-3 mb-8 text-accent-crimson">
+                  <List size={16} />
+                  <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em]">Neural Index</h3>
+                </div>
+                <nav className="flex flex-col gap-1">
+                  {headings.map((h, i) => (
+                    <button
+                      key={i}
+                      onClick={() => scrollToHeading(h.id)}
+                      className={clsx(
+                        'text-left text-[10px] py-3 px-4 rounded-xl transition-all duration-300 font-mono uppercase tracking-widest border border-transparent',
+                        activeHeading === h.id 
+                          ? 'bg-accent-crimson text-white font-black shadow-lg shadow-accent-crimson/30'
+                          : 'text-tertiary hover:bg-white/5'
+                      )}
+                    >
+                      <span className="opacity-40 mr-2">{i + 1}.</span>
+                      {h.text}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Quick Reading Stats */}
+              <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col gap-4">
+                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest opacity-50">
+                  <span>Complexity</span>
+                  <span className="text-accent-crimson">High</span>
+                </div>
+                <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest opacity-50">
+                  <span>Latency</span>
+                  <span className="text-accent-glow">12ms</span>
                 </div>
               </div>
-            </FadeInWhenVisible>
-          </article>
-        </div>
-
-        {/* Table of Contents Sidebar */}
-        {headings.length > 0 && showToc && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className={clsx(
-              'hidden lg:block fixed right-8 top-32 w-64 max-h-[calc(100vh-200px)] overflow-y-auto',
-              'backdrop-blur-xl rounded-xl border p-4 z-20',
-              modeStyles[readingMode].tocBg,
-              modeStyles[readingMode].tocBorder
-            )}
-          >
-            <h3 className={clsx(
-              'text-sm font-bold mb-4 uppercase tracking-wider',
-              readingMode === 'slate' ? 'text-primary' : 'text-[#433422]'
-            )}>
-              Contents
-            </h3>
-            <nav className="space-y-1">
-              {headings.map((heading, index) => (
-                <button
-                  key={`${heading.id}-${index}`}
-                  onClick={() => scrollToHeading(heading.id)}
-                  className={clsx(
-                    'block w-full text-left text-sm py-1.5 px-2 rounded transition-all duration-200 truncate',
-                    activeHeading === heading.id
-                      ? clsx('font-medium', modeStyles[readingMode].tocActive)
-                      : modeStyles[readingMode].tocText,
-                    heading.level === 1 ? 'font-medium' : '',
-                    heading.level === 2 ? 'ml-3' : '',
-                    heading.level === 3 ? 'ml-6' : '',
-                    heading.level >= 4 ? 'ml-9' : ''
-                  )}
-                >
-                  {heading.text}
-                </button>
-              ))}
-            </nav>
-          </motion.div>
-        )}
-
-        {/* Mobile TOC Drawer */}
-        {headings.length > 0 && showToc && (
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            className={clsx(
-              'lg:hidden fixed bottom-0 left-0 right-0 z-50',
-              'backdrop-blur-xl border-t max-h-[50vh] overflow-y-auto',
-              modeStyles[readingMode].tocBg,
-              modeStyles[readingMode].tocBorder
-            )}
-          >
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className={clsx(
-                  'text-sm font-bold uppercase tracking-wider',
-                  readingMode === 'slate' ? 'text-primary' : 'text-[#433422]'
-                )}>
-                  Contents
-                </h3>
-                <button 
-                  onClick={() => setShowToc(false)}
-                  className={modeStyles[readingMode].tocText}
-                >
-                  Close
-                </button>
-              </div>
-              <nav className="space-y-1">
-                {headings.map((heading, index) => (
-                  <button
-                    key={`${heading.id}-${index}`}
-                    onClick={() => {
-                      scrollToHeading(heading.id);
-                      setShowToc(false);
-                    }}
-                    className={clsx(
-                      'block w-full text-left text-sm py-2 px-2 rounded transition-all duration-200',
-                      activeHeading === heading.id
-                        ? clsx('font-medium', modeStyles[readingMode].tocActive)
-                        : modeStyles[readingMode].tocText,
-                      heading.level === 1 ? 'font-medium' : '',
-                      heading.level === 2 ? 'ml-3' : '',
-                      heading.level === 3 ? 'ml-6' : '',
-                      heading.level >= 4 ? 'ml-9' : ''
-                    )}
-                  >
-                    {heading.text}
-                  </button>
-                ))}
-              </nav>
             </div>
-          </motion.div>
-        )}
+          </aside>
+
+        </div>
       </div>
     </div>
   );

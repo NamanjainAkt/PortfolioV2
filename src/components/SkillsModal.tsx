@@ -1,63 +1,51 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import TypeScript from '@/icons/skills/TypeScript';
-import ReactJs from '@/icons/skills/ReactJs';
-import NodeJs from '@/icons/skills/NodeJs';
-import Express from '@/icons/skills/Express';
-import MongoDb from '@/icons/skills/MongoDb';
-import JavaScript from '@/icons/skills/JavaScript';
-import Jwt from '@/icons/skills/Jwt';
-import ReactNative from '@/icons/skills/ReactNative';
-import Expo from '@/icons/skills/Expo';
-import OpenAi from '@/icons/skills/OpenAi';
-import Claude from '@/icons/skills/Claude';
-import Docker from '@/icons/skills/Docker';
-import Git from '@/icons/skills/Git';
-import Vercel from '@/icons/skills/Vercel';
-import VsCode from '@/icons/skills/VsCode';
-import AntigravityIde from '@/icons/skills/AntigravityIde';
-import Postman from '@/icons/skills/Postman';
-import SkillPad2D from './SkillPad2D';
+import { X, Code2, Smartphone, Bot, Wrench } from 'lucide-react';
 
 interface SkillsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const allSkills = {
+interface Skill {
+  name: string;
+  iconClass: string;
+}
+
+const allSkills: Record<string, Skill[]> = {
   core: [
-    { icon: TypeScript, label: 'TypeScript' },
-    { icon: ReactJs, label: 'React.js' },
-    { icon: NodeJs, label: 'Node.js' },
-    { icon: Express, label: 'Express' },
-    { icon: MongoDb, label: 'MongoDB' },
-    { icon: JavaScript, label: 'JavaScript' },
-    { icon: Jwt, label: 'JWT' },
+    { name: 'TypeScript', iconClass: 'devicon-typescript-plain colored' },
+    { name: 'React.js', iconClass: 'devicon-react-original colored' },
+    { name: 'Node.js', iconClass: 'devicon-nodejs-plain colored' },
+    { name: 'Express', iconClass: 'devicon-express-original colored' },
+    { name: 'MongoDB', iconClass: 'devicon-mongodb-plain colored' },
+    { name: 'JavaScript', iconClass: 'devicon-javascript-plain colored' },
+    { name: 'Next.js', iconClass: 'devicon-nextjs-plain colored' },
+    { name: 'Tailwind', iconClass: 'devicon-tailwindcss-original colored' },
   ],
   mobile: [
-    { icon: ReactNative, label: 'React Native' },
-    { icon: Expo, label: 'Expo' },
+    { name: 'React Native', iconClass: 'devicon-react-original colored' },
+    { name: 'Expo', iconClass: 'devicon-react-original colored' },
   ],
   ai: [
-    { icon: OpenAi, label: 'OpenAI API' },
-    { icon: Claude, label: 'Claude API' },
+    { name: 'OpenAI API', iconClass: 'devicon-openapi-plain colored' },
+    { name: 'Gemini API', iconClass: 'devicon-google-plain colored' },
   ],
   tools: [
-    { icon: Docker, label: 'Docker' },
-    { icon: Git, label: 'Git' },
-    { icon: Vercel, label: 'Vercel' },
-    { icon: VsCode, label: 'VS Code' },
-    { icon: AntigravityIde, label: 'Antigravity IDE' },
-    { icon: Postman, label: 'Postman' },
+    { name: 'Docker', iconClass: 'devicon-docker-plain colored' },
+    { name: 'Git', iconClass: 'devicon-git-plain colored' },
+    { name: 'GitHub', iconClass: 'devicon-github-original colored' },
+    { name: 'VS Code', iconClass: 'devicon-vscode-plain colored' },
+    { name: 'Postman', iconClass: 'devicon-postman-plain colored' },
+    { name: 'Vercel', iconClass: 'devicon-vercel-original colored' },
   ],
 };
 
-const categoryLabels: Record<string, { icon: typeof ReactJs; label: string; color: string }> = {
-  core: { icon: ReactJs, label: ' Core Stack', color: '#FF6B6B' },
-  mobile: { icon: ReactNative, label: ' Mobile', color: '#C8102E' },
-  ai: { icon: OpenAi, label: ' AI Integration', color: '#FF6B6B' },
-  tools: { icon: VsCode, label: ' Tools & Deployment', color: '#C8102E' },
+const categoryLabels: Record<string, { icon: typeof Code2; label: string; color: string }> = {
+  core: { icon: Code2, label: ' Core Stack', color: '#FF6B6B' },
+  mobile: { icon: Smartphone, label: ' Mobile', color: '#C8102E' },
+  ai: { icon: Bot, label: ' AI Integration', color: '#FF6B6B' },
+  tools: { icon: Wrench, label: ' Tools & Deployment', color: '#C8102E' },
 };
 
 const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose }) => {
@@ -113,7 +101,7 @@ const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose }) => {
                     Complete Skill Arsenal
                   </motion.h2>
                   <p className="text-secondary text-sm mt-1">
-                    17 technologies across 4 categories
+                    16+ technologies across 4 categories
                   </p>
                 </div>
                 <motion.button
@@ -136,17 +124,17 @@ const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose }) => {
                   <SkillCategory 
                     category="mobile" 
                     skills={allSkills.mobile} 
-                    startIndex={7}
+                    startIndex={8}
                   />
                   <SkillCategory 
                     category="ai" 
                     skills={allSkills.ai} 
-                    startIndex={9}
+                    startIndex={10}
                   />
                   <SkillCategory 
                     category="tools" 
                     skills={allSkills.tools} 
-                    startIndex={11}
+                    startIndex={12}
                   />
                 </div>
                 <div className="h-8" />
@@ -166,7 +154,7 @@ const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose }) => {
 
 const SkillCategory: React.FC<{
   category: string;
-  skills: Array<{ icon: typeof ReactJs; label: string }>;
+  skills: Skill[];
   startIndex: number;
 }> = ({ category, skills, startIndex }) => {
   const categoryInfo = categoryLabels[category];
@@ -192,15 +180,23 @@ const SkillCategory: React.FC<{
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {skills.map((skill, index) => (
-          <SkillPad2D
-            key={skill.label}
-            icon={skill.icon}
-            label={skill.label}
-            index={startIndex + index}
-            size="sm"
-          />
+          <motion.div
+            key={skill.name}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: (startIndex + index) * 0.03 }}
+            className="flex flex-col items-center p-4 bg-elevated/30 border border-border rounded-xl hover:border-accent-crimson/30 hover:bg-elevated/50 transition-all group cursor-pointer"
+          >
+            <div className="relative mb-3">
+              <i className={`${skill.iconClass} text-4xl md:text-5xl transition-transform duration-300 group-hover:scale-110`} />
+              <div className="absolute inset-0 bg-accent-crimson/0 group-hover:bg-accent-crimson/20 blur-xl rounded-full transition-all duration-300" />
+            </div>
+            <span className="text-xs md:text-sm text-secondary group-hover:text-primary transition-colors text-center font-mono">
+              {skill.name}
+            </span>
+          </motion.div>
         ))}
       </div>
     </motion.div>

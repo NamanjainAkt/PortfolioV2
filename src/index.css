@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import 'devicon/devicon.min.css';
 
 @tailwind base;
 @tailwind components;
@@ -27,242 +28,31 @@
   }
 }
 
-/* Futuristic Logo Styles from logo.md */
-.logo-container {
-  cursor: pointer;
-  text-decoration: none;
-  position: relative;
-}
+/* Logo Styles removed - using Tailwind in FuturisticLogo.tsx */
 
-.hexagon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 55px;
-  height: 55px;
-}
-
-.hex-shape {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
-  background: transparent;
-  border: 2px solid #fff;
-  animation: hexRotate 8s linear infinite;
-}
-
-@keyframes hexRotate {
+/* Marquee Animations */
+@keyframes marquee-left {
   0% {
-    transform: rotate(0deg);
+    transform: translateX(0);
   }
   100% {
-    transform: rotate(360deg);
+    transform: translateX(-50%);
   }
 }
 
-.hex-inner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 45px;
-  height: 45px;
-  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  animation: hexRotate 6s linear infinite reverse;
-}
-
-.nj-letters {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 32px;
-  font-weight: 900;
-  color: #fff;
-  font-family: 'Arial Black', sans-serif;
-  letter-spacing: -2px;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-               0 0 20px rgba(255, 255, 255, 0.3);
-  animation: textGlow 2s ease-in-out infinite;
-}
-
-@keyframes textGlow {
-  0%, 100% {
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-                 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-  50% {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
-                 0 0 30px rgba(255, 255, 255, 0.5),
-                 0 0 40px rgba(255, 255, 255, 0.3);
-  }
-}
-
-.corner-accent {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid #fff;
-}
-
-.corner-accent.tl {
-  top: -5px;
-  left: 15px;
-  border-right: none;
-  border-bottom: none;
-  animation: cornerPulse 2s ease-in-out infinite;
-}
-
-.corner-accent.tr {
-  top: -5px;
-  right: 15px;
-  border-left: none;
-  border-bottom: none;
-  animation: cornerPulse 2s ease-in-out infinite 0.5s;
-}
-
-.corner-accent.bl {
-  bottom: -5px;
-  left: 15px;
-  border-right: none;
-  border-top: none;
-  animation: cornerPulse 2s ease-in-out infinite 1s;
-}
-
-.corner-accent.br {
-  bottom: -5px;
-  right: 15px;
-  border-left: none;
-  border-top: none;
-  animation: cornerPulse 2s ease-in-out infinite 1.5s;
-}
-
-@keyframes cornerPulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-}
-
-.scan-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    #fff 50%, 
-    transparent 100%);
-  opacity: 0.6;
-  animation: scan 3s ease-in-out infinite;
-}
-
-@keyframes scan {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(55px);
-    opacity: 0.6;
-  }
-  90% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-}
-
-.particles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-.particle {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background: #fff;
-  border-radius: 50%;
-  opacity: 0;
-  animation: particleFloat 4s ease-in-out infinite;
-}
-
-@keyframes particleFloat {
+@keyframes marquee-right {
   0% {
-    transform: translateY(60px);
-    opacity: 0;
-  }
-  20%, 80% {
-    opacity: 1;
+    transform: translateX(-50%);
   }
   100% {
-    transform: translateY(-10px);
-    opacity: 0;
+    transform: translateX(0);
   }
 }
 
-.full-name {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 2px;
-  opacity: 0;
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  text-transform: uppercase;
+.animate-marquee-left {
+  animation: marquee-left 30s linear infinite;
 }
 
-.full-name::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: #C8102E;
-  box-shadow: 0 0 10px rgba(200, 16, 46, 0.5);
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s;
-}
-
-.logo-container:hover .hex-shape {
-  animation: hexRotate 2s linear infinite;
-  border-color: #fff;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-}
-
-.logo-container:hover .nj-letters {
-  animation: textGlow 0.5s ease-in-out;
-}
-
-@media (max-width: 768px) {
-  .full-name {
-    font-size: 18px;
-  }
-
-  .nj-letters {
-    font-size: 24px;
-  }
+.animate-marquee-right {
+  animation: marquee-right 30s linear infinite;
 }
