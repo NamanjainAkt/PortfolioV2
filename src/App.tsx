@@ -12,6 +12,7 @@ import BlogDetail from './pages/BlogDetail';
 import Contact from './pages/Contact';
 import AdminModal from './components/AdminModal';
 import Admin from './pages/Admin';
+import Test from './pages/Test';
 import BottomNav from './components/BottomNav';
 import ChatBot from './components/ChatBot';
 import LoadingScreen from './components/LoadingScreen';
@@ -36,20 +37,12 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 3500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   const isHome = location.pathname === '/';
 
   return (
     <>
       <AnimatePresence mode="wait">
-        {isLoading && <LoadingScreen onComplete={() => {}} />}
+        {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
       </AnimatePresence>
       
       {!isLoading && (
@@ -72,7 +65,8 @@ function App() {
                 <Route path="/blogs" element={<PageTransition><Blogs /></PageTransition>} />
                 <Route path="/blogs/:slug" element={<PageTransition><BlogDetail /></PageTransition>} />
                 <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-                <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+<Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
+                <Route path="/test" element={<PageTransition><Test /></PageTransition>} />
               </Routes>
             </AnimatePresence>
           </main>

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Bot, User, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence, useScroll } from 'framer-motion';
+import { Send, Bot, User, Sparkles, Command, Zap, Maximize2, Minimize2, Trash2, X, ChevronDown, MessageCircle, ShieldCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 
@@ -13,11 +13,12 @@ interface Message {
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       role: 'bot',
-      content: "Hi there! I'm Aries, Naman's AI assistant. Ask me anything about his projects, skills, or experience!",
+      content: "Hello. I am **Aries**, your dedicated architectural assistant. I can provide technical specifications on Naman's stack, project methodologies, or facilitate a direct connection. \n\nWhat are we building today?",
       timestamp: new Date(),
     },
   ]);
@@ -30,7 +31,7 @@ const ChatBot = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
+    if (isOpen) scrollToBottom();
   }, [messages, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +50,6 @@ const ChatBot = () => {
     setIsLoading(true);
 
     try {
-      // Prepare history for API (exclude welcome message if needed, or map it correctly)
       const history = messages
         .filter(m => m.id !== 'welcome')
         .map(m => ({
@@ -60,35 +60,25 @@ const ChatBot = () => {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: userMessage.content,
-          history 
-        }),
+        body: JSON.stringify({ message: userMessage.content, history }),
       });
 
       const data = await res.json();
+      if (data.error) throw new Error(data.error);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      const botMessage: Message = {
+      setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'bot',
         content: data.reply,
         timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, botMessage]);
+      }]);
     } catch (error) {
-      console.error('Chat error:', error);
-      const errorMessage: Message = {
+      setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'bot',
-        content: "I'm having trouble connecting to my brain right now. Please try again later.",
+        content: "System link interrupted. Please verify your connection and re-initiate.",
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -96,67 +86,109 @@ const ChatBot = () => {
 
   return (
     <>
-      {/* Floating Toggle Button */}
+      {/* 1. THE TRIGGER: Minimalist Intelligence Pill */}
       <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-accent-crimson text-white rounded-full shadow-[0_0_20px_rgba(200,16,46,0.4)] hover:shadow-[0_0_30px_rgba(200,16,46,0.6)] transition-all duration-300 group"
+        className={cn(
+          "fixed bottom-8 right-8 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl transition-all duration-500",
+          isOpen 
+            ? "bg-white text-black ring-4 ring-white/10" 
+            : "bg-[#0A0A0A] border border-white/10 text-white hover:border-accent-crimson/50"
+        )}
       >
-        {isOpen ? <X size={24} /> : <MessageSquare size={24} className="group-hover:animate-pulse" />}
+        <div className="relative">
+          <Sparkles size={18} className={cn(isOpen ? "text-accent-crimson" : "text-white")} />
+          {!isOpen && (
+            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-crimson opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-crimson"></span>
+            </span>
+          )}
+        </div>
+        <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em]">
+          {isOpen ? "Active Link" : "Ask Aries"}
+        </span>
       </motion.button>
 
-      {/* Chat Window */}
+      {/* 2. THE INTERFACE: Glassmorphism 2.0 */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-50 w-[90vw] md:w-[400px] h-[600px] max-h-[80vh] bg-surface border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            initial={{ opacity: 0, y: 40, scale: 0.95, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: 40, scale: 0.95, filter: 'blur(10px)' }}
+            className={cn(
+              "fixed right-8 bottom-24 z-50 flex flex-col overflow-hidden bg-[#0A0A0A]/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_100px_rgba(0,0,0,0.8)] rounded-[2rem]",
+              isMaximized ? "inset-8 w-auto h-auto" : "w-[95vw] md:w-[420px] h-[600px] max-h-[80vh]"
+            )}
           >
-            {/* Header */}
-            <div className="p-4 border-b border-border bg-elevated/50 backdrop-blur-sm flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-accent-crimson/10 flex items-center justify-center border border-accent-crimson/20">
-                <Sparkles size={20} className="text-accent-crimson" />
-              </div>
-              <div>
-                <h3 className="font-bold text-primary">Aries AI</h3>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs text-secondary">Online</span>
+            {/* High-End Header */}
+            <div className="relative px-6 py-5 flex items-center justify-between border-b border-white/5 bg-gradient-to-b from-white/5 to-transparent">
+              <div className="flex items-center gap-4">
+                <div className="relative w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center">
+                   <div className="absolute inset-0 bg-accent-crimson/10 animate-pulse rounded-full" />
+                   <Bot size={20} className="text-white relative z-10" />
                 </div>
+                <div>
+                  <h3 className="text-white font-bold text-sm tracking-tight flex items-center gap-2">
+                    Aries Intelligence
+                    <ShieldCheck size={12} className="text-accent-crimson" />
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent-crimson" />
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Processing v2.4</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => setMessages([messages[0]])}
+                  className="p-2 text-zinc-500 hover:text-white transition-colors"
+                  title="Purge session"
+                >
+                  <Trash2 size={16} />
+                </button>
+                <button 
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  className="p-2 text-zinc-500 hover:text-white transition-colors hidden md:block"
+                >
+                  {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </button>
+                <button 
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 text-zinc-500 hover:text-accent-crimson transition-colors"
+                >
+                  <X size={18} />
+                </button>
               </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-              {messages.map((msg) => (
-                <div
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth custom-scrollbar">
+              {messages.map((msg, idx) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
                   key={msg.id}
                   className={cn(
-                    "flex gap-3 max-w-[85%]",
-                    msg.role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto"
+                    "flex flex-col gap-2 max-w-[85%]",
+                    msg.role === 'user' ? "ml-auto items-end" : "mr-auto items-start"
                   )}
                 >
                   <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1",
-                    msg.role === 'user' ? "bg-primary text-background" : "bg-elevated border border-border text-accent-crimson"
-                  )}>
-                    {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
-                  </div>
-                  
-                  <div className={cn(
-                    "p-3 rounded-2xl text-sm leading-relaxed",
+                    "px-4 py-3 text-sm leading-relaxed transition-all duration-300",
                     msg.role === 'user' 
-                      ? "bg-primary text-background rounded-tr-none" 
-                      : "bg-elevated border border-border text-secondary rounded-tl-none"
+                      ? "bg-white text-black rounded-2xl rounded-tr-none font-medium shadow-lg" 
+                      : "bg-zinc-900/50 border border-white/5 text-zinc-300 rounded-2xl rounded-tl-none backdrop-blur-sm"
                   )}>
                     {msg.role === 'bot' ? (
-                      <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-pre:bg-background prose-pre:border prose-pre:border-border">
+                      <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-strong:text-white prose-code:text-accent-crimson">
                         <ReactMarkdown>
                           {msg.content}
                         </ReactMarkdown>
@@ -164,23 +196,20 @@ const ChatBot = () => {
                     ) : (
                       <p>{msg.content}</p>
                     )}
-                    <span className="text-[10px] opacity-50 block mt-1">
-                      {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
                   </div>
-                </div>
+                  <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">
+                    {msg.role === 'user' ? "User_Authorized" : "Aries_Response"} • {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </motion.div>
               ))}
-              
+
               {isLoading && (
-                <div className="flex gap-3 max-w-[85%] mr-auto">
-                  <div className="w-8 h-8 rounded-full bg-elevated border border-border text-accent-crimson flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot size={16} />
-                  </div>
-                  <div className="bg-elevated border border-border p-4 rounded-2xl rounded-tl-none">
+                <div className="flex flex-col gap-2 items-start mr-auto">
+                  <div className="bg-zinc-900/50 border border-white/5 p-4 rounded-2xl rounded-tl-none">
                     <div className="flex gap-1.5">
-                      <span className="w-2 h-2 bg-secondary/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                      <span className="w-2 h-2 bg-secondary/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                      <span className="w-2 h-2 bg-secondary/50 rounded-full animate-bounce" />
+                      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-accent-crimson rounded-full" />
+                      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-accent-crimson rounded-full" />
+                      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-accent-crimson rounded-full" />
                     </div>
                   </div>
                 </div>
@@ -188,34 +217,63 @@ const ChatBot = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 border-t border-border bg-surface">
-              <form onSubmit={handleSubmit} className="flex gap-2">
+            {/* Advanced Input Component */}
+            <div className="p-6 bg-zinc-950/80 border-t border-white/5 backdrop-blur-xl">
+              <form onSubmit={handleSubmit} className="relative">
                 <input
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Ask me anything..."
-                  className="flex-1 bg-elevated border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-accent-crimson/50 transition-colors"
+                  placeholder="Inquire about system architecture..."
+                  className="w-full bg-zinc-900/50 border border-white/10 rounded-xl px-5 py-4 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-accent-crimson/50 focus:ring-4 focus:ring-accent-crimson/5 transition-all"
                   disabled={isLoading}
                 />
-                <button
-                  type="submit"
-                  disabled={isLoading || !inputValue.trim()}
-                  className="p-2.5 bg-accent-crimson text-white rounded-xl hover:bg-accent-glow disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send size={18} />
-                </button>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <div className="hidden md:flex items-center gap-1 px-2 py-1 rounded bg-zinc-800 text-[10px] text-zinc-500 font-mono border border-white/5">
+                    <Command size={10} />
+                    <span>Enter</span>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading || !inputValue.trim()}
+                    className="p-2.5 bg-white text-black rounded-lg hover:bg-accent-crimson hover:text-white disabled:opacity-20 transition-all shadow-xl"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
               </form>
-              <div className="text-center mt-2">
-                <p className="text-[10px] text-tertiary">
-                  AI can make mistakes. Please verify important info.
-                </p>
+              
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex gap-3">
+                   <div className="flex items-center gap-1.5">
+                      <div className="w-1 h-1 rounded-full bg-green-500" />
+                      <span className="text-[9px] text-zinc-600 font-mono uppercase tracking-widest">Encryption Active</span>
+                   </div>
+                </div>
+                <div className="text-[9px] text-zinc-700 font-mono">
+                  © 2026 NAMAN_INDUSTRIES
+                </div>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(200, 16, 46, 0.3);
+        }
+      `}</style>
     </>
   );
 };

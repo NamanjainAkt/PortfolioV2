@@ -1,384 +1,297 @@
-import { useEffect, useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Stars, Float, Sphere, MeshDistortMaterial, Points, PointMaterial } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface LoadingScreenProps {
   onComplete: () => void;
 }
 
+// 1. VOLUMETRIC ACCRETION DISK: 5000+ particles creating a "fiery" mist
+const AccretionPoints = ({ progress }: { progress: number }) => {
+  const count = 5000;
+  const pointsRef = useRef<THREE.Points>(null);
+
+  const particles = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      const r = 2.5 + Math.random() * 5;
+      const theta = Math.random() * Math.PI * 2;
+      const x = Math.cos(theta) * r;
+      const z = Math.sin(theta) * r;
+      const y = (Math.random() - 0.5) * 0.2 * (1 / r); // Thinner near edges
+
+      positions[i * 3] = x;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = z;
+
+      // Color gradient: White hot center to Crimson edge
+      const color = new THREE.Color();
+      const lerpVal = (r - 2.5) / 5;
+      color.lerpColors(new THREE.Color("#fff"), new THREE.Color("#C8102E"), lerpVal);
+      
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
+
+      sizes[i] = Math.random() * 2;
+    }
+    return { positions, colors, sizes };
+  }, []);
+
+  useFrame((state) => {
+    if (pointsRef.current) {
+      // Rotate disk and pulsate
+      pointsRef.current.rotation.y += 0.02 + (progress / 100) * 0.08;
+      // Slight tilt wobble
+      pointsRef.current.rotation.x = Math.PI / 2.2 + Math.sin(state.clock.elapsedTime) * 0.05;
+    }
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          count={particles.positions.length / 3}
+          array={particles.positions}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          count={particles.colors.length / 3}
+          array={particles.colors}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <PointMaterial
+        transparent
+        vertexColors
+        size={0.05}
+        sizeAttenuation={true}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+};
+
+// 2. LIGHT SHREDDER: Individual light beams being sucked in and stretched
+const LightBeam = ({ index }: { index: number }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [data] = useState(() => ({
+    speed: 0.1 + Math.random() * 0.2,
+    pos: new THREE.Vector3(
+      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 40,
+      (Math.random() - 0.5) * 40
+    ),
+    color: index % 3 === 0 ? "#ffffff" : "#C8102E"
+  }));
+
+  useFrame(() => {
+    if (meshRef.current) {
+      const dist = meshRef.current.position.length();
+      
+      // Intense Gravitational Pull
+      meshRef.current.position.lerp(new THREE.Vector3(0, 0, 0), data.speed * (10 / (dist + 1)));
+
+      // SPAGHETTIFICATION: Shredding into thin lines
+      if (dist < 8) {
+        const stretch = 1 + (8 - dist) * 2;
+        meshRef.current.scale.set(0.05, stretch, 0.05);
+        meshRef.current.lookAt(0, 0, 0);
+        meshRef.current.rotateX(Math.PI / 2);
+      }
+
+      // Respawn
+      if (dist < 0.2) {
+        meshRef.current.position.copy(data.pos);
+        meshRef.current.scale.set(1, 1, 1);
+      }
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={data.pos}>
+      <cylinderGeometry args={[0.02, 0.02, 1, 8]} />
+      <meshBasicMaterial color={data.color} transparent opacity={0.6} />
+    </mesh>
+  );
+};
+
+const SingularityMasterpiece = ({ progress, isExploding }: { progress: number; isExploding: boolean }) => {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      if (isExploding) {
+        groupRef.current.scale.lerp(new THREE.Vector3(60, 60, 60), 0.15);
+      } else {
+        const s = 1 + (progress / 100) * 0.4;
+        groupRef.current.scale.set(s, s, s);
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* The Central Void (Event Horizon) */}
+      <Sphere args={[2, 64, 64]}>
+        <meshBasicMaterial color="#000" />
+      </Sphere>
+
+      {/* The Glow Halo */}
+      <Sphere args={[2.05, 64, 64]}>
+        <MeshDistortMaterial 
+          color="#C8102E" 
+          speed={10} 
+          distort={0.4} 
+          emissive="#C8102E"
+          emissiveIntensity={5}
+          toneMapped={false}
+          transparent
+          opacity={0.8}
+        />
+      </Sphere>
+
+      {/* Atmospheric Scattering Rings */}
+      {[...Array(3)].map((_, i) => (
+        <mesh key={i} rotation={[Math.PI / 2.1, 0.1 * i, 0]}>
+          <ringGeometry args={[2.1 + i * 0.1, 8 - i, 128]} />
+          <meshBasicMaterial 
+            color="#C8102E" 
+            transparent 
+            opacity={0.1 / (i + 1)} 
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+};
+
 const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('Initializing');
-  const [isReady, setIsReady] = useState(false);
-
-  const loadingMessages = useMemo(() => [
-    'Initializing reactor core',
-    'Calibrating systems',
-    'Loading modules',
-    'Synchronizing data',
-    'Powering up',
-    'Ready'
-  ], []);
+  const [isExploding, setIsExploding] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
 
   useEffect(() => {
-    const duration = 5000; // 5 seconds
-    const interval = 50;
+    const duration = 3000; // 3 second blast
+    const interval = 16;
     const steps = duration / interval;
     let currentStep = 0;
 
     const timer = setInterval(() => {
       currentStep++;
-      const newProgress = Math.min((currentStep / steps) * 100, 100);
+      const t = currentStep / steps;
+      // Exponential power curve for aggressive finish
+      const rawProgress = Math.pow(t, 5);
+      const newProgress = Math.min(Math.round(rawProgress * 100), 100);
+      
       setProgress(newProgress);
-
-      const messageIndex = Math.min(
-        Math.floor((newProgress / 100) * loadingMessages.length),
-        loadingMessages.length - 1
-      );
-      setLoadingText(loadingMessages[messageIndex]);
 
       if (currentStep >= steps) {
         clearInterval(timer);
-        setIsReady(true);
+        setIsExploding(true);
+        setTimeout(() => setShowFlash(true), 200);
+        setTimeout(onComplete, 800);
       }
     }, interval);
 
     return () => clearInterval(timer);
-  }, [loadingMessages]);
+  }, [onComplete]);
 
   return (
     <motion.div
-      className="fixed inset-0 z-[100] bg-black flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[100] bg-black overflow-hidden"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.8, ease: 'easeInOut' }}
-      onAnimationComplete={onComplete}
     >
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        {/* Radial gradient background */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(200,16,46,0.15)_0%,_transparent_70%)]" />
-        
-        {/* Grid */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `
-            linear-gradient(rgba(200, 16, 46, 0.8) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(200, 16, 46, 0.8) 1px, transparent 1px)
-          `,
-          backgroundSize: '80px 80px',
-        }} />
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <Canvas camera={{ position: [0, 4, 18], fov: 40 }} dpr={[1, 2]}>
+          <color attach="background" args={['#000']} />
+          
+          <ambientLight intensity={0.5} />
+          <pointLight position={[0, 0, 0]} intensity={30} color="#C8102E" />
 
-        {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-accent-crimson rounded-full"
-            initial={{ 
-              x: `${Math.random() * 100}%`, 
-              y: '110%',
-              opacity: 0 
-            }}
-            animate={{ 
-              y: '-10%',
-              opacity: [0, 0.8, 0.8, 0],
-            }}
-            transition={{
-              duration: 5 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 3,
-              ease: 'linear',
-            }}
-          />
-        ))}
+          <Stars radius={100} depth={50} count={4000} factor={6} saturation={0} fade speed={3} />
+          
+          <SingularityMasterpiece progress={progress} isExploding={isExploding} />
+          <AccretionPoints progress={progress} />
+
+          {/* LIGHT SHREDDING BEAMS */}
+          {[...Array(80)].map((_, i) => (
+            <LightBeam key={i} index={i} />
+          ))}
+
+          {isExploding && (
+            <pointLight position={[0, 0, 0]} intensity={300} color="#fff" />
+          )}
+        </Canvas>
       </div>
 
-      {/* Main Arc Reactor Container */}
-      <div className="relative z-10 flex flex-col items-center">
-        
-        {/* Arc Reactor Rings */}
-        <div className="relative w-72 h-72 md:w-96 md:h-96">
-          
-          {/* Outer Glow Ring */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'radial-gradient(circle, rgba(200,16,46,0.3) 0%, transparent 70%)',
-              filter: 'blur(20px)',
-            }}
-            animate={{ 
-              scale: [1, 1.1, 1],
-              opacity: [0.5, 0.8, 0.5]
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Rotating Outer Ring */}
-          <motion.div
-            className="absolute inset-2 rounded-full border-2 border-accent-crimson/30"
-            style={{
-              borderStyle: 'dashed',
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          />
-
-          {/* Segmented Ring */}
-          <motion.div
-            className="absolute inset-4 rounded-full border-4 border-transparent"
-            style={{
-              background: 'conic-gradient(from 0deg, transparent 0deg, rgba(200,16,46,0.8) 30deg, transparent 60deg, transparent 120deg, rgba(200,16,46,0.8) 150deg, transparent 180deg, transparent 240deg, rgba(200,16,46,0.8) 270deg, transparent 300deg, transparent 360deg)',
-              WebkitMask: 'radial-gradient(circle, transparent 65%, black 66%, black 68%, transparent 69%)',
-              mask: 'radial-gradient(circle, transparent 65%, black 66%, black 68%, transparent 69%)',
-            }}
-            animate={{ rotate: -360 }}
-            transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-          />
-
-          {/* Inner Rotating Ring with Dots */}
-          <motion.div
-            className="absolute inset-8 rounded-full border border-accent-crimson/50"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-          >
-            {[0, 60, 120, 180, 240, 300].map((angle, i) => (
-              <div
-                key={i}
-                className="absolute w-3 h-3 bg-accent-crimson rounded-full"
-                style={{
-                  top: '50%',
-                  left: '50%',
-                  transform: `rotate(${angle}deg) translateX(calc(50% + 100px)) translate(-50%, -50%)`,
-                }}
-              />
-            ))}
-          </motion.div>
-
-          {/* Inner Glow Ring */}
-          <motion.div
-            className="absolute inset-16 rounded-full border-2 border-accent-glow/50"
-            animate={{ 
-              boxShadow: [
-                '0 0 20px rgba(255,107,107,0.3), inset 0 0 20px rgba(255,107,107,0.1)',
-                '0 0 40px rgba(255,107,107,0.6), inset 0 0 40px rgba(255,107,107,0.2)',
-                '0 0 20px rgba(255,107,107,0.3), inset 0 0 20px rgba(255,107,107,0.1)',
-              ]
-            }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Center Core - NJ Logo */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              className="relative"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8, type: 'spring', stiffness: 100 }}
-            >
-              {/* Core Glow */}
-              <motion.div
-                className="absolute inset-0 bg-accent-crimson rounded-full blur-xl"
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.4, 0.7, 0.4]
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              />
-
-              {/* Core Background */}
-              <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-accent-crimson/20 to-accent-forge/40 backdrop-blur-sm border border-accent-crimson/50 flex items-center justify-center overflow-hidden">
-                {/* Animated lines inside core */}
-                <motion.div
-                  className="absolute inset-0 opacity-30"
-                  style={{
-                    background: 'repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(200,16,46,0.5) 10px, rgba(200,16,46,0.5) 12px)',
-                  }}
-                  animate={{ x: [0, 22] }}
-                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                />
-
-                {/* NJ Text */}
-                <div className="relative z-10">
-                  <motion.h1
-                    className="text-5xl md:text-7xl font-black font-serif tracking-tighter text-white"
-                    style={{
-                      textShadow: '0 0 30px rgba(200,16,46,0.8), 0 0 60px rgba(200,16,46,0.4)',
-                    }}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.8, duration: 0.5 }}
-                  >
-                    NJ
-                  </motion.h1>
-
-                  {/* Glitch Layer */}
-                  <motion.span
-                    className="absolute top-0 left-0 text-5xl md:text-7xl font-black font-serif tracking-tighter text-accent-crimson"
-                    style={{
-                      textShadow: '2px 0 0 rgba(255,0,0,0.5), -2px 0 0 rgba(0,255,255,0.5)',
-                    }}
-                    initial={{ opacity: 0 }}
-                    animate={{ 
-                      opacity: [0, 0.8, 0, 0.8, 0],
-                      x: [-3, 3, -2, 2, 0],
-                    }}
-                    transition={{ 
-                      delay: 1.5,
-                      duration: 0.15,
-                      repeat: 4,
-                      repeatDelay: 0.3,
-                    }}
-                    aria-hidden
-                  >
-                    NJ
-                  </motion.span>
-                </div>
-              </div>
-
-              {/* Core Ring */}
-              <motion.div
-                className="absolute -inset-2 rounded-full border-2 border-accent-crimson/60"
-                animate={{ rotate: -360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-              >
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-              </motion.div>
-            </motion.div>
+      {/* Minimalist HUD */}
+      {!showFlash && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-between py-24 pointer-events-none">
+          <div className="flex flex-col items-center">
+            <span className="text-accent-crimson font-mono text-[8px] tracking-[1.5em] uppercase opacity-70">
+              Dimensional Convergence
+            </span>
           </div>
 
-          {/* Energy Spikes */}
-          {[...Array(12)].map((_, i) => {
-            const angle = (i * 30 * Math.PI) / 180;
-            return (
-              <motion.div
-                key={i}
-                className="absolute w-0.5 bg-gradient-to-t from-accent-crimson to-transparent"
-                style={{
-                  height: '30px',
-                  top: '50%',
-                  left: '50%',
-                  transformOrigin: 'top center',
-                  transform: `rotate(${i * 30}deg) translateY(-160px)`,
-                }}
-                animate={{ 
-                  opacity: [0.2, 0.8, 0.2],
-                  scaleY: [0.5, 1, 0.5],
-                }}
-                transition={{ 
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.1,
-                  ease: 'easeInOut'
-                }}
-              />
-            );
-          })}
-        </div>
+          <div className="relative">
+            <motion.span 
+              className="text-white font-serif text-[12rem] font-black tracking-tighter leading-none"
+              animate={{ 
+                textShadow: progress > 85 ? '0 0 80px #C8102E' : '0 0 20px rgba(255,255,255,0.1)',
+                scale: [1, 1.02, 1]
+              }}
+              transition={{ duration: 0.2, repeat: Infinity }}
+            >
+              {progress}
+            </motion.span>
+            <span className="text-accent-crimson text-4xl font-black absolute top-4 -right-16">%</span>
+          </div>
 
-        {/* Name & Title */}
-        <motion.div
-          className="text-center mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-        >
-          <motion.h2 
-            className="text-xl md:text-2xl text-white font-serif tracking-[0.3em] uppercase"
-            style={{
-              textShadow: '0 0 20px rgba(200,16,46,0.5)',
-            }}
-          >
-            {'NAMAN JAIN'.split('').map((char, i) => (
-              <motion.span
-                key={i}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5 + i * 0.05 }}
-              >
-                {char === ' ' ? '\u00A0' : char}
-              </motion.span>
-            ))}
-          </motion.h2>
-          <motion.p
-            className="text-xs md:text-sm text-tertiary mt-2 tracking-widest uppercase"
+          <div className="w-64 flex flex-col items-center gap-4">
+            <div className="w-full h-[1px] bg-white/10 relative overflow-hidden">
+              <motion.div 
+                className="absolute inset-0 bg-accent-crimson shadow-[0_0_15px_#C8102E]"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="text-white/30 font-mono text-[7px] tracking-[0.8em] uppercase">
+              Event Horizon Status: CRITICAL
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Professional Sharp White Flash */}
+      <AnimatePresence>
+        {showFlash && (
+          <motion.div
+            className="absolute inset-0 z-[200] bg-white"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
-          >
-            Full Stack Developer
-          </motion.p>
-        </motion.div>
+            transition={{ duration: 0.3, ease: "easeIn" }}
+          />
+        )}
+      </AnimatePresence>
 
-        {/* Progress Section */}
-        <motion.div
-          className="w-full max-w-sm mt-12 px-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.8 }}
-        >
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-secondary font-mono flex items-center gap-2">
-              <span className="w-2 h-2 bg-accent-crimson rounded-full animate-pulse" />
-              {loadingText}
-              <span className="animate-pulse">...</span>
-            </span>
-            <span className="text-xs text-accent-crimson font-mono font-bold">
-              {Math.round(progress)}%
-            </span>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="h-1 bg-elevated/50 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-accent-crimson via-accent-glow to-accent-crimson rounded-full relative"
-              initial={{ width: '0%' }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.1 }}
-              style={{
-                boxShadow: '0 0 20px rgba(200, 16, 46, 0.8)',
-              }}
-            >
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
-                animate={{ x: ['-100%', '100%'] }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              />
-            </motion.div>
-          </div>
-
-          <div className="flex justify-between items-center mt-2">
-            <span className="text-[10px] text-tertiary font-mono uppercase tracking-wider">
-              System Status
-            </span>
-            <motion.span 
-              className="text-[10px] font-mono uppercase tracking-wider"
-              animate={{ 
-                color: isReady ? '#22c55e' : '#C8102E'
-              }}
-            >
-              {isReady ? 'Online' : 'Booting'}
-            </motion.span>
-          </div>
-        </motion.div>
-
-        {/* Bottom Tech Details */}
-        <motion.div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.5 }}
-        >
-          <div className="h-px w-12 bg-gradient-to-r from-transparent via-accent-crimson/50 to-transparent" />
-          <span className="text-[10px] text-tertiary font-mono tracking-widest">
-            Portfolio V2 || NAMAN INDUSTRIES
-          </span>
-          <div className="h-px w-12 bg-gradient-to-r from-transparent via-accent-crimson/50 to-transparent" />
-        </motion.div>
-      </div>
-
-      {/* Corner Decorations */}
-      <div className="absolute top-4 left-4 w-16 h-16 border-l-2 border-t-2 border-accent-crimson/30" />
-      <div className="absolute top-4 right-4 w-16 h-16 border-r-2 border-t-2 border-accent-crimson/30" />
-      <div className="absolute bottom-4 left-4 w-16 h-16 border-l-2 border-b-2 border-accent-crimson/30" />
-      <div className="absolute bottom-4 right-4 w-16 h-16 border-r-2 border-b-2 border-accent-crimson/30" />
+      {/* Letterbox Bars */}
+      <div className="absolute top-0 left-0 w-full h-[12vh] bg-black z-30" />
+      <div className="absolute bottom-0 left-0 w-full h-[12vh] bg-black z-30" />
+      
+      {/* Decorative Lines */}
+      <div className="absolute top-1/2 left-10 w-[1px] h-32 -translate-y-1/2 bg-accent-crimson/20 z-30" />
+      <div className="absolute top-1/2 right-10 w-[1px] h-32 -translate-y-1/2 bg-accent-crimson/20 z-30" />
     </motion.div>
   );
 };

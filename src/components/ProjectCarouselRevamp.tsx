@@ -78,7 +78,7 @@ const ProjectCarouselRevamp: React.FC<ProjectCarouselRevampProps> = ({ projects 
               <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.4em]">Project Showcase</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-serif font-black tracking-tighter uppercase">
-              Selected <span className="text-accent-crimson">Works</span>
+              Crafted <span className="text-accent-crimson">Works</span>
             </h2>
           </div>
 
