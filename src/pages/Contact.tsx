@@ -106,9 +106,9 @@ const Contact = () => {
   };
 
   const contactChannels = [
-    { icon: Mail, name: 'Email', value: 'contact@example.com', href: 'mailto:contact@example.com', label: 'DIRECT_LINK' },
-    { icon: Github, name: 'GitHub', value: 'github.com/username', href: 'https://github.com', label: 'SOURCE_CORE' },
-    { icon: Linkedin, name: 'LinkedIn', value: 'linkedin.com/in/username', href: 'https://linkedin.com', label: 'NEURAL_NET' },
+    { icon: Mail, name: 'Email', value: 'namanjainakt007@gmail.com', href: 'mailto:namanjainakt007@gmail.com', label: 'DIRECT_LINK' },
+    { icon: Github, name: 'GitHub', value: 'github.com/namanjainakt', href: 'https://github.com/namanjainakt', label: 'SOURCE_CORE' },
+    { icon: Linkedin, name: 'LinkedIn', value: 'linkedin.com/in/naman-jain-akt', href: 'https://linkedin.com/in/naman-jain-akt', label: 'NEURAL_NET' },
   ];
 
   const inputClasses = (fieldName: string, hasError: boolean) => `

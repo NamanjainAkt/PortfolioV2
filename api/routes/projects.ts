@@ -39,7 +39,7 @@ router.get('/:slug', async (req, res) => {
 // Create project (Admin only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, slug, overview, problem, solution, techStack, images, githubUrl, liveUrl } = req.body;
+    const { title, slug, overview, problem, solution, techStack, images, githubUrl, liveUrl, category } = req.body;
     
     // Get highest displayOrder and add 1 (new projects at top)
     const highestOrder = await prisma.project.findFirst({
@@ -56,6 +56,7 @@ router.post('/', authenticateToken, async (req, res) => {
         solution,
         techStack,
         images,
+        category: category || 'Development',
         githubUrl,
         liveUrl,
         displayOrder: (highestOrder?.displayOrder ?? 0) + 1,
@@ -70,7 +71,7 @@ router.post('/', authenticateToken, async (req, res) => {
 // Update project (Admin only)
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { title, slug, overview, problem, solution, techStack, images, githubUrl, liveUrl, displayOrder } = req.body;
+    const { title, slug, overview, problem, solution, techStack, images, githubUrl, liveUrl, displayOrder, category } = req.body;
     const project = await prisma.project.update({
       where: { id: req.params.id },
       data: {
@@ -84,6 +85,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
         githubUrl,
         liveUrl,
         displayOrder,
+        category,
       },
     });
     res.json(project);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Loader2, ImageIcon } from 'lucide-react';
+import { X, Loader2, ImageIcon, Newspaper, Info, FileText, Sparkles, Trash } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface BlogFormProps {
   initialData?: any;
@@ -43,7 +44,6 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
         });
 
         const data = await uploadRes.json();
-        console.log('[Upload] Response:', { status: uploadRes.status, hasUrl: !!data.url, error: data.error });
         
         if (!uploadRes.ok || data.error) {
             throw new Error(data.error || `Upload failed: ${uploadRes.status}`);
@@ -102,69 +102,103 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-surface border border-border w-full max-w-3xl rounded-lg shadow-2xl relative flex flex-col max-h-[90vh]">
-        <div className="p-6 border-b border-border flex justify-between items-center sticky top-0 bg-surface z-10 rounded-t-lg">
-          <h2 className="text-2xl font-serif font-bold text-primary">
-            {initialData ? 'Edit Blog' : 'New Blog Post'}
-          </h2>
-          <button onClick={onClose} className="text-secondary hover:text-primary">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
+    >
+      <motion.div 
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        className="bg-[#0a0a0a] border border-white/5 w-full max-w-4xl rounded-[2.5rem] shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden"
+      >
+        {/* Header */}
+        <div className="p-8 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-accent-crimson rounded-2xl flex items-center justify-center shadow-lg shadow-accent-crimson/20">
+              <Newspaper className="text-white" size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-serif font-black tracking-tighter uppercase leading-none">
+                {initialData ? 'Modify' : 'Publish'} <span className="text-accent-crimson">Article</span>
+              </h2>
+              <p className="text-[10px] font-mono text-tertiary uppercase tracking-[0.4em] mt-1">Content Management System</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-3 bg-white/5 rounded-2xl text-tertiary hover:text-white hover:bg-white/10 transition-all">
             <X size={24} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-secondary text-sm mb-2">Title</label>
-              <input
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full bg-background border border-border rounded px-4 py-2 text-primary focus:border-accent-crimson outline-none"
-                required
-              />
+        <form onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+              <Info size={16} className="text-accent-crimson" />
+              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Metadata</span>
             </div>
-            <div>
-              <label className="block text-secondary text-sm mb-2">Slug</label>
-              <input
-                name="slug"
-                value={formData.slug}
-                onChange={handleChange}
-                className="w-full bg-background border border-border rounded px-4 py-2 text-primary focus:border-accent-crimson outline-none"
-                required
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Article Title</label>
+                <input
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="The future of systems..."
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">URL Slug</label>
+                <input
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleChange}
+                  placeholder="article-slug"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors font-mono"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          {/* Featured Image Upload */}
-          <div>
-            <label className="block text-secondary text-sm mb-2">Featured Image</label>
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+              <ImageIcon size={16} className="text-accent-crimson" />
+              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Visual Identity</span>
+            </div>
+
             {formData.featuredImage ? (
-              <div className="relative">
+              <div className="relative group aspect-video rounded-[2rem] overflow-hidden border border-white/5 bg-white/5">
                 <img 
                   src={formData.featuredImage} 
                   alt="Featured" 
-                  className="w-full h-48 object-cover rounded-lg border border-border"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className="absolute top-2 right-2 bg-warning text-white p-1 rounded-full hover:bg-warning/80 transition-colors"
-                >
-                  <X size={16} />
-                </button>
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="bg-accent-crimson text-white px-6 py-3 rounded-2xl flex items-center gap-2 font-bold uppercase tracking-widest text-xs shadow-xl"
+                  >
+                    <Trash size={16} />
+                    Replace Image
+                  </button>
+                </div>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-accent-crimson transition-colors bg-background">
+              <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/5 rounded-[2rem] cursor-pointer hover:border-accent-crimson/50 hover:bg-white/[0.02] transition-all group">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   {uploading ? (
-                    <Loader2 size={24} className="text-accent-crimson animate-spin mb-2" />
+                    <Loader2 size={32} className="text-accent-crimson animate-spin mb-3" />
                   ) : (
-                    <ImageIcon size={24} className="text-secondary mb-2" />
+                    <Sparkles size={32} className="text-tertiary group-hover:text-accent-crimson transition-colors mb-3" />
                   )}
-                  <p className="text-sm text-secondary">
-                    {uploading ? 'Uploading...' : 'Click to upload featured image'}
+                  <p className="text-xs font-mono text-tertiary uppercase tracking-widest group-hover:text-white transition-colors">
+                    {uploading ? 'Processing Image...' : 'Deploy Featured Visual'}
                   </p>
                 </div>
                 <input
@@ -178,39 +212,52 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
             )}
           </div>
 
-          <div className="flex-1 flex flex-col h-full min-h-[300px]">
-            <label className="block text-secondary text-sm mb-2">Content (Markdown)</label>
-            <textarea
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              className="w-full flex-1 bg-background border border-border rounded px-4 py-2 text-primary focus:border-accent-crimson outline-none font-mono text-sm"
-              required
-            />
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+              <FileText size={16} className="text-accent-crimson" />
+              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Article Body</span>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Markdown Content</label>
+              <textarea
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                placeholder="Write your article in markdown..."
+                className="w-full h-96 bg-white/5 border border-white/10 rounded-[2rem] px-8 py-8 text-white focus:border-accent-crimson outline-none transition-colors font-mono text-sm resize-none custom-scrollbar"
+                required
+              />
+            </div>
           </div>
 
-          {error && <p className="text-accent-crimson text-sm">{error}</p>}
+          {error && (
+            <div className="p-4 bg-accent-crimson/10 border border-accent-crimson/20 rounded-2xl flex items-center gap-4">
+              <X size={20} className="text-accent-crimson" />
+              <p className="text-accent-crimson text-xs font-mono uppercase tracking-widest">{error}</p>
+            </div>
+          )}
         </form>
 
-        <div className="p-6 border-t border-border sticky bottom-0 bg-surface z-10 rounded-b-lg flex justify-end">
+        <div className="p-8 border-t border-white/5 sticky bottom-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-10 rounded-b-lg flex justify-end gap-6">
             <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-2 text-secondary hover:text-primary mr-4"
+                className="px-8 py-4 text-tertiary hover:text-white font-mono text-xs uppercase tracking-widest transition-colors"
             >
-                Cancel
+                Discard
             </button>
             <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="bg-white text-black px-6 py-2 rounded font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center"
+                className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-accent-crimson hover:text-white transition-all duration-500 shadow-xl shadow-white/5 disabled:opacity-50 flex items-center"
             >
-                {loading && <Loader2 size={16} className="animate-spin mr-2" />}
-                {initialData ? 'Update Blog' : 'Publish Blog'}
+                {loading && <Loader2 size={16} className="animate-spin mr-3" />}
+                {initialData ? 'Update Core' : 'Execute Publication'}
             </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

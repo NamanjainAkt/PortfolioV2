@@ -17,6 +17,7 @@ model Project {
   solution    String?
   techStack   String[]
   images      String[]
+  category    String?  @default("Development")
   githubUrl   String?
   liveUrl     String?
   displayOrder Int     @default(0)

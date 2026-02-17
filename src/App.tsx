@@ -39,6 +39,7 @@ function App() {
   const location = useLocation();
 
   const isHome = location.pathname === '/';
+  const isAdmin = location.pathname.startsWith('/admin');
 
   return (
     <>
@@ -53,8 +54,8 @@ function App() {
           <Spotlight />
           <CommandPalette />
           <ScrollToTop />
-          <Navbar />
-          <BottomNav />
+          {!isAdmin && <Navbar />}
+          {!isAdmin && <BottomNav />}
           <AdminModal />
           <ChatBot />
           <main className="flex-grow">

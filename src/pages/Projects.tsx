@@ -22,7 +22,7 @@ const Projects = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const res = await fetch('/api/projects');
+        const res = await fetch('/api/projects?orderBy=displayOrder');
         const data = await res.json();
         setProjects(Array.isArray(data) ? data : []);
       } catch (error) {
