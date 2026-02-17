@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Github, ExternalLink, ArrowUpRight, Box } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Project } from '../types/project';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface ProjectCarouselRevampProps {
   projects: Project[];
@@ -61,10 +62,11 @@ const ProjectCarouselRevamp: React.FC<ProjectCarouselRevampProps> = ({ projects 
           transition={{ duration: 1 }}
           className="absolute inset-0 z-0"
         >
-          <img 
-            src={currentProject.images[0]} 
+          <img
+            src={getOptimizedImageUrl(currentProject.images[0], { width: ImageSizes.medium })}
             className="w-full h-full object-cover blur-[100px] saturate-150"
             alt=""
+            loading="lazy"
           />
         </motion.div>
       </AnimatePresence>
@@ -120,10 +122,11 @@ const ProjectCarouselRevamp: React.FC<ProjectCarouselRevampProps> = ({ projects 
             >
               {/* Image Side */}
               <div className="w-full md:w-1/2 h-48 md:h-auto overflow-hidden relative group/img">
-                <img 
-                  src={currentProject.images[0]} 
+                <img
+                  src={getOptimizedImageUrl(currentProject.images[0], { width: ImageSizes.large })}
                   alt={currentProject.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-110"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#111]/80 hidden md:block" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111]/80 via-transparent to-transparent md:hidden" />

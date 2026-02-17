@@ -4,6 +4,7 @@ import { Github, ExternalLink, ArrowRight, Layers, Sparkles, MonitorSmartphone }
 import { Link } from 'react-router-dom';
 import { Project } from '../types/project';
 import { FadeInWhenVisible } from './FadeInWhenVisible';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface ProjectSectionProps {
   projects: Project[];
@@ -73,10 +74,11 @@ const ProjectSection: React.FC<ProjectSectionProps> = ({ projects }) => {
                   {/* Background Image */}
                   <div className="absolute inset-0 bg-[#111]">
                     {project.images[0] && (
-                      <img 
-                        src={project.images[0]} 
+                      <img
+                        src={getOptimizedImageUrl(project.images[0], { width: isLarge ? ImageSizes.large : ImageSizes.medium })}
                         alt={project.title}
                         className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
+                        loading="lazy"
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />

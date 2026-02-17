@@ -19,6 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Save, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Project } from '../../types/project';
+import { getOptimizedImageUrl, ImageSizes } from '../../lib/imageUtils';
 
 interface SortableProjectListProps {
   projects: Project[];
@@ -60,9 +61,10 @@ const SortableItem: React.FC<{ project: Project; index: number }> = ({ project, 
       <div className="w-16 h-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 border border-white/5">
         {project.images[0] ? (
           <img
-            src={project.images[0]}
+            src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.thumbnail })}
             alt={project.title}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-tertiary">

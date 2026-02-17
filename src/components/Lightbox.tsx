@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface LightboxProps {
   images: string[];
@@ -137,9 +138,10 @@ export const Lightbox = ({
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={images[currentIndex]}
+              src={getOptimizedImageUrl(images[currentIndex], { width: ImageSizes.fullscreen })}
               alt={`Image ${currentIndex + 1}`}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+              loading="eager"
             />
           </motion.div>
 
@@ -169,9 +171,10 @@ export const Lightbox = ({
                   }`}
                 >
                   <img
-                    src={img}
+                    src={getOptimizedImageUrl(img, { width: ImageSizes.thumbnail })}
                     alt={`Thumbnail ${idx + 1}`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </button>
               ))}

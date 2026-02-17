@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Github, ExternalLink } from 'lucide-react';
 import { Project } from '../types/project';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface ProjectCardProps {
   project: Project;
@@ -38,9 +39,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       <div className={`relative overflow-hidden ${viewMode === 'carousel' ? 'aspect-video' : 'aspect-video'}`}>
         {project.images[0] ? (
           <img
-            src={project.images[0]}
+            src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.medium })}
             alt={project.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-elevated flex items-center justify-center">

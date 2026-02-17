@@ -4,6 +4,7 @@ import { motion, useScroll, useSpring } from 'framer-motion';
 import { ArrowLeft, Github, ExternalLink, ArrowRight, FolderGit2, Boxes, Terminal, ShieldAlert, Sparkles, Globe } from 'lucide-react';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import { Lightbox } from '../components/Lightbox';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface Project {
   id: string;
@@ -113,13 +114,14 @@ const ProjectDetail = () => {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/90 to-[#050505]" />
           {project.images[0] && (
-            <motion.img 
+            <motion.img
               initial={{ scale: 1.2, opacity: 0 }}
               animate={{ scale: 1, opacity: 0.25 }}
               transition={{ duration: 2, ease: "easeOut" }}
-              src={project.images[0]} 
+              src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.hero })}
               className="w-full h-full object-cover blur-3xl saturate-200"
               alt=""
+              loading="eager"
             />
           )}
         </div>
@@ -280,7 +282,7 @@ const ProjectDetail = () => {
                   onClick={() => openLightbox(idx)}
                   whileHover={{ y: -12, scale: 1.02 }}
                 >
-                  <img src={img} alt="" className="w-full aspect-video object-cover opacity-70 group-hover:opacity-100 transition-all duration-700 ease-out" />
+                  <img src={getOptimizedImageUrl(img, { width: ImageSizes.large })} alt="" className="w-full aspect-video object-cover opacity-70 group-hover:opacity-100 transition-all duration-700 ease-out" loading="lazy" />
                   <div className="absolute inset-0 bg-accent-crimson/0 group-hover:bg-accent-crimson/5 transition-colors duration-500" />
                   <div className="absolute bottom-8 left-8 px-6 py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl text-[10px] font-mono uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                     Visual Core {idx + 1}
@@ -314,7 +316,7 @@ const ProjectDetail = () => {
                   <Link to={`/projects/${related.slug}`} className="group block bg-[#111]/50 border border-white/5 rounded-3xl overflow-hidden hover:border-accent-crimson/30 transition-all duration-500 hover:-translate-y-2">
                     <div className="aspect-video overflow-hidden relative">
                       {related.images[0] ? (
-                        <img src={related.images[0]} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt="" />
+                        <img src={getOptimizedImageUrl(related.images[0], { width: ImageSizes.medium })} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt="" loading="lazy" />
                       ) : (
                         <div className="w-full h-full bg-elevated flex items-center justify-center text-tertiary">
                           <FolderGit2 size={40} />

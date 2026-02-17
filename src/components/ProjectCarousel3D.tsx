@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Github, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Project } from '../types/project';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface ProjectCarousel3DProps {
   projects: Project[];
@@ -182,9 +183,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, isCenter, isSide }) 
       <div className="relative aspect-video overflow-hidden">
         {project.images[0] ? (
           <img
-            src={project.images[0]}
+            src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.medium })}
             alt={project.title}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-elevated flex items-center justify-center">

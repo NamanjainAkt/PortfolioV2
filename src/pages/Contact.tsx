@@ -150,7 +150,7 @@ const Contact = () => {
     <div className="relative min-h-screen w-full bg-[#050505] overflow-hidden">
       {/* 3D Background Layer - Hidden on small screens */}
       <div className="absolute inset-0 z-0 hidden lg:block">
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
+        <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 5], fov: 45 }} frameloop="demand">
           <Suspense fallback={null}>
             <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
             <ambientLight intensity={0.2} />

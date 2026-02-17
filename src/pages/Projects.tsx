@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, FolderGit2, MonitorSmartphone, Code2, Sparkles, Command, ShieldCheck } from 'lucide-react';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface Project {
   id: string;
@@ -109,7 +110,12 @@ const Projects = () => {
                     {/* Visual Asset */}
                     <div className="aspect-[16/10] overflow-hidden relative">
                       {project.images[0] ? (
-                        <img src={project.images[0]} alt="" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 saturate-50 group-hover:saturate-100" />
+                        <img
+                          src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.large })}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 saturate-50 group-hover:saturate-100"
+                          loading="lazy"
+                        />
                       ) : (
                         <div className="w-full h-full bg-[#151515] flex items-center justify-center">
                           <FolderGit2 size={60} className="text-white/5" />
