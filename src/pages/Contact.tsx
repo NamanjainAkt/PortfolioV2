@@ -1,13 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Github, Linkedin, Send, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, Github, Linkedin, Send, Check, AlertCircle, Loader2, Radio, Globe, Zap } from 'lucide-react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Float, Stars, Environment } from '@react-three/drei';
+import { Satellite } from '../components/Satellite';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
+import * as THREE from 'three';
 
 interface FormErrors {
   name?: string;
   email?: string;
   message?: string;
 }
+
+const MouseFollowSatellite = () => {
+  const { mouse, viewport } = useThree();
+  const satelliteRef = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    if (satelliteRef.current) {
+      // Position satellite to the right of the text
+      // In Three.js units, we'll aim for x = viewport.width / 4 or similar
+      const targetX = (mouse.x * viewport.width) / 4 - 0.5;
+      const targetY = (mouse.y * viewport.height) / 4 + 1;
+      
+      satelliteRef.current.position.x = THREE.MathUtils.lerp(satelliteRef.current.position.x, targetX, 0.05);
+      satelliteRef.current.position.y = THREE.MathUtils.lerp(satelliteRef.current.position.y, targetY, 0.05);
+      
+      // Also slight rotation based on mouse
+      satelliteRef.current.rotation.y = THREE.MathUtils.lerp(satelliteRef.current.rotation.y, mouse.x * 0.5, 0.05);
+      satelliteRef.current.rotation.x = THREE.MathUtils.lerp(satelliteRef.current.rotation.x, -mouse.y * 0.3, 0.05);
+    }
+  });
+
+  return (
+    <group ref={satelliteRef}>
+      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+        <Satellite scale={0.9} />
+      </Float>
+    </group>
+  );
+};
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -39,8 +72,6 @@ const Contact = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
-    // Real-time validation for touched fields
     if (touched[name]) {
       const error = validateField(name, value);
       setErrors(prev => ({ ...prev, [name]: error }));
@@ -51,308 +82,238 @@ const Contact = () => {
     const { name, value } = e.target;
     setTouched(prev => ({ ...prev, [name]: true }));
     setFocusedField(null);
-    
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
   };
 
-  const handleFocus = (fieldName: string) => {
-    setFocusedField(fieldName);
-  };
-
-  const validateForm = (): boolean => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     const newErrors: FormErrors = {};
-    
     Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key as keyof typeof formData]);
       if (error) newErrors[key as keyof FormErrors] = error;
     });
-    
     setErrors(newErrors);
     setTouched({ name: true, email: true, message: true });
-    
-    return Object.keys(newErrors).length === 0;
-  };
+    if (Object.keys(newErrors).length > 0) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-    
     setIsSubmitting(true);
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsSubmitting(false);
     setSubmitted(true);
     setFormData({ name: '', email: '', message: '' });
     setTouched({});
-    setErrors({});
   };
 
   const contactChannels = [
-    {
-      icon: Mail,
-      name: 'Email',
-      value: 'contact@example.com',
-      href: 'mailto:contact@example.com',
-    },
-    {
-      icon: Github,
-      name: 'GitHub',
-      value: 'github.com/username',
-      href: 'https://github.com',
-    },
-    {
-      icon: Linkedin,
-      name: 'LinkedIn',
-      value: 'linkedin.com/in/username',
-      href: 'https://linkedin.com',
-    },
+    { icon: Mail, name: 'Email', value: 'contact@example.com', href: 'mailto:contact@example.com', label: 'DIRECT_LINK' },
+    { icon: Github, name: 'GitHub', value: 'github.com/username', href: 'https://github.com', label: 'SOURCE_CORE' },
+    { icon: Linkedin, name: 'LinkedIn', value: 'linkedin.com/in/username', href: 'https://linkedin.com', label: 'NEURAL_NET' },
   ];
 
   const inputClasses = (fieldName: string, hasError: boolean) => `
-    w-full bg-elevated border-2 rounded-lg px-4 py-3 text-primary 
-    transition-all duration-300 outline-none
+    w-full bg-[#0A0A0A]/60 backdrop-blur-md border rounded-lg px-4 py-3 text-white 
+    transition-all duration-300 outline-none font-mono text-sm
     ${hasError 
-      ? 'border-warning/50 focus:border-warning' 
+      ? 'border-red-500/50 focus:border-red-500' 
       : focusedField === fieldName 
-        ? 'border-accent-crimson' 
-        : touched[fieldName] && !errors[fieldName as keyof FormErrors]
-          ? 'border-success/50 focus:border-success'
-          : 'border-border focus:border-accent-crimson'
+        ? 'border-accent-crimson shadow-[0_0_15px_rgba(200,16,46,0.2)]' 
+        : 'border-white/10 focus:border-accent-crimson'
     }
   `;
 
   return (
-    <div className="pt-24 pb-20 container mx-auto px-4 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        <FadeInWhenVisible>
-          <h1 className="text-4xl md:text-5xl font-serif font-bold mb-8 text-center">
-            Initiate <span className="text-accent-crimson">Communication</span>
-          </h1>
-        </FadeInWhenVisible>
-        
-        <FadeInWhenVisible delay={0.1}>
-          <p className="text-xl text-secondary text-center mb-16 max-w-2xl mx-auto">
-            Open for high-impact opportunities, technical consulting, and collaborative ventures.
-          </p>
-        </FadeInWhenVisible>
-
-        <div className="grid md:grid-cols-2 gap-12">
-          {/* Contact Info */}
-          <div className="space-y-8">
-            <FadeInWhenVisible delay={0.2}>
-              <h2 className="text-2xl font-bold mb-6">Direct Channels</h2>
-            </FadeInWhenVisible>
+    <div className="relative min-h-screen w-full bg-[#050505] overflow-hidden">
+      {/* 3D Background Layer - Hidden on small screens */}
+      <div className="absolute inset-0 z-0 hidden lg:block">
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
+          <Suspense fallback={null}>
+            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+            <ambientLight intensity={0.2} />
+            <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
+            <pointLight position={[-10, -10, -10]} intensity={0.5} color="#C8102E" />
             
-            {contactChannels.map((channel, index) => (
-              <FadeInWhenVisible key={channel.name} delay={0.3 + index * 0.1}>
-                <a
-                  href={channel.href}
-                  target={channel.href.startsWith('mailto') ? undefined : '_blank'}
-                  rel={channel.href.startsWith('mailto') ? undefined : 'noopener noreferrer'}
-                  className="flex items-center space-x-4 p-4 bg-surface border border-border rounded-lg hover:border-accent-crimson transition-colors group"
-                >
-                  <div className="w-12 h-12 bg-elevated rounded-full flex items-center justify-center text-accent-crimson group-hover:bg-accent-crimson group-hover:text-white transition-colors">
-                    <channel.icon size={24} />
+            <MouseFollowSatellite />
+            
+            <Environment preset="night" />
+            <OrbitControls enableZoom={false} enablePan={false} />
+          </Suspense>
+        </Canvas>
+      </div>
+
+      {/* Content Layer */}
+      <div className="relative z-10 pt-28 pb-20 container mx-auto px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            
+            {/* Left Side: Space HUD Theme Info */}
+            <div className="space-y-12">
+              <FadeInWhenVisible>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-[2px] w-12 bg-accent-crimson shadow-[0_0_10px_rgba(200,16,46,0.8)]" />
+                    <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.5em] animate-pulse">Establishing Connection</span>
                   </div>
-                  <div>
-                    <h3 className="font-bold">{channel.name}</h3>
-                    <span className="text-secondary group-hover:text-primary transition-colors">
-                      {channel.value}
-                    </span>
-                  </div>
-                </a>
+                  <h1 className="text-5xl md:text-7xl font-serif font-black text-white uppercase leading-none">
+                    GET IN <br />
+                    <span className="text-accent-crimson">ORBIT</span>
+                  </h1>
+                  <p className="text-gray-400 font-mono text-sm max-w-md leading-relaxed">
+                    Ready to receive high-bandwidth transmissions. Whether it's a new project, technical query, or just a ping from across the digital void.
+                  </p>
+                </div>
               </FadeInWhenVisible>
-            ))}
-          </div>
 
-          {/* Contact Form */}
-          <FadeInWhenVisible delay={0.4} direction="left">
-            <div className="bg-surface p-8 rounded-lg border border-border">
-              <h2 className="text-2xl font-bold mb-6">Send a Transmission</h2>
-              
-              <AnimatePresence mode="wait">
-                {submitted ? (
-                  <motion.div
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="bg-success/10 border border-success/30 text-success p-8 rounded-lg text-center"
-                  >
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                      className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4"
+              <div className="grid sm:grid-cols-1 gap-4">
+                {contactChannels.map((channel, index) => (
+                  <FadeInWhenVisible key={channel.name} delay={0.2 + index * 0.1}>
+                    <a
+                      href={channel.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center justify-between p-4 bg-white/[0.03] backdrop-blur-sm border border-white/5 rounded-xl hover:border-accent-crimson/50 hover:bg-white/[0.05] transition-all duration-500"
                     >
-                      <Check size={32} className="text-white" />
-                    </motion.div>
-                    <h3 className="font-bold text-xl mb-2">Message Received!</h3>
-                    <p className="mb-4">I will respond to your inquiry shortly.</p>
-                    <motion.button 
-                      onClick={() => setSubmitted(false)}
-                      className="text-sm underline hover:text-white"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Send another message
-                    </motion.button>
-                  </motion.div>
-                ) : (
-                  <motion.form 
-                    key="form"
-                    onSubmit={handleSubmit} 
-                    className="space-y-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    {/* Name Field */}
-                    <div className="relative">
-                      <motion.label
-                        htmlFor="name"
-                        className={`absolute left-4 transition-all duration-300 pointer-events-none ${
-                          focusedField === 'name' || formData.name 
-                            ? '-top-2.5 text-xs bg-surface px-1 text-accent-crimson' 
-                            : 'top-3.5 text-secondary'
-                        }`}
-                      >
-                        Name
-                      </motion.label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus('name')}
-                        onBlur={handleBlur}
-                        className={inputClasses('name', !!errors.name)}
-                      />
-                      <AnimatePresence>
-                        {errors.name && touched.name && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center gap-1 mt-1 text-warning text-sm"
-                          >
-                            <AlertCircle size={14} />
-                            {errors.name}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-accent-crimson/10 flex items-center justify-center text-accent-crimson group-hover:bg-accent-crimson group-hover:text-white transition-all">
+                          <channel.icon size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-mono text-accent-glow uppercase tracking-widest">{channel.label}</p>
+                          <h3 className="text-white font-bold text-sm tracking-tight">{channel.value}</h3>
+                        </div>
+                      </div>
+                      <Radio size={14} className="text-white/20 group-hover:text-accent-crimson animate-pulse" />
+                    </a>
+                  </FadeInWhenVisible>
+                ))}
+              </div>
 
-                    {/* Email Field */}
-                    <div className="relative">
-                      <motion.label
-                        htmlFor="email"
-                        className={`absolute left-4 transition-all duration-300 pointer-events-none ${
-                          focusedField === 'email' || formData.email 
-                            ? '-top-2.5 text-xs bg-surface px-1 text-accent-crimson' 
-                            : 'top-3.5 text-secondary'
-                        }`}
-                      >
-                        Email
-                      </motion.label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus('email')}
-                        onBlur={handleBlur}
-                        className={inputClasses('email', !!errors.email)}
-                      />
-                      <AnimatePresence>
-                        {errors.email && touched.email && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center gap-1 mt-1 text-warning text-sm"
-                          >
-                            <AlertCircle size={14} />
-                            {errors.email}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Message Field */}
-                    <div className="relative">
-                      <motion.label
-                        htmlFor="message"
-                        className={`absolute left-4 transition-all duration-300 pointer-events-none ${
-                          focusedField === 'message' || formData.message 
-                            ? '-top-2.5 text-xs bg-surface px-1 text-accent-crimson' 
-                            : 'top-3.5 text-secondary'
-                        }`}
-                      >
-                        Message
-                      </motion.label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={4}
-                        value={formData.message}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus('message')}
-                        onBlur={handleBlur}
-                        className={inputClasses('message', !!errors.message)}
-                      />
-                      <AnimatePresence>
-                        {errors.message && touched.message && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="flex items-center gap-1 mt-1 text-warning text-sm"
-                          >
-                            <AlertCircle size={14} />
-                            {errors.message}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Submit Button */}
-                    <motion.button
-                      type="submit"
-                      disabled={isSubmitting}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full bg-accent-crimson text-white font-bold py-3 rounded-lg hover:bg-accent-glow hover:shadow-[0_0_20px_rgba(200,16,46,0.4)] transition-all duration-300 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 size={18} className="animate-spin mr-2" />
-                          Transmitting...
-                        </>
-                      ) : (
-                        <>
-                          Send Message 
-                          <motion.span
-                            className="ml-2"
-                            animate={{ x: [0, 4, 0] }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                          >
-                            <Send size={18} />
-                          </motion.span>
-                        </>
-                      )}
-                    </motion.button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
+              {/* Orbital Telemetry HUD */}
+              <FadeInWhenVisible delay={0.5}>
+                <div className="p-4 border-t border-white/5 flex gap-8 items-center opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                   <div className="font-mono text-[9px] space-y-1">
+                      <p className="text-accent-glow">LAT: 21.2514° N</p>
+                      <p className="text-accent-glow">LON: 81.6296° E</p>
+                   </div>
+                   <div className="font-mono text-[9px] space-y-1">
+                      <p className="text-white">SIG_STRENGTH: 98%</p>
+                      <p className="text-white">STATUS: LISTENING</p>
+                   </div>
+                   <div className="ml-auto">
+                      <Globe size={24} className="text-accent-crimson animate-spin-slow" />
+                   </div>
+                </div>
+              </FadeInWhenVisible>
             </div>
-          </FadeInWhenVisible>
+
+            {/* Right Side: Transmission Form */}
+            <FadeInWhenVisible delay={0.3} direction="left">
+              <div className="relative group">
+                {/* HUD Frame Decorations */}
+                <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-accent-crimson/30 group-hover:border-accent-crimson transition-colors" />
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-accent-crimson/30 group-hover:border-accent-crimson transition-colors" />
+                
+                <div className="bg-[#0A0A0A]/40 backdrop-blur-xl p-8 md:p-10 rounded-2xl border border-white/5 shadow-2xl">
+                  <div className="flex items-center justify-between mb-8">
+                    <h2 className="text-2xl font-serif font-bold text-white uppercase tracking-tight">Transmission_Buffer</h2>
+                    <Zap size={16} className="text-accent-glow animate-bounce" />
+                  </div>
+                  
+                  <AnimatePresence mode="wait">
+                    {submitted ? (
+                      <motion.div
+                        key="success"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="py-12 text-center space-y-6"
+                      >
+                        <div className="w-20 h-20 bg-accent-crimson/20 rounded-full flex items-center justify-center mx-auto border border-accent-crimson/30">
+                          <Check size={40} className="text-accent-crimson" />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold text-white uppercase tracking-tighter">Signal Sent!</h3>
+                          <p className="text-gray-400 font-mono text-xs mt-2">Packet delivered to the neural core.</p>
+                        </div>
+                        <button 
+                          onClick={() => setSubmitted(false)}
+                          className="px-6 py-2 border border-white/10 rounded-full text-xs font-mono text-gray-400 hover:text-white hover:border-accent-crimson transition-all"
+                        >
+                          Send Another_Packet
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <motion.form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest ml-1">Identity.name</label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            onFocus={() => setFocusedField('name')}
+                            onBlur={handleBlur}
+                            placeholder="COMM_OPERATOR_NAME"
+                            className={inputClasses('name', !!errors.name)}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest ml-1">Identity.email</label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            onFocus={() => setFocusedField('email')}
+                            onBlur={handleBlur}
+                            placeholder="REPLY_NODE_ADDRESS"
+                            className={inputClasses('email', !!errors.email)}
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest ml-1">Packet.payload</label>
+                          <textarea
+                            name="message"
+                            rows={4}
+                            value={formData.message}
+                            onChange={handleChange}
+                            onFocus={() => setFocusedField('message')}
+                            onBlur={handleBlur}
+                            placeholder="ENTER_DATA_TO_TRANSMIT..."
+                            className={inputClasses('message', !!errors.message)}
+                          />
+                        </div>
+
+                        <motion.button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full relative overflow-hidden group/btn"
+                        >
+                          <div className="absolute inset-0 bg-accent-crimson translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500" />
+                          <div className="relative border border-accent-crimson/50 px-8 py-4 flex items-center justify-center gap-3 text-white font-mono text-sm tracking-[0.2em] uppercase transition-colors group-hover/btn:text-white">
+                            {isSubmitting ? (
+                              <Loader2 size={18} className="animate-spin" />
+                            ) : (
+                              <>
+                                Execute_Send
+                                <Send size={16} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
+                              </>
+                            )}
+                          </div>
+                        </motion.button>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            </FadeInWhenVisible>
+          </div>
         </div>
       </div>
+
+      {/* Background radial glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent-crimson/5 rounded-full blur-[120px] pointer-events-none" />
     </div>
   );
 };

@@ -17,7 +17,7 @@ export default {
         elevated: "#1A1A1A",
         primary: "#EDEDED",
         secondary: "#A0A0A0",
-        tertiary: "#6B6B6B",
+        tertiary: "#8a8a8a",
         accent: {
           crimson: "#C8102E",
           glow: "#FF6B6B",

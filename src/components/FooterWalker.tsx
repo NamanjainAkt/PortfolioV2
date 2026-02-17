@@ -47,6 +47,7 @@ const FooterWalker: React.FC<Props> = ({ startRef, endRef, containerRef }) => {
   return (
     <>
       <div
+        className="hidden lg:block"
         style={{
           position: 'absolute',
           inset: 0,

@@ -20,36 +20,41 @@ const experiences: Experience[] = [
   {
     id: 1,
     role: "Full Stack Developer",
-    company: "TechCorp Inc.",
-    location: "San Francisco, CA",
-    period: "2022 - Present",
+    company: "Flick",
+    location: "Raipur, Chhattisgarh, India (Remote)",
+    period: "Nov 2025 - Present",
     isCurrent: true,
-    type: "Full-time",
-    description: "Architecting high-performance web solutions and leading core infrastructure initiatives.",
+    type: "Internship",
+    description:
+      "Working as a Full Stack Developer Intern, building and maintaining scalable MERN-based applications in a remote agile environment.",
     achievements: [
-      "Orchestrated microservices architecture handling 1.5M+ daily requests.",
-      "Engineered automated CI/CD workflows, slashing deployment latency by 65%.",
-      "Pioneered an internal UI framework adopted by 12+ cross-functional teams."
+      "Developed and shipped full-stack features using the MERN stack.",
+      "Collaborated with cross-functional remote teams following agile practices.",
+      "Implemented REST APIs and integrated frontend with backend services.",
+      "Contributed to improving application performance and maintainability."
     ],
-    technologies: ["React", "Node.js", "MongoDB", "TypeScript", "AWS"]
+    technologies: ["React", "Node.js", "Express.js", "MongoDB", "JavaScript"]
   },
   {
     id: 2,
-    role: "Frontend Specialist",
-    company: "StartupXYZ",
-    location: "New York, NY",
-    period: "2020 - 2022",
+    role: "MERN Stack Developer",
+    company: "Tellis Technologies Pvt Ltd",
+    location: "West Bengal, India (Remote)",
+    period: "Nov 2025",
     isCurrent: false,
-    type: "Remote",
-    description: "Focused on building immersive user interfaces and optimized design systems.",
+    type: "Internship",
+    description:
+      "Worked as a MERN Stack Developer Intern, focusing on full-stack development and API-driven applications.",
     achievements: [
-      "Developed a real-time analytics dashboard used by 50K+ enterprise users.",
-      "Reduced main bundle size by 45% using code-splitting techniques.",
-      "Implemented WCAG 2.1 accessibility standards across the product suite."
+      "Built end-to-end MERN stack features for internal products.",
+      "Designed MongoDB schemas and implemented backend logic.",
+      "Integrated REST APIs with responsive React interfaces.",
+      "Worked in a remote development workflow with version control."
     ],
-    technologies: ["Vue.js", "Tailwind CSS", "JavaScript", "Redux"]
+    technologies: ["MongoDB", "Express.js", "React", "Node.js"]
   }
 ];
+
 
 const ExperienceItem = ({ exp, index }: { exp: Experience; index: number }) => {
   return (

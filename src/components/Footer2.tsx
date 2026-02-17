@@ -7,7 +7,6 @@ const Footer2 = () => {
   const socialLinks = [
     { name: 'GitHub', icon: Github, href: 'https://github.com/namanjainakt/' },
     { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/in/naman-jain-akt/' },
-    { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
     { name: 'Email', icon: Mail, href: 'mailto:namanjainakt@gmail.com' },
   ];
 

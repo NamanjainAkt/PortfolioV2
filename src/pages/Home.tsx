@@ -76,7 +76,6 @@ const Home = () => {
   const socialLinks = [
     { icon: Linkedin, href: "https://linkedin.com/in/naman-jain-akt/", label: "LinkedIn" },
     { icon: Github, href: "https://github.com/namanjainakt/", label: "GitHub" },
-    { icon: Twitter, href: "https://twitter.com/", label: "Twitter" },
     { icon: Mail, href: "mailto:namanjainakt@gmail.com", label: "Email" },
   ];
 
@@ -136,11 +135,6 @@ const Home = () => {
                 <Cpu size={16} className="text-accent-crimson" />
                 <Typewriter words={roles} />
               </div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              <div className="flex items-center gap-2 text-secondary font-mono text-sm md:text-lg">
-                <Globe size={16} className="text-accent-crimson" />
-                <span>India Based</span>
-              </div>
             </motion.div>
 
             <motion.div
@@ -199,9 +193,6 @@ const Home = () => {
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 cursor-pointer group"
           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
         >
-          <span className="text-[10px] font-mono text-white/30 tracking-[0.4em] uppercase group-hover:text-accent-crimson transition-colors">
-            Scroll to Initiate
-          </span>
           <div className="w-[1px] h-12 bg-gradient-to-b from-accent-crimson to-transparent relative overflow-hidden">
             <motion.div 
               animate={{ y: ['-100%', '100%'] }}
