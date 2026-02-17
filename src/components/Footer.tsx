@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail, Twitter, ArrowUp } from 'lucide-react';
+import FooterWalker from './FooterWalker';
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -15,9 +16,23 @@ const Footer = () => {
   ];
 
   const name = "NAMAN JAIN";
+  const containerRef = useRef<HTMLDivElement>(null)
+  const leftNRef = useRef<HTMLSpanElement>(null)
+  const rightNRef = useRef<HTMLSpanElement>(null)
+  const spaceIndex = name.indexOf(' ')
+  const leftNIndex = (() => {
+    for (let i = spaceIndex - 1; i >= 0; i--) if (name[i] === 'N') return i
+    return 0
+  })()
+  const rightNIndex = (() => {
+    for (let i = name.length - 1; i > spaceIndex; i--) if (name[i] === 'N') return i
+    return name.length - 1
+  })()
+
+  const footerRef = useRef<HTMLElement>(null)
 
   return (
-    <footer className="relative py-24 bg-[#050505] overflow-hidden border-t border-white/5">
+    <footer ref={footerRef} className="relative py-24 bg-[#050505] overflow-hidden border-t border-white/5">
       <div className="container mx-auto px-4 flex flex-col items-center">
         
         {/* Massive Name / Scroll to Top */}
@@ -25,7 +40,7 @@ const Footer = () => {
           onClick={scrollToTop}
           className="group relative cursor-pointer mb-12"
         >
-          <div className="relative flex overflow-hidden">
+          <div ref={containerRef} className="relative flex overflow-hidden">
             {name.split('').map((char, i) => (
               <motion.span
                 key={i}
@@ -33,6 +48,7 @@ const Footer = () => {
                 whileHover={{ y: -20, color: '#C8102E' }}
                 transition={{ type: "spring", stiffness: 300, damping: 10 }}
                 className="text-6xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-serif font-black tracking-tighter text-white leading-none inline-block select-none"
+                ref={i === leftNIndex ? leftNRef : i === rightNIndex ? rightNRef : undefined}
               >
                 {char === ' ' ? '\u00A0' : char}
               </motion.span>
@@ -67,13 +83,14 @@ const Footer = () => {
         </div>
 
         {/* Minimal Copyright */}
-        <div className="mt-20 text-[9px] font-mono text-tertiary/30 uppercase tracking-[0.5em]">
+        <div className="mt-20 text-[9px] font-mono text-tertiary/80 uppercase tracking-[0.5em]">
           © 2026 Developed by Naman Jain
         </div>
       </div>
 
       {/* Atmospheric Background Glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[20%] bg-accent-crimson/5 blur-[120px] pointer-events-none" />
+      <FooterWalker startRef={leftNRef} endRef={rightNRef} containerRef={footerRef} />
     </footer>
   );
 };

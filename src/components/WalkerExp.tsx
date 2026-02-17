@@ -13,7 +13,16 @@ type GLTFResult = GLTF & {
   }
 }
 
-export function WalkerExp(props: ThreeElements['group']) {
+type Control = {
+  axis?: 'x' | 'z'
+  direction?: -1 | 0 | 1
+  speed?: number
+  headTarget?: { x: number; y: number } | null
+  bounds?: { min: number; max: number }
+  lookAtCamera?: boolean
+}
+
+export function WalkerExp(props: ThreeElements['group'] & { control?: Control }) {
   const { nodes, materials } = useGLTF('/model.glb') as GLTFResult
 
   const groupRef = useRef<THREE.Group>(null)
@@ -28,7 +37,7 @@ export function WalkerExp(props: ThreeElements['group']) {
   const headBaseY = 1.545
   const legRightBaseY = -1.621
   const legLeftBaseY = -1.613
-  const prevRootZ = useRef(0)
+  const prevAxisPos = useRef(0)
   const phaseRef = useRef(0)
   const yawRef = useRef(0)
   const leftSwingT = useRef(0)
@@ -41,6 +50,7 @@ export function WalkerExp(props: ThreeElements['group']) {
   const rightSwingStart = useRef(rightPlant.current.clone())
   const leftSwingEnd = useRef(leftPlant.current.clone())
   const rightSwingEnd = useRef(rightPlant.current.clone())
+  const autoDirRef = useRef<1 | -1>(1)
   const theme = {
     crimson: '#C8102E',
     glow: '#FF6B6B',
@@ -50,6 +60,7 @@ export function WalkerExp(props: ThreeElements['group']) {
   }
 
   useEffect(() => {
+    if (props.control) return
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'w' || e.key === 'W') setMovement(m => ({ ...m, forward: true }))
       if (e.key === 's' || e.key === 'S') setMovement(m => ({ ...m, backward: true }))
@@ -64,33 +75,64 @@ export function WalkerExp(props: ThreeElements['group']) {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [])
+  }, [props.control])
 
   useFrame((state, delta) => {
     const t = state.clock.getElapsedTime()
+    const axis = props.control?.axis ?? 'z'
     const mouse = state.mouse
-    const targetGait = movement.forward || movement.backward ? 1 : 0
+    const externalMoving = props.control ? ((props.control.direction ?? autoDirRef.current) !== 0) : false
+    const targetGait = props.control ? (externalMoving ? 1 : 0) : (movement.forward || movement.backward ? 1 : 0)
     gaitRef.current = THREE.MathUtils.lerp(gaitRef.current, targetGait, 0.12)
-    const maxSpeed = 1
-    const targetSpeed = movement.forward || movement.backward ? maxSpeed : 0
+    const maxSpeed = props.control?.speed ?? 1
+    const targetSpeed = props.control ? (externalMoving ? maxSpeed : 0) : ((movement.forward || movement.backward) ? maxSpeed : 0)
     speedRef.current = THREE.MathUtils.lerp(speedRef.current, targetSpeed, 0.15)
     phaseRef.current += delta * 6 * Math.max(0.2, speedRef.current)
     const phase = phaseRef.current
     const stride = 0.6 * gaitRef.current
     const lift = 0.14 * gaitRef.current
     const stepLen = 0.45 * gaitRef.current
-    const direction = movement.forward ? 1 : movement.backward ? -1 : 0
+    let direction = props.control ? (props.control.direction ?? autoDirRef.current) : (movement.forward ? 1 : movement.backward ? -1 : 0)
 
     if (headRef.current) {
-      headRef.current.rotation.y = THREE.MathUtils.lerp(headRef.current.rotation.y, mouse.x * 0.7, 0.12)
-      headRef.current.rotation.x = THREE.MathUtils.lerp(headRef.current.rotation.x, -mouse.y * 0.4, 0.12)
+      if (props.control?.lookAtCamera) {
+        const head = headRef.current
+        const headWorld = new THREE.Vector3()
+        const parentWorldQuat = new THREE.Quaternion()
+        const targetWorldQuat = new THREE.Quaternion()
+        const m = new THREE.Matrix4()
+        head.getWorldPosition(headWorld)
+        m.lookAt(headWorld, state.camera.position, new THREE.Vector3(0, 1, 0))
+        targetWorldQuat.setFromRotationMatrix(m)
+        if (head.parent) {
+          head.parent.getWorldQuaternion(parentWorldQuat)
+          parentWorldQuat.invert()
+          targetWorldQuat.premultiply(parentWorldQuat)
+        }
+        head.quaternion.slerp(targetWorldQuat, 0.12)
+        const e = new THREE.Euler().setFromQuaternion(head.quaternion, 'YXZ')
+        e.y = THREE.MathUtils.clamp(e.y, -0.8, 0.8)
+        e.x = THREE.MathUtils.clamp(e.x, -0.5, 0.5)
+        head.quaternion.setFromEuler(e)
+      } else {
+        const tx = props.control?.headTarget ? props.control.headTarget.x * 0.8 : (props.control ? Math.sin(t * 0.5) * 0.6 : mouse.x * 0.7)
+        const ty = props.control?.headTarget ? props.control.headTarget.y * 0.5 : (props.control ? Math.sin(t * 0.3) * 0.3 : -mouse.y * 0.4)
+        headRef.current.rotation.y = THREE.MathUtils.lerp(headRef.current.rotation.y, tx, 0.12)
+        headRef.current.rotation.x = THREE.MathUtils.lerp(headRef.current.rotation.x, -ty, 0.12)
+      }
     }
 
     if (groupRef.current && legLeftRef.current && legRightRef.current && bodyRef.current) {
-      const dz = groupRef.current.position.z - prevRootZ.current
-      prevRootZ.current = groupRef.current.position.z
-      groupRef.current.position.z += direction * speedRef.current * delta * 2
-      const targetYaw = direction >= 0 ? 0 : Math.PI
+      const prev = prevAxisPos.current
+      const curr = axis === 'z' ? groupRef.current.position.z : groupRef.current.position.x
+      const dAxis = curr - prev
+      prevAxisPos.current = curr
+      if (axis === 'z') {
+        groupRef.current.position.z += direction * speedRef.current * delta * 2
+      } else {
+        groupRef.current.position.x += direction * speedRef.current * delta * 2
+      }
+      const targetYaw = axis === 'z' ? (direction >= 0 ? 0 : Math.PI) : (direction >= 0 ? -Math.PI / 2 : Math.PI / 2)
       yawRef.current = THREE.MathUtils.lerp(yawRef.current, targetYaw, 0.15 * gaitRef.current + 0.05)
       groupRef.current.rotation.y = yawRef.current
       const leftPhase = phase
@@ -101,7 +143,7 @@ export function WalkerExp(props: ThreeElements['group']) {
         leftIsSwing.current = true
         leftSwingT.current = 0
         leftSwingStart.current.copy(leftPlant.current)
-        leftSwingEnd.current.copy(leftPlant.current).add(new THREE.Vector3(0, 0, direction * stepLen))
+        leftSwingEnd.current.copy(leftPlant.current).add(axis === 'z' ? new THREE.Vector3(0, 0, direction * stepLen) : new THREE.Vector3(direction * stepLen, 0, 0))
       } else if (!leftSwingNow && leftIsSwing.current) {
         leftIsSwing.current = false
         leftPlant.current.copy(legLeftRef.current.position)
@@ -110,7 +152,7 @@ export function WalkerExp(props: ThreeElements['group']) {
         rightIsSwing.current = true
         rightSwingT.current = 0
         rightSwingStart.current.copy(rightPlant.current)
-        rightSwingEnd.current.copy(rightPlant.current).add(new THREE.Vector3(0, 0, direction * stepLen))
+        rightSwingEnd.current.copy(rightPlant.current).add(axis === 'z' ? new THREE.Vector3(0, 0, direction * stepLen) : new THREE.Vector3(direction * stepLen, 0, 0))
       } else if (!rightSwingNow && rightIsSwing.current) {
         rightIsSwing.current = false
         rightPlant.current.copy(legRightRef.current.position)
@@ -121,7 +163,8 @@ export function WalkerExp(props: ThreeElements['group']) {
         const yArc = Math.sin(Math.PI * leftSwingT.current) * lift
         legLeftRef.current.position.set(a.x, legLeftBaseY + yArc, a.z)
       } else {
-        legLeftRef.current.position.z -= dz
+        if (axis === 'z') legLeftRef.current.position.z -= dAxis
+        else legLeftRef.current.position.x -= dAxis
         legLeftRef.current.position.y = legLeftBaseY
       }
       if (rightIsSwing.current) {
@@ -130,7 +173,8 @@ export function WalkerExp(props: ThreeElements['group']) {
         const yArc = Math.sin(Math.PI * rightSwingT.current) * lift
         legRightRef.current.position.set(a.x, legRightBaseY + yArc, a.z)
       } else {
-        legRightRef.current.position.z -= dz
+        if (axis === 'z') legRightRef.current.position.z -= dAxis
+        else legRightRef.current.position.x -= dAxis
         legRightRef.current.position.y = legRightBaseY
       }
       legLeftRef.current.rotation.x = Math.sin(leftPhase) * stride
@@ -141,6 +185,11 @@ export function WalkerExp(props: ThreeElements['group']) {
       bodyRef.current.rotation.y = Math.sin(phase) * 0.05 * gaitRef.current
       bodyRef.current.rotation.z = Math.sin(phase + Math.PI / 2) * 0.03 * gaitRef.current
       if (headRef.current) headRef.current.position.y = headBaseY + Math.sin(phase * 2) * 0.05 * gaitRef.current
+      if (props.control?.bounds && props.control.direction === undefined) {
+        const pos = axis === 'z' ? groupRef.current.position.z : groupRef.current.position.x
+        if (pos >= props.control.bounds.max) autoDirRef.current = -1
+        if (pos <= props.control.bounds.min) autoDirRef.current = 1
+      }
     }
   })
 

@@ -174,7 +174,7 @@ const Home = () => {
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 border border-white/20 text-white font-black uppercase tracking-widest text-xs rounded-none hover:bg-white/5 transition-all"
                 >
-                  Briefing
+                  Book a Meeting
                 </motion.button>
               </div>
 
