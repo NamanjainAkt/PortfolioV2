@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll } from 'framer-motion';
-import { Send, Bot, User, Sparkles, Command, Zap, Maximize2, Minimize2, Trash2, X, ChevronDown, MessageCircle, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Send, Bot, Sparkles, Command, Maximize2, Minimize2, Trash2, X, ShieldCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +9,7 @@ interface Message {
   role: 'user' | 'bot';
   content: string;
   timestamp: Date;
+  isError?: boolean;
 }
 
 const ChatBot = () => {
@@ -18,8 +19,9 @@ const ChatBot = () => {
     {
       id: 'welcome',
       role: 'bot',
-      content: "Hello. I am **Aries**, your dedicated architectural assistant. I can provide technical specifications on Naman's stack, project methodologies, or facilitate a direct connection. \n\nWhat are we building today?",
+      content: "Hello. I am **Mars**, your dedicated architectural assistant. I can provide technical specifications on Naman's stack, project methodologies, or facilitate a direct connection. \n\nWhat are we building today?",
       timestamp: new Date(),
+      isError: false,
     },
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -43,6 +45,7 @@ const ChatBot = () => {
       role: 'user',
       content: inputValue,
       timestamp: new Date(),
+      isError: false,
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -71,13 +74,16 @@ const ChatBot = () => {
         role: 'bot',
         content: data.reply,
         timestamp: new Date(),
+        isError: false,
       }]);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "System link interrupted. Please verify your connection and re-initiate.";
       setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'bot',
-        content: "System link interrupted. Please verify your connection and re-initiate.",
+        content: `**⚠️ System Error**\n\n${errorMessage}\n\n*Please try again or contact support if the issue persists.*`,
         timestamp: new Date(),
+        isError: true,
       }]);
     } finally {
       setIsLoading(false);
@@ -94,9 +100,9 @@ const ChatBot = () => {
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-8 right-8 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl transition-all duration-500",
-          isOpen 
-            ? "bg-white text-black ring-4 ring-white/10" 
+          "fixed bottom-20 right-4 md:bottom-8 md:right-8 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl transition-all duration-500",
+          isOpen
+            ? "bg-white text-black ring-4 ring-white/10"
             : "bg-[#0A0A0A] border border-white/10 text-white hover:border-accent-crimson/50"
         )}
       >
@@ -110,7 +116,7 @@ const ChatBot = () => {
           )}
         </div>
         <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em]">
-          {isOpen ? "Active Link" : "Ask Aries"}
+          {isOpen ? "Active Link" : "Ask Mars"}
         </span>
       </motion.button>
 
@@ -122,8 +128,8 @@ const ChatBot = () => {
             animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: 40, scale: 0.95, filter: 'blur(10px)' }}
             className={cn(
-              "fixed right-8 bottom-24 z-50 flex flex-col overflow-hidden bg-[#0A0A0A]/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_100px_rgba(0,0,0,0.8)] rounded-[2rem]",
-              isMaximized ? "inset-8 w-auto h-auto" : "w-[95vw] md:w-[420px] h-[600px] max-h-[80vh]"
+              "fixed right-4 md:right-8 bottom-28 md:bottom-24 z-[70] flex flex-col overflow-hidden bg-[#0A0A0A]/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_100px_rgba(0,0,0,0.8)] rounded-[2rem]",
+              isMaximized ? "inset-4 md:inset-8 w-auto h-auto" : "w-[95vw] md:w-[420px] h-[600px] max-h-[calc(100vh-8rem)] md:max-h-[80vh]"
             )}
           >
             {/* High-End Header */}
@@ -135,7 +141,7 @@ const ChatBot = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-sm tracking-tight flex items-center gap-2">
-                    Aries Intelligence
+                    Mars Bot
                     <ShieldCheck size={12} className="text-accent-crimson" />
                   </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
@@ -183,9 +189,11 @@ const ChatBot = () => {
                 >
                   <div className={cn(
                     "px-4 py-3 text-sm leading-relaxed transition-all duration-300",
-                    msg.role === 'user' 
-                      ? "bg-white text-black rounded-2xl rounded-tr-none font-medium shadow-lg" 
-                      : "bg-zinc-900/50 border border-white/5 text-zinc-300 rounded-2xl rounded-tl-none backdrop-blur-sm"
+                    msg.role === 'user'
+                      ? "bg-white text-black rounded-2xl rounded-tr-none font-medium shadow-lg"
+                      : msg.isError
+                        ? "bg-red-950/30 border border-red-500/30 text-red-200 rounded-2xl rounded-tl-none backdrop-blur-sm"
+                        : "bg-zinc-900/50 border border-white/5 text-zinc-300 rounded-2xl rounded-tl-none backdrop-blur-sm"
                   )}>
                     {msg.role === 'bot' ? (
                       <div className="prose prose-invert prose-sm max-w-none prose-p:leading-relaxed prose-strong:text-white prose-code:text-accent-crimson">
@@ -197,8 +205,11 @@ const ChatBot = () => {
                       <p>{msg.content}</p>
                     )}
                   </div>
-                  <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">
-                    {msg.role === 'user' ? "User_Authorized" : "Aries_Response"} • {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <span className={cn(
+                    "text-[9px] font-mono uppercase tracking-widest",
+                    msg.isError ? "text-red-500/70" : "text-zinc-600"
+                  )}>
+                    {msg.role === 'user' ? "User_Authorized" : msg.isError ? "System_Error" : "Mars_Response"} • {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </motion.div>
               ))}

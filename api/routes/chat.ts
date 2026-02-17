@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
     // Construct the chat history for Gemini
     // We prepend the system context
@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
         },
         {
           role: "model",
-          parts: [{ text: "Understood. I am Aries, Naman's AI assistant. I will answer questions based on the provided context." }],
+          parts: [{ text: "Understood. I am Mars, Naman's AI assistant. I will answer questions based on the provided context." }],
         },
         ...(history || []).map((msg: any) => ({
           role: msg.role === 'user' ? 'user' : 'model',
@@ -51,9 +51,13 @@ router.post('/', async (req, res) => {
     const text = response.text();
 
     res.json({ reply: text });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat API Error:', error);
-    res.status(500).json({ error: 'Failed to generate response' });
+    const errorMessage = error?.message || 'Unknown error occurred';
+    res.status(500).json({
+      error: `Failed to generate response: ${errorMessage}`,
+      reply: "I apologize, but I'm experiencing technical difficulties right now. Please try again in a moment."
+    });
   }
 });
 

@@ -21,6 +21,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Reorder projects (Admin only) - bulk update displayOrder
+// MUST be before /:slug to avoid being caught by slug route
+router.put('/reorder', authenticateToken, async (req, res) => {
+  try {
+    const { projects } = req.body; // Array of { id, displayOrder }
+    
+    // Update all projects in a transaction
+    const updates = projects.map((p: { id: string; displayOrder: number }) =>
+      prisma.project.update({
+        where: { id: p.id },
+        data: { displayOrder: p.displayOrder },
+      })
+    );
+    
+    await prisma.$transaction(updates);
+    res.json({ message: 'Projects reordered successfully' });
+  } catch (error) {
+    console.error('Reorder error:', error);
+    res.status(500).json({ error: 'Failed to reorder projects' });
+  }
+});
+
 // Get single project by slug
 router.get('/:slug', async (req, res) => {
   try {
@@ -91,26 +113,6 @@ router.put('/:id', authenticateToken, async (req, res) => {
     res.json(project);
   } catch (error) {
     res.status(500).json({ error: 'Failed to update project' });
-  }
-});
-
-// Reorder projects (Admin only) - bulk update displayOrder
-router.put('/reorder', authenticateToken, async (req, res) => {
-  try {
-    const { projects } = req.body; // Array of { id, displayOrder }
-    
-    // Update all projects in a transaction
-    const updates = projects.map((p: { id: string; displayOrder: number }) =>
-      prisma.project.update({
-        where: { id: p.id },
-        data: { displayOrder: p.displayOrder },
-      })
-    );
-    
-    await prisma.$transaction(updates);
-    res.json({ message: 'Projects reordered successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to reorder projects' });
   }
 });
 

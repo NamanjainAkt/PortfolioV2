@@ -1,11 +1,12 @@
 import React, { useState, Suspense, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Github, Linkedin, Send, Check, AlertCircle, Loader2, Radio, Globe, Zap } from 'lucide-react';
+import { Mail, Github, Linkedin, Send, Check, Loader2, Radio, Globe, Zap } from 'lucide-react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Float, Stars, Environment } from '@react-three/drei';
 import { Satellite } from '../components/Satellite';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import * as THREE from 'three';
+import emailjs from '@emailjs/browser';
 
 interface FormErrors {
   name?: string;
@@ -98,11 +99,34 @@ const Contact = () => {
     if (Object.keys(newErrors).length > 0) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setSubmitted(true);
-    setFormData({ name: '', email: '', message: '' });
-    setTouched({});
+
+    try {
+      const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          to_name: 'Naman',
+          to_email: 'namanjainakt007@gmail.com',
+        },
+        PUBLIC_KEY
+      );
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', message: '' });
+      setTouched({});
+    } catch (error) {
+      console.error('Email send failed:', error);
+      setErrors(prev => ({ ...prev, message: 'Transmission failed. Please try again.' }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactChannels = [
