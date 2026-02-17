@@ -13,6 +13,7 @@ import Contact from './pages/Contact';
 import AdminModal from './components/AdminModal';
 import Admin from './pages/Admin';
 import Test from './pages/Test';
+import NotFound from './pages/NotFound';
 import BottomNav from './components/BottomNav';
 import ChatBot from './components/ChatBot';
 import LoadingScreen from './components/LoadingScreen';
@@ -67,6 +68,7 @@ function App() {
                 <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
 <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
                 <Route path="/test" element={<PageTransition><Test /></PageTransition>} />
+                <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
               </Routes>
             </AnimatePresence>
           </main>
