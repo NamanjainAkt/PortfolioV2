@@ -55,7 +55,7 @@ export const CommandPalette = () => {
       id: 'resume',
       name: 'Download Resume',
       icon: FileText,
-      action: () => window.open('/resume.pdf', '_blank'),
+      action: () => window.open('/Naman_s_Resume.pdf', '_blank'),
       keywords: ['resume', 'cv', 'download', 'pdf'],
     },
   ];

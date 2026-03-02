@@ -145,7 +145,7 @@ const Home = () => {
             >
               <div className="flex gap-4">
                 <motion.a
-                  href="/resume.pdf"
+                  href="/Naman_s_Resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.05 }}
