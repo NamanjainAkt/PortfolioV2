@@ -1,9 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
-const DroneBody: React.FC = () => {
+const DroneBody = () => {
   return (
     <group>
       <mesh position={[0, 0, 0]}>
@@ -28,7 +28,7 @@ const DroneBody: React.FC = () => {
   );
 };
 
-const DroneArm: React.FC<{ position: [number, number, number]; rotation: number }> = ({ position, rotation }) => {
+const DroneArm = ({ position, rotation }: { position: [number, number, number]; rotation: number }) => {
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       <mesh position={[0.4, 0, 0]}>
@@ -39,13 +39,15 @@ const DroneArm: React.FC<{ position: [number, number, number]; rotation: number 
   );
 };
 
-const Rotor: React.FC<{ position: [number, number, number]; spinDirection: number }> = ({ position, spinDirection }) => {
+const Rotor = ({ position, spinDirection }: { position: [number, number, number]; spinDirection: number }) => {
   const rotorRef1 = useRef<THREE.Mesh>(null);
   const rotorRef2 = useRef<THREE.Mesh>(null);
+  const rotationRef = useRef(0);
 
   useFrame((_, delta) => {
-    if (rotorRef1.current) rotorRef1.current.rotation.y += delta * 30 * spinDirection;
-    if (rotorRef2.current) rotorRef2.current.rotation.y += delta * 30 * spinDirection;
+    rotationRef.current += delta * 30 * spinDirection;
+    if (rotorRef1.current) rotorRef1.current.rotation.y = rotationRef.current;
+    if (rotorRef2.current) rotorRef2.current.rotation.y = rotationRef.current;
   });
 
   return (
@@ -69,17 +71,19 @@ const Rotor: React.FC<{ position: [number, number, number]; spinDirection: numbe
   );
 };
 
-const LandingGear: React.FC = () => {
+const LandingGear = () => {
+  const positions: [number, number, number][] = [
+    [0.25, -0.15, 0.2],
+    [-0.25, -0.15, 0.2],
+    [0.25, -0.15, -0.2],
+    [-0.25, -0.15, -0.2]
+  ];
+
   return (
     <group>
-      {[
-        [0.25, -0.15, 0.2],
-        [-0.25, -0.15, 0.2],
-        [0.25, -0.15, -0.2],
-        [-0.25, -0.15, -0.2]
-      ].map((pos, i) => (
-        <React.Fragment key={i}>
-          <mesh position={pos as [number, number, number]}>
+      {positions.map((pos, i) => (
+        <group key={i}>
+          <mesh position={pos}>
             <cylinderGeometry args={[0.015, 0.015, 0.15, 8]} />
             <meshStandardMaterial color="#1a1a1a" metalness={0.6} roughness={0.3} />
           </mesh>
@@ -87,14 +91,20 @@ const LandingGear: React.FC = () => {
             <sphereGeometry args={[0.025, 8, 8]} />
             <meshStandardMaterial color="#0a0a0a" />
           </mesh>
-        </React.Fragment>
+        </group>
       ))}
     </group>
   );
 };
 
-const Quadcopter: React.FC<{ mousePosition: { x: number; y: number } }> = ({ mousePosition }) => {
+interface QuadcopterProps {
+  mousePosition: { x: number; y: number };
+}
+
+const Quadcopter = ({ mousePosition }: QuadcopterProps) => {
   const groupRef = useRef<THREE.Group>(null);
+  const positionRef = useRef({ x: 0, y: 0 });
+  const rotationRef = useRef({ x: 0, z: 0 });
   
   useFrame((state, delta) => {
     if (!groupRef.current) return;
@@ -103,20 +113,25 @@ const Quadcopter: React.FC<{ mousePosition: { x: number; y: number } }> = ({ mou
     const maxTilt = 0.4;
     
     // Calculate target with a fixed offset (escort distance)
-    // We add 1.2 to X and 0.8 to Y to keep it away from the cursor
     const targetX = (mousePosition.x * 4) + 1.2;
     const targetY = (mousePosition.y * 2.5) + 0.8;
 
-    groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetX, lerpFactor);
-    groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, lerpFactor);
+    // Smooth position update using refs
+    positionRef.current.x = THREE.MathUtils.lerp(positionRef.current.x, targetX, lerpFactor);
+    positionRef.current.y = THREE.MathUtils.lerp(positionRef.current.y, targetY, lerpFactor);
 
     const tiltX = -mousePosition.y * maxTilt;
     const tiltZ = -mousePosition.x * maxTilt;
     
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, tiltX, lerpFactor);
-    groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, tiltZ, lerpFactor);
+    // Smooth rotation update
+    rotationRef.current.x = THREE.MathUtils.lerp(rotationRef.current.x, tiltX, lerpFactor);
+    rotationRef.current.z = THREE.MathUtils.lerp(rotationRef.current.z, tiltZ, lerpFactor);
     
-    groupRef.current.position.y += Math.sin(state.clock.elapsedTime * 2) * 0.002;
+    // Apply updates
+    groupRef.current.position.x = positionRef.current.x;
+    groupRef.current.position.y = positionRef.current.y + Math.sin(state.clock.elapsedTime * 2) * 0.002;
+    groupRef.current.rotation.x = rotationRef.current.x;
+    groupRef.current.rotation.z = rotationRef.current.z;
   });
 
   const armAngle = Math.PI / 4;
@@ -139,28 +154,67 @@ const Quadcopter: React.FC<{ mousePosition: { x: number; y: number } }> = ({ mou
   );
 };
 
-const DroneOverlay: React.FC = () => {
+const DroneOverlay = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(true);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number>();
 
-  useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      // Convert pixel coordinates to NDC (-1 to 1)
-      setMousePosition({
-        x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: -(event.clientY / window.innerHeight) * 2 + 1,
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+  // Throttled mouse handler using RAF
+  const updateMousePosition = useCallback(() => {
+    setMousePosition(mouseRef.current);
+    rafRef.current = undefined;
   }, []);
 
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    // Convert pixel coordinates to NDC (-1 to 1)
+    mouseRef.current = {
+      x: (event.clientX / window.innerWidth) * 2 - 1,
+      y: -(event.clientY / window.innerHeight) * 2 + 1,
+    };
+    
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(updateMousePosition);
+    }
+  }, [updateMousePosition]);
+
+  // Visibility check - pause rendering when not visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0 }
+    );
+
+    const container = document.getElementById('drone-container');
+    if (container) {
+      observer.observe(container);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [handleMouseMove]);
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-[100] hidden md:block">
+    <div 
+      id="drone-container"
+      className="fixed inset-0 pointer-events-none z-[100] hidden md:block"
+    >
       <Canvas 
         shadows 
         camera={{ position: [0, 0, 5], fov: 50 }}
         gl={{ alpha: true, antialias: true }}
+        frameloop={isVisible ? 'always' : 'never'}
         style={{ pointerEvents: 'none' }}
       >
         <ambientLight intensity={0.8} />

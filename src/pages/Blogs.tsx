@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Clock, ArrowUpRight, Search, Zap, Terminal, Hash, Fingerprint } from 'lucide-react';
+import { ArrowUpRight, Search, Terminal, Fingerprint } from 'lucide-react';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 
 interface Blog {
@@ -20,25 +20,37 @@ const Blogs = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const res = await fetch('/api/blogs');
-        const data = await res.json();
-        setBlogs(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Failed to fetch blogs', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBlogs();
+  // Memoized fetch function
+  const fetchBlogs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/blogs');
+      const data = await res.json();
+      setBlogs(Array.isArray(data) ? data : []);
+    } catch {
+      console.error('Failed to fetch blogs');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const filteredBlogs = blogs.filter(blog => 
-    blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (blog.category && blog.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  useEffect(() => {
+    fetchBlogs();
+  }, [fetchBlogs]);
+
+  // Memoized filtered blogs
+  const filteredBlogs = useMemo(() => {
+    if (!searchQuery.trim()) return blogs;
+    const query = searchQuery.toLowerCase();
+    return blogs.filter(blog => 
+      blog.title.toLowerCase().includes(query) ||
+      (blog.category && blog.category.toLowerCase().includes(query))
+    );
+  }, [blogs, searchQuery]);
+
+  // Memoized search handler
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
 
   if (loading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
@@ -52,7 +64,7 @@ const Blogs = () => {
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-accent-crimson/30 overflow-x-hidden">
       {/* Immersive Background */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-[radial-gradient(circle_at_center,rgba(200,16,46,0.03)_0%,transparent_70%)]" />
         <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[radial-gradient(circle_at_center,rgba(200,16,46,0.02)_0%,transparent_70%)]" />
       </div>
@@ -82,7 +94,7 @@ const Blogs = () => {
                   type="text" 
                   placeholder="FILTER BY PROTOCOL..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className="w-full bg-transparent border-b border-white/10 py-4 pl-8 text-[10px] font-mono tracking-widest uppercase focus:outline-none focus:border-accent-crimson transition-all placeholder:text-tertiary/20"
                 />
               </div>
@@ -104,12 +116,18 @@ const Blogs = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 className="bg-[#050505] group"
+                style={{ willChange: 'transform, opacity' }}
               >
                 <Link to={`/blogs/${blog.slug}`} className="block p-8 md:p-12 relative overflow-hidden">
                   {/* Background Blur Overlay on Hover */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-all duration-700 pointer-events-none overflow-hidden">
                     {blog.featuredImage && (
-                      <img src={blog.featuredImage} className="w-full h-full object-cover blur-2xl scale-110 saturate-150" alt="" />
+                      <img 
+                        src={blog.featuredImage} 
+                        className="w-full h-full object-cover blur-2xl scale-110 saturate-150" 
+                        alt="" 
+                        loading="lazy"
+                      />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />
                   </div>
@@ -140,7 +158,10 @@ const Blogs = () => {
                         <span className="text-[9px] font-mono text-tertiary uppercase tracking-widest">Read Latency</span>
                         <span className="text-xs font-mono text-white">{Math.ceil(blog.content.split(/\s+/).length / 200)}M</span>
                       </div>
-                      <div className="w-12 h-12 rounded-2xl border border-white/5 flex items-center justify-center group-hover:bg-accent-crimson group-hover:border-accent-crimson transition-all duration-500">
+                      <div 
+                        className="w-12 h-12 rounded-2xl border border-white/5 flex items-center justify-center group-hover:bg-accent-crimson group-hover:border-accent-crimson transition-all duration-500"
+                        style={{ willChange: 'transform' }}
+                      >
                         <ArrowUpRight size={20} className="text-white transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </div>
                     </div>

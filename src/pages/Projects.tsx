@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpRight, FolderGit2, MonitorSmartphone, Code2, Sparkles, Command, ShieldCheck } from 'lucide-react';
+import { clsx } from 'clsx';
+import { ArrowUpRight, FolderGit2, MonitorSmartphone, Sparkles, Command, ShieldCheck } from 'lucide-react';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
@@ -20,23 +21,37 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch('/api/projects?orderBy=displayOrder');
-        const data = await res.json();
-        setProjects(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error('Failed to fetch projects', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProjects();
+  // Memoized fetch function
+  const fetchProjects = useCallback(async () => {
+    try {
+      const res = await fetch('/api/projects?orderBy=displayOrder');
+      const data = await res.json();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch {
+      console.error('Failed to fetch projects');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const categories = ['all', ...Array.from(new Set(projects.map(p => p.category || 'Development')))];
-  const filteredProjects = filter === 'all' ? projects : projects.filter(p => (p.category || 'Development') === filter);
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // Memoize categories
+  const categories = useMemo(() => 
+    ['all', ...Array.from(new Set(projects.map(p => p.category || 'Development')))]
+  , [projects]);
+
+  // Memoize filtered projects
+  const filteredProjects = useMemo(() => 
+    filter === 'all' ? projects : projects.filter(p => (p.category || 'Development') === filter)
+  , [filter, projects]);
+
+  // Memoized filter handler
+  const handleFilterChange = useCallback((cat: string) => {
+    setFilter(cat);
+  }, []);
 
   if (loading) {
     return (
@@ -74,13 +89,14 @@ const Projects = () => {
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setFilter(cat)}
+                    onClick={() => handleFilterChange(cat)}
                     className={clsx(
                       'px-6 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all duration-500',
                       filter === cat 
                         ? 'bg-accent-crimson text-white shadow-lg shadow-accent-crimson/20' 
                         : 'text-tertiary hover:bg-white/5 hover:text-primary'
                     )}
+                    style={{ willChange: 'transform' }}
                   >
                     {cat}
                   </button>
@@ -103,9 +119,13 @@ const Projects = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
+                style={{ willChange: 'transform, opacity' }}
               >
                 <Link to={`/projects/${project.slug}`} className="group block h-full">
-                  <div className="h-full flex flex-col bg-[#111] border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-accent-crimson/30 transition-all duration-500 hover:-translate-y-3">
+                  <div 
+                    className="h-full flex flex-col bg-[#111] border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-accent-crimson/30 transition-all duration-500 hover:-translate-y-3"
+                    style={{ willChange: 'transform' }}
+                  >
                     
                     {/* Visual Asset */}
                     <div className="aspect-[16/10] overflow-hidden relative">
@@ -115,6 +135,7 @@ const Projects = () => {
                           alt=""
                           className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 saturate-50 group-hover:saturate-100"
                           loading="lazy"
+                          style={{ willChange: 'transform' }}
                         />
                       ) : (
                         <div className="w-full h-full bg-[#151515] flex items-center justify-center">
@@ -198,5 +219,4 @@ const Projects = () => {
   );
 };
 
-import { clsx } from 'clsx'; // Missing import check
 export default Projects;

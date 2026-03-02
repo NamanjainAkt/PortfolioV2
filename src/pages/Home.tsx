@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Github, Linkedin, Calendar, Mail, Twitter, FileText, Cpu, Globe } from 'lucide-react';
+import { Github, Linkedin, Mail, FileText, Cpu } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { Float, Stars, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import Typewriter from '../components/Typewriter';
@@ -11,17 +11,31 @@ import ProjectCarouselRevamp from '../components/ProjectCarouselRevamp';
 import { Project } from '../types/project';
 import DroneOverlay from '../components/drone/DroneOverlay';
 
+// Static data moved outside component to prevent recreation on render
+const ROLES = [
+  "Software Architect",
+  "Full Stack Engineer",
+  "System Designer",
+  "Product Visionary"
+];
+
+const SOCIAL_LINKS = [
+  { icon: Linkedin, href: "https://linkedin.com/in/naman-jain-akt/", label: "LinkedIn" },
+  { icon: Github, href: "https://github.com/namanjainakt/", label: "GitHub" },
+  { icon: Mail, href: "mailto:namanjainakt@gmail.com", label: "Email" },
+];
+
 const HeroBackground = () => {
   return (
     <div className="absolute inset-0 z-0">
       <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 1.5]} frameloop="demand">
         <color attach="background" args={['#050505']} />
-        <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} color="#C8102E" />
         
         <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-          <Sphere args={[1, 64, 64]} scale={2}>
+          <Sphere args={[1, 32, 32]} scale={2}>
             <MeshDistortMaterial
               color="#C8102E"
               speed={3}
@@ -48,36 +62,41 @@ const Home = () => {
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
   const scale = useTransform(scrollY, [0, 300], [1, 0.9]);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch('/api/projects?limit=5&orderBy=displayOrder');
-        const data = await res.json();
-        if (Array.isArray(data)) {
-            setProjects(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch projects');
-      } finally {
-        setLoading(false);
+  // Memoize fetch function
+  const fetchProjects = useCallback(async () => {
+    try {
+      const res = await fetch('/api/projects?limit=5&orderBy=displayOrder');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setProjects(data);
       }
-    };
-
-    fetchProjects();
+    } catch (error) {
+      console.error('Failed to fetch projects');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const roles = [
-    "Software Architect",
-    "Full Stack Engineer",
-    "System Designer",
-    "Product Visionary"
-  ];
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
-  const socialLinks = [
-    { icon: Linkedin, href: "https://linkedin.com/in/naman-jain-akt/", label: "LinkedIn" },
-    { icon: Github, href: "https://github.com/namanjainakt/", label: "GitHub" },
-    { icon: Mail, href: "mailto:namanjainakt@gmail.com", label: "Email" },
-  ];
+  // Memoize scroll handler
+  const handleScrollToProjects = useCallback(() => {
+    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+  }, []);
+
+  // Memoize social links rendering
+  const socialIcons = useMemo(() => (
+    SOCIAL_LINKS.map((social, index) => (
+      <MagneticSocialIcon 
+        key={social.label}
+        icon={social.icon}
+        href={social.href}
+        index={index}
+      />
+    ))
+  ), []);
 
   return (
     <div className="pt-0 bg-[#050505]">
@@ -100,6 +119,7 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-crimson/10 border border-accent-crimson/20 mb-8 backdrop-blur-md"
+              style={{ willChange: 'transform' }}
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-crimson opacity-75"></span>
@@ -116,6 +136,7 @@ const Home = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-serif font-black tracking-tighter text-white uppercase leading-[0.8]"
+                style={{ willChange: 'transform' }}
               >
                 NAMAN<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-crimson via-accent-glow to-accent-crimson">JAIN</span>
@@ -133,7 +154,7 @@ const Home = () => {
             >
               <div className="flex items-center gap-2 text-secondary font-mono text-sm md:text-lg">
                 <Cpu size={16} className="text-accent-crimson" />
-                <Typewriter words={roles} />
+                <Typewriter words={ROLES} />
               </div>
             </motion.div>
 
@@ -151,6 +172,7 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="group relative px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-none overflow-hidden"
+                  style={{ willChange: 'transform' }}
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     Resume <FileText size={14} />
@@ -167,20 +189,14 @@ const Home = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 border border-white/20 text-white font-black uppercase tracking-widest text-xs rounded-none hover:bg-white/5 transition-all"
+                  style={{ willChange: 'transform' }}
                 >
                   Book a Meeting
                 </motion.button>
               </div>
 
               <div className="flex gap-4 ml-0 sm:ml-4">
-                {socialLinks.map((social, index) => (
-                  <MagneticSocialIcon 
-                    key={index}
-                    icon={social.icon}
-                    href={social.href}
-                    index={index}
-                  />
-                ))}
+                {socialIcons}
               </div>
             </motion.div>
           </div>
@@ -191,7 +207,8 @@ const Home = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 cursor-pointer group"
-          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+          onClick={handleScrollToProjects}
+          style={{ willChange: 'transform' }}
         >
           <div className="w-[1px] h-12 bg-gradient-to-b from-accent-crimson to-transparent relative overflow-hidden">
             <motion.div 

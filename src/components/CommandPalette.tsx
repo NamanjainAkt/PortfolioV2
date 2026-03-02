@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, FileText, Folder, Home, Mail, BookOpen, Command } from 'lucide-react';
+import { Search, FileText, Folder, Home, Mail, BookOpen, Command } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CommandItem {
@@ -12,116 +12,149 @@ interface CommandItem {
   keywords: string[];
 }
 
+// Static commands configuration - defined outside component
+const createCommands = (navigate: (path: string) => void): CommandItem[] => [
+  {
+    id: 'home',
+    name: 'Go to Home',
+    shortcut: 'H',
+    icon: Home,
+    action: () => navigate('/'),
+    keywords: ['home', 'index', 'main', 'start'],
+  },
+  {
+    id: 'projects',
+    name: 'View Projects',
+    shortcut: 'P',
+    icon: Folder,
+    action: () => navigate('/projects'),
+    keywords: ['projects', 'work', 'portfolio', 'case studies'],
+  },
+  {
+    id: 'blogs',
+    name: 'Read Blog',
+    shortcut: 'B',
+    icon: BookOpen,
+    action: () => navigate('/blogs'),
+    keywords: ['blog', 'articles', 'writings', 'posts'],
+  },
+  {
+    id: 'contact',
+    name: 'Contact Me',
+    shortcut: 'C',
+    icon: Mail,
+    action: () => navigate('/contact'),
+    keywords: ['contact', 'email', 'reach out', 'hire'],
+  },
+  {
+    id: 'resume',
+    name: 'Download Resume',
+    icon: FileText,
+    action: () => window.open('/Naman_s_Resume.pdf', '_blank'),
+    keywords: ['resume', 'cv', 'download', 'pdf'],
+  },
+];
+
 export const CommandPalette = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
+  
+  // Use ref for stable state access in event handlers
+  const stateRef = useRef({ isOpen, selectedIndex, searchQuery });
+  stateRef.current = { isOpen, selectedIndex, searchQuery };
 
-  const commands: CommandItem[] = [
-    {
-      id: 'home',
-      name: 'Go to Home',
-      shortcut: 'H',
-      icon: Home,
-      action: () => navigate('/'),
-      keywords: ['home', 'index', 'main', 'start'],
-    },
-    {
-      id: 'projects',
-      name: 'View Projects',
-      shortcut: 'P',
-      icon: Folder,
-      action: () => navigate('/projects'),
-      keywords: ['projects', 'work', 'portfolio', 'case studies'],
-    },
-    {
-      id: 'blogs',
-      name: 'Read Blog',
-      shortcut: 'B',
-      icon: BookOpen,
-      action: () => navigate('/blogs'),
-      keywords: ['blog', 'articles', 'writings', 'posts'],
-    },
-    {
-      id: 'contact',
-      name: 'Contact Me',
-      shortcut: 'C',
-      icon: Mail,
-      action: () => navigate('/contact'),
-      keywords: ['contact', 'email', 'reach out', 'hire'],
-    },
-    {
-      id: 'resume',
-      name: 'Download Resume',
-      icon: FileText,
-      action: () => window.open('/Naman_s_Resume.pdf', '_blank'),
-      keywords: ['resume', 'cv', 'download', 'pdf'],
-    },
-  ];
+  // Memoize commands
+  const commands = useMemo(() => createCommands(navigate), [navigate]);
 
-  const filteredCommands = commands.filter(
-    (cmd) =>
-      cmd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      cmd.keywords.some((k) => k.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  // Memoize filtered commands
+  const filteredCommands = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return commands.filter(
+      (cmd) =>
+        cmd.name.toLowerCase().includes(query) ||
+        cmd.keywords.some((k) => k.toLowerCase().includes(query))
+    );
+  }, [commands, searchQuery]);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      // Cmd/Ctrl + K to open
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+  // Stable event handler using refs
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const { isOpen, selectedIndex } = stateRef.current;
+    
+    // Cmd/Ctrl + K to open
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      setIsOpen((prev) => !prev);
+    }
+
+    // ESC to close
+    if (e.key === 'Escape' && isOpen) {
+      setIsOpen(false);
+    }
+
+    if (isOpen) {
+      if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        setSelectedIndex((prev) => 
+          prev < filteredCommands.length - 1 ? prev + 1 : 0
+        );
       }
-
-      // ESC to close
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prev) => 
+          prev > 0 ? prev - 1 : filteredCommands.length - 1
+        );
+      }
+      if (e.key === 'Enter' && filteredCommands[selectedIndex]) {
+        filteredCommands[selectedIndex].action();
         setIsOpen(false);
+        setSearchQuery('');
       }
+    }
+  }, [filteredCommands]);
 
-      if (isOpen) {
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setSelectedIndex((prev) => 
-            prev < filteredCommands.length - 1 ? prev + 1 : 0
-          );
-        }
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setSelectedIndex((prev) => 
-            prev > 0 ? prev - 1 : filteredCommands.length - 1
-          );
-        }
-        if (e.key === 'Enter' && filteredCommands[selectedIndex]) {
-          filteredCommands[selectedIndex].action();
-          setIsOpen(false);
-          setSearchQuery('');
-        }
-      }
-    },
-    [isOpen, filteredCommands, selectedIndex]
-  );
-
+  // Single event listener - stable reference
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
+  // Reset selection when search changes
   useEffect(() => {
     setSelectedIndex(0);
   }, [searchQuery]);
+
+  // Memoized handlers
+  const handleOpen = useCallback(() => setIsOpen(true), []);
+  const handleBackdropClick = useCallback(() => setIsOpen(false), []);
+  
+  const handleCommandClick = useCallback((cmd: CommandItem) => {
+    cmd.action();
+    setIsOpen(false);
+    setSearchQuery('');
+  }, []);
+
+  const handleMouseEnter = useCallback((index: number) => {
+    setSelectedIndex(index);
+  }, []);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  }, []);
 
   return (
     <>
       {/* Command Palette Button */}
       <motion.button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         className="fixed bottom-20 md:bottom-6 left-4 md:left-6 z-40 flex items-center gap-2 px-3 py-2.5 bg-background/80 backdrop-blur-xl border border-border/50 rounded-full text-secondary hover:text-primary hover:border-accent-crimson/50 hover:bg-accent-crimson/5 transition-all duration-300 shadow-lg shadow-black/20 group"
         whileHover={{ scale: 1.05, y: -2 }}
         whileTap={{ scale: 0.95 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 2, duration: 0.5 }}
+        style={{ willChange: 'transform' }}
       >
         <div className="w-7 h-7 rounded-full bg-accent-crimson/10 flex items-center justify-center group-hover:bg-accent-crimson/20 transition-colors">
           <Command size={14} className="text-accent-crimson" />
@@ -142,7 +175,7 @@ export const CommandPalette = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-              onClick={() => setIsOpen(false)}
+              onClick={handleBackdropClick}
             />
 
             {/* Command Palette */}
@@ -165,7 +198,7 @@ export const CommandPalette = () => {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={handleInputChange}
                     placeholder="Search commands..."
                     className="flex-1 bg-transparent outline-none text-primary placeholder:text-tertiary text-lg"
                     autoFocus
@@ -189,19 +222,16 @@ export const CommandPalette = () => {
                     filteredCommands.map((cmd, index) => (
                       <motion.button
                         key={cmd.id}
-                        onClick={() => {
-                          cmd.action();
-                          setIsOpen(false);
-                          setSearchQuery('');
-                        }}
+                        onClick={() => handleCommandClick(cmd)}
                         className={`flex items-center gap-4 px-4 py-3.5 text-left transition-all duration-200 mx-2 rounded-lg w-[calc(100%-16px)] ${
                           index === selectedIndex
                             ? 'bg-accent-crimson/10 text-accent-crimson'
                             : 'text-secondary hover:bg-elevated/50'
                         }`}
-                        onMouseEnter={() => setSelectedIndex(index)}
+                        onMouseEnter={() => handleMouseEnter(index)}
                         whileHover={{ x: 4 }}
                         whileTap={{ scale: 0.98 }}
+                        style={{ willChange: 'transform' }}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           index === selectedIndex ? 'bg-accent-crimson/20' : 'bg-elevated'

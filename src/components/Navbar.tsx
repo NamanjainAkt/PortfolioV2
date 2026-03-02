@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import FuturisticLogo from './FuturisticLogo';
 
+const LINKS = [
+  { name: 'Home', path: '/' },
+  { name: 'Projects', path: '/projects' },
+  { name: 'Blogs', path: '/blogs' },
+  { name: 'Contact', path: '/contact' },
+];
+
 const Navbar = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Passive scroll listener for better performance
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 80);
@@ -24,41 +32,96 @@ const Navbar = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  const links = [
-    { name: 'Home', path: '/' },
-    { name: 'Projects', path: '/projects' },
-    { name: 'Blogs', path: '/blogs' },
-    { name: 'Contact', path: '/contact' },
-  ];
+  // Memoized handlers
+  const toggleMenu = useCallback(() => setIsOpen(prev => !prev), []);
+
+  // Memoize links rendering
+  const navLinks = useMemo(() => (
+    LINKS.map((link) => (
+      <Link
+        key={link.path}
+        to={link.path}
+        className="relative px-4 py-2 group"
+      >
+        {location.pathname === link.path && (
+          <motion.div
+            layoutId="activeNav"
+            className="absolute inset-0 bg-accent-crimson/15 rounded-lg"
+            style={{
+              boxShadow: '0 0 20px rgba(200, 16, 46, 0.3), inset 0 1px 0 0 rgba(255,255,255,0.1)',
+              willChange: 'transform',
+            }}
+            transition={{
+              type: 'spring',
+              stiffness: 400,
+              damping: 30,
+            }}
+          />
+        )}
+        <span
+          className={clsx(
+            'relative z-10 text-sm font-medium transition-colors duration-200 whitespace-nowrap',
+            location.pathname === link.path 
+              ? 'text-accent-crimson font-semibold' 
+              : 'text-secondary group-hover:text-primary'
+          )}
+        >
+          {link.name}
+        </span>
+      </Link>
+    ))
+  ), [location.pathname]);
+
+  // Memoize mobile links
+  const mobileLinks = useMemo(() => (
+    LINKS.map((link) => (
+      <Link
+        key={link.path}
+        to={link.path}
+        className={clsx(
+          'px-6 py-4 rounded-xl transition-all duration-200 text-base font-medium',
+          location.pathname === link.path
+            ? 'bg-accent-crimson/20 text-accent-crimson border border-accent-crimson/30'
+            : 'text-secondary hover:bg-white/5 hover:text-primary border border-transparent'
+        )}
+      >
+        {link.name}
+      </Link>
+    ))
+  ), [location.pathname]);
 
   return (
     <motion.nav
-      layout
       initial={false}
       animate={{
-        width: scrolled ? 'auto' : '100%',
+        maxWidth: scrolled ? '672px' : '100%',
         marginTop: scrolled ? '16px' : '0px',
+        paddingLeft: scrolled ? '16px' : '0px',
+        paddingRight: scrolled ? '16px' : '0px',
       }}
       transition={{
         type: 'spring',
         stiffness: 300,
         damping: 30,
       }}
-      className={clsx(
-        'fixed left-0 right-0 z-50 mx-auto',
-        scrolled
-          ? 'max-w-3xl px-4'
-          : 'w-full px-0'
-      )}
+      className="fixed left-0 right-0 z-50 mx-auto"
+      style={{ willChange: 'max-width, margin-top' }}
     >
       <motion.div
-        layout
         className={clsx(
-          'relative h-14 md:h-16 flex items-center justify-between overflow-hidden transition-all duration-300',
+          'relative h-14 md:h-16 flex items-center justify-between overflow-hidden',
           scrolled
             ? 'rounded-full px-5 md:px-6'
             : 'border-b border-border/50 px-4 md:px-8 container mx-auto'
         )}
+        animate={{
+          borderRadius: scrolled ? '9999px' : '0px',
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 300,
+          damping: 30,
+        }}
         style={{
           background: scrolled
             ? 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 100%)'
@@ -68,11 +131,12 @@ const Navbar = () => {
           boxShadow: scrolled
             ? '0 8px 32px 0 rgba(0,0,0,0.37), inset 0 1px 0 0 rgba(255,255,255,0.1)'
             : 'none',
+          willChange: 'border-radius, box-shadow',
         }}
       >
         {/* Animated gradient shimmer for liquid effect */}
         <motion.div
-          className="absolute inset-0 opacity-30"
+          className="absolute inset-0 opacity-30 pointer-events-none"
           animate={{
             background: [
               'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
@@ -84,6 +148,7 @@ const Navbar = () => {
             repeat: Infinity,
             ease: 'linear',
           }}
+          style={{ willChange: 'background' }}
         />
         
         {/* Inner glow effect */}
@@ -127,45 +192,15 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className="relative z-10 hidden md:flex items-center gap-1">
-          {links.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="relative px-4 py-2"
-            >
-              {location.pathname === link.path && (
-                <motion.div
-                  layoutId="activeNav"
-                  className="absolute inset-0 bg-accent-crimson/15 rounded-lg"
-                  style={{
-                    boxShadow: '0 0 20px rgba(200, 16, 46, 0.3), inset 0 1px 0 0 rgba(255,255,255,0.1)',
-                  }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 30,
-                  }}
-                />
-              )}
-              <span
-                className={clsx(
-                  'relative z-10 text-sm font-medium transition-all duration-200 whitespace-nowrap',
-                  location.pathname === link.path 
-                    ? 'text-accent-crimson font-semibold' 
-                    : 'text-secondary hover:text-primary'
-                )}
-              >
-                {link.name}
-              </span>
-            </Link>
-          ))}
+          {navLinks}
         </div>
 
         {/* Mobile Menu Toggle */}
         <div className="md:hidden relative z-10">
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={toggleMenu}
             className="p-2 text-primary focus:outline-none"
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -186,23 +221,11 @@ const Navbar = () => {
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+              willChange: 'transform, opacity',
             }}
           >
             <div className="flex flex-col p-4 gap-2">
-              {links.map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={clsx(
-                    'px-6 py-4 rounded-xl transition-all duration-200 text-base font-medium',
-                    location.pathname === link.path
-                      ? 'bg-accent-crimson/20 text-accent-crimson border border-accent-crimson/30'
-                      : 'text-secondary hover:bg-white/5 hover:text-primary border border-transparent'
-                  )}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {mobileLinks}
             </div>
           </motion.div>
         )}

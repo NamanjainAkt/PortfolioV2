@@ -1,12 +1,14 @@
-import React, { useState, Suspense, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Github, Linkedin, Send, Check, Loader2, Radio, Globe, Zap } from 'lucide-react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Float, Stars, Environment } from '@react-three/drei';
-import { Satellite } from '../components/Satellite';
+import { Float, Stars, Environment, OrbitControls } from '@react-three/drei';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
+
+// Lazy load Satellite component for code splitting
+const Satellite = lazy(() => import('../components/Satellite').then(m => ({ default: m.Satellite })));
 
 interface FormErrors {
   name?: string;
@@ -14,30 +16,45 @@ interface FormErrors {
   message?: string;
 }
 
+// Static data outside component
+const CONTACT_CHANNELS = [
+  { icon: Mail, name: 'Email', value: 'namanjainakt007@gmail.com', href: 'mailto:namanjainakt007@gmail.com', label: 'DIRECT_LINK' },
+  { icon: Github, name: 'GitHub', value: 'github.com/namanjainakt', href: 'https://github.com/namanjainakt', label: 'SOURCE_CORE' },
+  { icon: Linkedin, name: 'LinkedIn', value: 'linkedin.com/in/naman-jain-akt', href: 'https://linkedin.com/in/naman-jain-akt', label: 'NEURAL_NET' },
+];
+
 const MouseFollowSatellite = () => {
   const { mouse, viewport } = useThree();
   const satelliteRef = useRef<THREE.Group>(null);
+  const targetRef = useRef({ x: 0, y: 0 });
+  const rotationRef = useRef(0);
 
-  useFrame(() => {
-    if (satelliteRef.current) {
-      // Position satellite to the right of the text
-      // In Three.js units, we'll aim for x = viewport.width / 4 or similar
-      const targetX = (mouse.x * viewport.width) / 4 - 0.5;
-      const targetY = (mouse.y * viewport.height) / 4 + 1;
-      
-      satelliteRef.current.position.x = THREE.MathUtils.lerp(satelliteRef.current.position.x, targetX, 0.05);
-      satelliteRef.current.position.y = THREE.MathUtils.lerp(satelliteRef.current.position.y, targetY, 0.05);
-      
-      // Also slight rotation based on mouse
-      satelliteRef.current.rotation.y = THREE.MathUtils.lerp(satelliteRef.current.rotation.y, mouse.x * 0.5, 0.05);
-      satelliteRef.current.rotation.x = THREE.MathUtils.lerp(satelliteRef.current.rotation.x, -mouse.y * 0.3, 0.05);
-    }
+  useFrame((state) => {
+    if (!satelliteRef.current) return;
+    
+    // Always rotate continuously
+    rotationRef.current += 0.005;
+    satelliteRef.current.rotation.y = rotationRef.current;
+    
+    // Add subtle floating motion
+    const t = state.clock.getElapsedTime();
+    satelliteRef.current.position.y += Math.sin(t * 2) * 0.0005;
+    
+    // Calculate target position based on mouse
+    targetRef.current.x = (mouse.x * viewport.width) / 4 - 0.5;
+    targetRef.current.y = (mouse.y * viewport.height) / 4 + 1;
+    
+    // Smooth lerp position
+    satelliteRef.current.position.x = THREE.MathUtils.lerp(satelliteRef.current.position.x, targetRef.current.x, 0.05);
+    satelliteRef.current.position.y = THREE.MathUtils.lerp(satelliteRef.current.position.y, targetRef.current.y + Math.sin(t * 2) * 0.1, 0.05);
   });
 
   return (
     <group ref={satelliteRef}>
       <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        <Satellite scale={0.9} />
+        <Suspense fallback={null}>
+          <Satellite scale={0.9} />
+        </Suspense>
       </Float>
     </group>
   );
@@ -54,8 +71,19 @@ const Contact = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const validateField = (name: string, value: string): string | undefined => {
+  // Check for mobile on mount
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(!window.matchMedia('(pointer: fine)').matches);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const validateField = useCallback((name: string, value: string): string | undefined => {
     switch (name) {
       case 'name':
         if (value.length < 2) return 'Name must be at least 2 characters';
@@ -68,26 +96,30 @@ const Contact = () => {
         break;
     }
     return undefined;
-  };
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (touched[name]) {
       const error = validateField(name, value);
       setErrors(prev => ({ ...prev, [name]: error }));
     }
-  };
+  }, [touched, validateField]);
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTouched(prev => ({ ...prev, [name]: true }));
     setFocusedField(null);
     const error = validateField(name, value);
     setErrors(prev => ({ ...prev, [name]: error }));
-  };
+  }, [validateField]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFocus = useCallback((fieldName: string) => {
+    setFocusedField(fieldName);
+  }, []);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: FormErrors = {};
     Object.keys(formData).forEach((key) => {
@@ -121,19 +153,12 @@ const Contact = () => {
       setSubmitted(true);
       setFormData({ name: '', email: '', message: '' });
       setTouched({});
-    } catch (error) {
-      console.error('Email send failed:', error);
+    } catch {
       setErrors(prev => ({ ...prev, message: 'Transmission failed. Please try again.' }));
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const contactChannels = [
-    { icon: Mail, name: 'Email', value: 'namanjainakt007@gmail.com', href: 'mailto:namanjainakt007@gmail.com', label: 'DIRECT_LINK' },
-    { icon: Github, name: 'GitHub', value: 'github.com/namanjainakt', href: 'https://github.com/namanjainakt', label: 'SOURCE_CORE' },
-    { icon: Linkedin, name: 'LinkedIn', value: 'linkedin.com/in/naman-jain-akt', href: 'https://linkedin.com/in/naman-jain-akt', label: 'NEURAL_NET' },
-  ];
+  }, [formData, validateField]);
 
   const inputClasses = (fieldName: string, hasError: boolean) => `
     w-full bg-[#0A0A0A]/60 backdrop-blur-md border rounded-lg px-4 py-3 text-white 
@@ -148,22 +173,28 @@ const Contact = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-[#050505] overflow-hidden">
-      {/* 3D Background Layer - Hidden on small screens */}
-      <div className="absolute inset-0 z-0 hidden lg:block">
-        <Canvas dpr={[1, 1.5]} camera={{ position: [0, 0, 5], fov: 45 }} frameloop="demand">
-          <Suspense fallback={null}>
-            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-            <ambientLight intensity={0.2} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
-            <pointLight position={[-10, -10, -10]} intensity={0.5} color="#C8102E" />
-            
-            <MouseFollowSatellite />
-            
-            <Environment preset="night" />
-            <OrbitControls enableZoom={false} enablePan={false} />
-          </Suspense>
-        </Canvas>
-      </div>
+      {/* 3D Background Layer - Hidden on mobile */}
+      {!isMobile && (
+        <div className="absolute inset-0 z-0">
+          <Canvas 
+            dpr={[1, 1.5]} 
+            camera={{ position: [0, 0, 5], fov: 45 }} 
+            frameloop="always"
+          >
+            <Suspense fallback={null}>
+              <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+              <ambientLight intensity={0.2} />
+              <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
+              <pointLight position={[-10, -10, -10]} intensity={0.5} color="#C8102E" />
+              
+              <MouseFollowSatellite />
+              
+              <Environment preset="night" />
+              <OrbitControls enableZoom={false} enablePan={false} />
+            </Suspense>
+          </Canvas>
+        </div>
+      )}
 
       {/* Content Layer */}
       <div className="relative z-10 pt-28 pb-20 container mx-auto px-4">
@@ -189,13 +220,14 @@ const Contact = () => {
               </FadeInWhenVisible>
 
               <div className="grid sm:grid-cols-1 gap-4">
-                {contactChannels.map((channel, index) => (
+                {CONTACT_CHANNELS.map((channel, index) => (
                   <FadeInWhenVisible key={channel.name} delay={0.2 + index * 0.1}>
                     <a
                       href={channel.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group flex items-center justify-between p-4 bg-white/[0.03] backdrop-blur-sm border border-white/5 rounded-xl hover:border-accent-crimson/50 hover:bg-white/[0.05] transition-all duration-500"
+                      style={{ willChange: 'transform' }}
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-lg bg-accent-crimson/10 flex items-center justify-center text-accent-crimson group-hover:bg-accent-crimson group-hover:text-white transition-all">
@@ -274,7 +306,7 @@ const Contact = () => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            onFocus={() => setFocusedField('name')}
+                            onFocus={() => handleFocus('name')}
                             onBlur={handleBlur}
                             placeholder="COMM_OPERATOR_NAME"
                             className={inputClasses('name', !!errors.name)}
@@ -288,7 +320,7 @@ const Contact = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            onFocus={() => setFocusedField('email')}
+                            onFocus={() => handleFocus('email')}
                             onBlur={handleBlur}
                             placeholder="REPLY_NODE_ADDRESS"
                             className={inputClasses('email', !!errors.email)}
@@ -302,7 +334,7 @@ const Contact = () => {
                             rows={4}
                             value={formData.message}
                             onChange={handleChange}
-                            onFocus={() => setFocusedField('message')}
+                            onFocus={() => handleFocus('message')}
                             onBlur={handleBlur}
                             placeholder="ENTER_DATA_TO_TRANSMIT..."
                             className={inputClasses('message', !!errors.message)}
@@ -313,6 +345,9 @@ const Contact = () => {
                           type="submit"
                           disabled={isSubmitting}
                           className="w-full relative overflow-hidden group/btn"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          style={{ willChange: 'transform' }}
                         >
                           <div className="absolute inset-0 bg-accent-crimson translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500" />
                           <div className="relative border border-accent-crimson/50 px-8 py-4 flex items-center justify-center gap-3 text-white font-mono text-sm tracking-[0.2em] uppercase transition-colors group-hover/btn:text-white">

@@ -23,7 +23,6 @@ const Blogs = lazy(() => import('./pages/Blogs'));
 const BlogDetail = lazy(() => import('./pages/BlogDetail'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Admin = lazy(() => import('./pages/Admin'));
-const Test = lazy(() => import('./pages/Test'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Scroll to top on route change
@@ -72,7 +71,6 @@ function App() {
                   <Route path="/blogs/:slug" element={<PageTransition><BlogDetail /></PageTransition>} />
                   <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
                   <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
-                  <Route path="/test" element={<PageTransition><Test /></PageTransition>} />
                   <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
                 </Routes>
               </AnimatePresence>
