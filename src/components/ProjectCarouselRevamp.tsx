@@ -104,7 +104,7 @@ const ProjectCarouselRevamp: React.FC<ProjectCarouselRevampProps> = ({ projects 
         </div>
 
         {/* Carousel Content */}
-        <div className="relative h-[450px] md:h-[500px] perspective-1000">
+        <div className="relative h-[380px] sm:h-[420px] md:h-[500px] perspective-1000">
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={currentIndex}
@@ -121,7 +121,7 @@ const ProjectCarouselRevamp: React.FC<ProjectCarouselRevampProps> = ({ projects 
               className="absolute inset-0 flex flex-col md:flex-row bg-[#111]/80 backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
             >
               {/* Image Side */}
-              <div className="w-full md:w-1/2 h-48 md:h-auto overflow-hidden relative group/img">
+              <div className="w-full md:w-1/2 h-40 sm:h-48 md:h-auto overflow-hidden relative group/img">
                 <img
                   src={getOptimizedImageUrl(currentProject.images[0], { width: ImageSizes.large })}
                   alt={currentProject.title}
@@ -133,7 +133,7 @@ const ProjectCarouselRevamp: React.FC<ProjectCarouselRevampProps> = ({ projects 
               </div>
 
               {/* Info Side */}
-              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+              <div className="w-full md:w-1/2 p-5 sm:p-8 md:p-12 flex flex-col justify-center">
                 <div className="flex flex-wrap gap-2 mb-6">
                   {currentProject.techStack.slice(0, 3).map(tech => (
                     <span key={tech} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-mono text-secondary uppercase tracking-widest">

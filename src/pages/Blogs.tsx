@@ -81,7 +81,7 @@ const Blogs = () => {
                 </div>
               </FadeInWhenVisible>
               <FadeInWhenVisible delay={0.1}>
-                <h1 className="text-6xl md:text-8xl font-serif font-black tracking-tight uppercase leading-[0.8]">
+                <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif font-black tracking-tight uppercase leading-[0.8]">
                   JOURNAL <span className="text-accent-crimson">.</span>
                 </h1>
               </FadeInWhenVisible>
@@ -118,7 +118,7 @@ const Blogs = () => {
                 className="bg-[#050505] group"
                 style={{ willChange: 'transform, opacity' }}
               >
-                <Link to={`/blogs/${blog.slug}`} className="block p-8 md:p-12 relative overflow-hidden">
+                <Link to={`/blogs/${blog.slug}`} className="block p-5 sm:p-8 md:p-12 relative overflow-hidden">
                   {/* Background Blur Overlay on Hover */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-all duration-700 pointer-events-none overflow-hidden">
                     {blog.featuredImage && (
@@ -144,7 +144,7 @@ const Blogs = () => {
                         </span>
                       </div>
 
-                      <h2 className="text-3xl md:text-5xl font-serif font-bold text-white group-hover:text-accent-crimson transition-all duration-500 leading-tight">
+                      <h2 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-white group-hover:text-accent-crimson transition-all duration-500 leading-tight">
                         {blog.title}
                       </h2>
                       

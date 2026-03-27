@@ -135,7 +135,7 @@ const Home = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-serif font-black tracking-tighter text-white uppercase leading-[0.8]"
+                className="text-5xl sm:text-7xl md:text-9xl lg:text-[12rem] font-serif font-black tracking-tighter text-white uppercase leading-[0.8]"
                 style={{ willChange: 'transform' }}
               >
                 NAMAN<br />
@@ -150,7 +150,7 @@ const Home = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="flex flex-wrap justify-center items-center gap-4 md:gap-8 mb-10"
+              className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-8 mb-10"
             >
               <div className="flex items-center gap-2 text-secondary font-mono text-sm md:text-lg">
                 <Cpu size={16} className="text-accent-crimson" />
@@ -171,7 +171,7 @@ const Home = () => {
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group relative px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-none overflow-hidden"
+                  className="group relative px-5 py-3 sm:px-8 sm:py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-none overflow-hidden"
                   style={{ willChange: 'transform' }}
                 >
                   <span className="relative z-10 flex items-center gap-2">
@@ -188,7 +188,7 @@ const Home = () => {
                   data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 border border-white/20 text-white font-black uppercase tracking-widest text-xs rounded-none hover:bg-white/5 transition-all"
+                  className="px-5 py-3 sm:px-8 sm:py-4 border border-white/20 text-white font-black uppercase tracking-widest text-xs rounded-none hover:bg-white/5 transition-all"
                   style={{ willChange: 'transform' }}
                 >
                   Book a Meeting

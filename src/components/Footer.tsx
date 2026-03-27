@@ -46,7 +46,7 @@ const Footer = () => {
                 initial={{ y: 0 }}
                 whileHover={{ y: -20, color: '#C8102E' }}
                 transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                className="text-6xl sm:text-8xl md:text-[10rem] lg:text-[12rem] font-serif font-black tracking-tighter text-white leading-none inline-block select-none"
+                className="text-4xl sm:text-6xl md:text-[10rem] lg:text-[12rem] font-serif font-black tracking-tighter text-white leading-none inline-block select-none"
                 ref={i === leftNIndex ? leftNRef : i === rightNIndex ? rightNRef : undefined}
               >
                 {char === ' ' ? '\u00A0' : char}
@@ -62,7 +62,7 @@ const Footer = () => {
         </button>
 
         {/* Social Links */}
-        <div className="flex gap-8 md:gap-12 relative z-10">
+        <div className="flex gap-6 sm:gap-8 md:gap-12 relative z-10">
           {socialLinks.map((social, index) => (
             <motion.a
               key={social.name}

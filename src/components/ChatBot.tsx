@@ -129,7 +129,7 @@ const ChatBot = () => {
             exit={{ opacity: 0, y: 40, scale: 0.95, filter: 'blur(10px)' }}
             className={cn(
               "fixed right-4 md:right-8 bottom-28 md:bottom-24 z-[70] flex flex-col overflow-hidden bg-[#0A0A0A]/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_100px_rgba(0,0,0,0.8)] rounded-[2rem]",
-              isMaximized ? "inset-4 md:inset-8 w-auto h-auto" : "w-[95vw] md:w-[420px] h-[600px] max-h-[calc(100vh-8rem)] md:max-h-[80vh]"
+              isMaximized ? "inset-4 md:inset-8 w-auto h-auto" : "w-[calc(100vw-2rem)] sm:w-[380px] md:w-[420px] h-[600px] max-h-[calc(100vh-8rem)] md:max-h-[80vh]"
             )}
           >
             {/* High-End Header */}

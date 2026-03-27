@@ -199,7 +199,7 @@ const Contact = () => {
       {/* Content Layer */}
       <div className="relative z-10 pt-28 pb-20 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
+          <div className="grid lg:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-start">
             
             {/* Left Side: Space HUD Theme Info */}
             <div className="space-y-12">
@@ -209,7 +209,7 @@ const Contact = () => {
                     <div className="h-[2px] w-12 bg-accent-crimson shadow-[0_0_10px_rgba(200,16,46,0.8)]" />
                     <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.5em] animate-pulse">Establishing Connection</span>
                   </div>
-                  <h1 className="text-5xl md:text-7xl font-serif font-black text-white uppercase leading-none">
+                  <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-black text-white uppercase leading-none">
                     GET IN <br />
                     <span className="text-accent-crimson">ORBIT</span>
                   </h1>
@@ -269,7 +269,7 @@ const Contact = () => {
                 <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-accent-crimson/30 group-hover:border-accent-crimson transition-colors" />
                 <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-accent-crimson/30 group-hover:border-accent-crimson transition-colors" />
                 
-                <div className="bg-[#0A0A0A]/40 backdrop-blur-xl p-8 md:p-10 rounded-2xl border border-white/5 shadow-2xl">
+                <div className="bg-[#0A0A0A]/40 backdrop-blur-xl p-5 sm:p-8 md:p-10 rounded-2xl border border-white/5 shadow-2xl">
                   <div className="flex items-center justify-between mb-8">
                     <h2 className="text-2xl font-serif font-bold text-white uppercase tracking-tight">Transmission_Buffer</h2>
                     <Zap size={16} className="text-accent-glow animate-bounce" />
@@ -350,7 +350,7 @@ const Contact = () => {
                           style={{ willChange: 'transform' }}
                         >
                           <div className="absolute inset-0 bg-accent-crimson translate-y-[100%] group-hover/btn:translate-y-0 transition-transform duration-500" />
-                          <div className="relative border border-accent-crimson/50 px-8 py-4 flex items-center justify-center gap-3 text-white font-mono text-sm tracking-[0.2em] uppercase transition-colors group-hover/btn:text-white">
+                          <div className="relative border border-accent-crimson/50 px-6 py-3 sm:px-8 sm:py-4 flex items-center justify-center gap-3 text-white font-mono text-sm tracking-[0.2em] uppercase transition-colors group-hover/btn:text-white">
                             {isSubmitting ? (
                               <Loader2 size={18} className="animate-spin" />
                             ) : (

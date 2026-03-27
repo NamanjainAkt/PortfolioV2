@@ -77,7 +77,7 @@ const Projects = () => {
                 </div>
               </FadeInWhenVisible>
               <FadeInWhenVisible delay={0.1}>
-                <h1 className="text-6xl md:text-8xl font-serif font-black tracking-tighter uppercase leading-[0.85]">
+                <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif font-black tracking-tighter uppercase leading-[0.85]">
                   PROJECT <span className="text-accent-crimson">BASE .</span>
                 </h1>
               </FadeInWhenVisible>
@@ -91,7 +91,7 @@ const Projects = () => {
                     key={cat}
                     onClick={() => handleFilterChange(cat)}
                     className={clsx(
-                      'px-6 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all duration-500',
+                      'px-3 py-2 sm:px-6 sm:py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all duration-500',
                       filter === cat 
                         ? 'bg-accent-crimson text-white shadow-lg shadow-accent-crimson/20' 
                         : 'text-tertiary hover:bg-white/5 hover:text-primary'
@@ -108,8 +108,8 @@ const Projects = () => {
       </section>
 
       {/* Main Grid */}
-      <div className="container mx-auto px-4 py-20 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project, index) => (
               <motion.div
@@ -155,7 +155,7 @@ const Projects = () => {
                     </div>
 
                     {/* Content Section */}
-                    <div className="p-10 flex flex-col flex-1 relative">
+                    <div className="p-6 sm:p-8 md:p-10 flex flex-col flex-1 relative">
                       <div className="absolute top-0 right-10 -translate-y-1/2 w-12 h-12 rounded-2xl bg-accent-crimson flex items-center justify-center shadow-xl shadow-accent-crimson/20 transform group-hover:rotate-12 transition-transform duration-500">
                         <ArrowUpRight size={20} className="text-white" />
                       </div>

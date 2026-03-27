@@ -147,7 +147,7 @@ const ProjectDetail = () => {
                 </FadeInWhenVisible>
                 
                 <FadeInWhenVisible delay={0.2}>
-                  <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter mb-10 leading-[0.85] uppercase">
+                  <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter mb-10 leading-[0.85] uppercase">
                     {project.title}
                   </h1>
                 </FadeInWhenVisible>
@@ -163,7 +163,7 @@ const ProjectDetail = () => {
                     {project.liveUrl && (
                       <motion.a 
                         href={project.liveUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-4 px-10 py-5 bg-primary text-surface rounded-2xl font-black uppercase tracking-widest text-xs group relative overflow-hidden"
+                        className="flex items-center justify-center gap-4 px-6 py-4 sm:px-10 sm:py-5 bg-primary text-surface rounded-2xl font-black uppercase tracking-widest text-xs group relative overflow-hidden"
                         whileHover={{ scale: 1.05 }}
                       >
                         <div className="absolute inset-0 bg-accent-crimson translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -175,7 +175,7 @@ const ProjectDetail = () => {
                     {project.githubUrl && (
                       <motion.a 
                         href={project.githubUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-4 px-10 py-5 bg-white/5 border border-white/10 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:border-accent-crimson/50 transition-all group"
+                        className="flex items-center justify-center gap-4 px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:border-accent-crimson/50 transition-all group"
                         whileHover={{ scale: 1.05 }}
                       >
                         <Github size={18} className="text-tertiary group-hover:text-accent-crimson transition-colors" />
@@ -193,9 +193,9 @@ const ProjectDetail = () => {
       {/* Deep Content Section */}
       <section className="py-24 relative z-10">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid lg:grid-cols-12 gap-20">
+          <div className="grid lg:grid-cols-12 gap-10 sm:gap-14 lg:gap-20">
             
-            <div className="lg:col-span-8 space-y-32">
+            <div className="lg:col-span-8 space-y-16 sm:space-y-24 lg:space-y-32">
               {/* Problem Section */}
               <FadeInWhenVisible>
                 <div className="relative">
@@ -203,7 +203,7 @@ const ProjectDetail = () => {
                     <ShieldAlert size={20} />
                     <h2 className="text-xs font-mono font-black uppercase tracking-[0.5em]">The Core Conflict</h2>
                   </div>
-                  <div className="relative p-10 md:p-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
+                  <div className="relative p-6 sm:p-8 md:p-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-accent-crimson/50" />
                     <p className="text-secondary text-lg md:text-xl leading-relaxed font-light">
                       {project.problem || 'No problem description available.'}
@@ -220,7 +220,7 @@ const ProjectDetail = () => {
                     <Boxes size={20} />
                     <h2 className="text-xs font-mono font-black uppercase tracking-[0.5em]">The Resolved Architecture</h2>
                   </div>
-                  <div className="relative p-10 md:p-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
+                  <div className="relative p-6 sm:p-8 md:p-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
                     <div className="absolute top-0 right-0 w-1 h-full bg-accent-glow/50" />
                     <p className="text-secondary text-lg md:text-xl leading-relaxed font-light">
                       {project.solution || 'No solution description available.'}
@@ -235,7 +235,7 @@ const ProjectDetail = () => {
             <div className="lg:col-span-4">
               <div className="sticky top-32">
                 <FadeInWhenVisible direction="left">
-                  <div className="p-10 bg-[#111]/40 border border-white/5 rounded-[2.5rem] backdrop-blur-2xl">
+                  <div className="p-6 sm:p-8 lg:p-10 bg-[#111]/40 border border-white/5 rounded-[2.5rem] backdrop-blur-2xl">
                     <div className="flex items-center gap-3 mb-10 text-accent-crimson">
                       <Terminal size={16} />
                       <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em]">System Specs</h3>
@@ -263,7 +263,7 @@ const ProjectDetail = () => {
       </section>
 
       {/* Visual Terminal - Gallery */}
-      <section className="py-32 relative bg-[#080808]">
+      <section className="py-16 sm:py-24 md:py-32 relative bg-[#080808]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(200,16,46,0.02)_0%,transparent_70%)]" />
         
         <div className="container mx-auto px-4 max-w-6xl relative z-10">
@@ -274,7 +274,7 @@ const ProjectDetail = () => {
             </div>
           </FadeInWhenVisible>
 
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {project.images.map((img, idx) => (
               <FadeInWhenVisible key={idx} delay={idx * 0.1}>
                 <motion.div 
@@ -284,7 +284,7 @@ const ProjectDetail = () => {
                 >
                   <img src={getOptimizedImageUrl(img, { width: ImageSizes.large })} alt="" className="w-full aspect-video object-cover opacity-70 group-hover:opacity-100 transition-all duration-700 ease-out" loading="lazy" />
                   <div className="absolute inset-0 bg-accent-crimson/0 group-hover:bg-accent-crimson/5 transition-colors duration-500" />
-                  <div className="absolute bottom-8 left-8 px-6 py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl text-[10px] font-mono uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                  <div className="absolute bottom-4 left-4 px-4 py-2 sm:bottom-8 sm:left-8 sm:px-6 sm:py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl text-[10px] font-mono uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                     Visual Core {idx + 1}
                   </div>
                 </motion.div>
@@ -296,7 +296,7 @@ const ProjectDetail = () => {
 
       {/* Related Projects - Immersive Carousel */}
       {relatedProjects.length > 0 && (
-        <section className="py-32 border-t border-white/5">
+        <section className="py-16 sm:py-24 md:py-32 border-t border-white/5">
           <div className="container mx-auto px-4 max-w-6xl">
             <FadeInWhenVisible>
               <div className="flex justify-between items-end mb-16">
@@ -324,7 +324,7 @@ const ProjectDetail = () => {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
                     </div>
-                    <div className="p-8">
+                    <div className="p-5 sm:p-6 md:p-8">
                       <h3 className="text-xl font-serif font-bold text-white group-hover:text-accent-crimson transition-colors mb-2 leading-tight uppercase tracking-tight">
                         {related.title}
                       </h3>

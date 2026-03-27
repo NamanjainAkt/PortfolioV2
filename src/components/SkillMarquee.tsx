@@ -33,10 +33,10 @@ const SkillItem = ({ skill }: { skill: Skill }) => {
   const isDarkIcon = skill.name === 'Next.js' || skill.name === 'Express' || skill.name === 'Vercel' || skill.name === 'GitHub';
   
   return (
-    <div className="flex flex-col items-center mx-4 md:mx-6 group cursor-pointer py-4">
+    <div className="flex flex-col items-center mx-2 sm:mx-4 md:mx-6 group cursor-pointer py-4">
       <div className="relative">
         {/* Glass Card Container */}
-        <div className="relative w-20 h-20 md:w-24 md:h-24 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm transition-all duration-500 group-hover:bg-accent-crimson/10 group-hover:border-accent-crimson/30 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+        <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm transition-all duration-500 group-hover:bg-accent-crimson/10 group-hover:border-accent-crimson/30 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
           
           {/* Internal Glow */}
           <div 
@@ -45,7 +45,7 @@ const SkillItem = ({ skill }: { skill: Skill }) => {
           />
 
           <i 
-            className={`${skill.iconClass} text-3xl md:text-4xl transition-all duration-500 group-hover:scale-110`}
+            className={`${skill.iconClass} text-2xl sm:text-3xl md:text-4xl transition-all duration-500 group-hover:scale-110`}
             style={isDarkIcon ? { color: '#E0E0E0', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))' } : {}}
           />
 
@@ -71,8 +71,8 @@ const SkillMarquee: React.FC = () => {
       {/* Row 1 - Scrolling Left */}
       <div className="relative overflow-hidden">
         {/* Edge Fades */}
-        <div className="absolute left-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 md:w-48 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 md:w-48 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
         
         <div className="flex animate-marquee-left whitespace-nowrap py-4">
           {duplicatedRow1.map((skill, index) => (
@@ -84,8 +84,8 @@ const SkillMarquee: React.FC = () => {
       {/* Row 2 - Scrolling Right */}
       <div className="relative overflow-hidden">
         {/* Edge Fades */}
-        <div className="absolute left-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-24 md:w-48 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 md:w-48 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 md:w-48 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
         
         <div className="flex animate-marquee-right whitespace-nowrap py-4">
           {duplicatedRow2.map((skill, index) => (

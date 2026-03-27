@@ -247,7 +247,7 @@ const BlogDetail = () => {
             <>
               <img 
                 src={blog.featuredImage} 
-                className="w-full h-[120%] object-cover saturate-[0.8] brightness-[0.4]" 
+                className="w-full h-full sm:h-[120%] object-cover saturate-[0.8] brightness-[0.4]" 
                 alt="" 
                 loading="eager"
               />
@@ -276,7 +276,7 @@ const BlogDetail = () => {
           </FadeInWhenVisible>
 
           <FadeInWhenVisible delay={0.1}>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter leading-[0.85] uppercase text-white drop-shadow-2xl">
+            <h1 className="text-3xl sm:text-5xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter leading-[0.85] uppercase text-white drop-shadow-2xl">
               {blog.title}
             </h1>
           </FadeInWhenVisible>
@@ -290,7 +290,7 @@ const BlogDetail = () => {
 
       {/* Main Content Layout */}
       <div className="container mx-auto px-4 relative z-10 mt-20 pb-40">
-        <div className="flex flex-col lg:grid lg:grid-cols-[300px_1fr_300px] gap-12 lg:gap-20">
+        <div className="flex flex-col lg:grid lg:grid-cols-[300px_1fr_300px] gap-8 sm:gap-12 lg:gap-20">
           
           {/* LEFT SIDE: Editor Controls */}
           <aside className="order-2 lg:order-1">
@@ -299,7 +299,7 @@ const BlogDetail = () => {
                 <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Archives
               </Link>
 
-              <div className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 backdrop-blur-xl space-y-10 shadow-2xl">
+              <div className="p-5 sm:p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 backdrop-blur-xl space-y-10 shadow-2xl">
                 <div className="flex items-center gap-3 text-accent-crimson">
                   <Terminal size={16} />
                   <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em]">Reader Config</span>

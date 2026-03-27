@@ -43,7 +43,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
       {/* Animated gradient orbs - GPU accelerated */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full"
+          className="absolute w-[300px] h-[300px] sm:w-[450px] sm:h-[450px] md:w-[600px] md:h-[600px] rounded-full"
           style={{
             background: 'radial-gradient(circle, rgba(200,16,46,0.15) 0%, transparent 70%)',
             filter: 'blur(60px)',
@@ -60,7 +60,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
           }}
         />
         <motion.div
-          className="absolute right-0 bottom-0 w-[500px] h-[500px] rounded-full"
+          className="absolute right-0 bottom-0 w-[250px] h-[250px] sm:w-[375px] sm:h-[375px] md:w-[500px] md:h-[500px] rounded-full"
           style={{
             background: 'radial-gradient(circle, rgba(200,16,46,0.1) 0%, transparent 70%)',
             filter: 'blur(80px)',
@@ -88,7 +88,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
           <span 
-            className="text-white font-serif text-[8rem] sm:text-[10rem] font-black tracking-tighter leading-none"
+            className="text-white font-serif text-[6rem] sm:text-[8rem] md:text-[10rem] font-black tracking-tighter leading-none"
             style={{ willChange: 'transform' }}
           >
             {progress}

@@ -20,7 +20,7 @@ const Footer2 = () => {
       </div>
 
       <div className="container mx-auto px-4 max-w-6xl relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-12">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 sm:gap-10 md:gap-12">
           
           {/* Logo & Protocol Identity */}
           <div className="flex flex-col items-center md:items-start gap-4">
