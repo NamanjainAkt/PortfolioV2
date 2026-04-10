@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# Host
+Host: https://namanx.vercel.app
+
+# Sitemaps
+Sitemap: https://namanx.vercel.app/sitemap.xml
