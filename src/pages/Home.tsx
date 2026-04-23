@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail, FileText, Cpu } from 'lucide-react';
-import { Canvas } from '@react-three/fiber';
-import { Float, Stars, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import Typewriter from '../components/Typewriter';
 import { MagneticSocialIcon } from '../components/MagneticSocialIcon';
 import SkillSection from '../components/SkillSection';
@@ -27,28 +25,46 @@ const SOCIAL_LINKS = [
 
 const HeroBackground = () => {
   return (
-    <div className="absolute inset-0 z-0">
-      <Canvas camera={{ position: [0, 0, 5], fov: 75 }} dpr={[1, 1.5]} frameloop="demand">
-        <color attach="background" args={['#050505']} />
-        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#C8102E" />
-        
-        <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-          <Sphere args={[1, 32, 32]} scale={2}>
-            <MeshDistortMaterial
-              color="#C8102E"
-              speed={3}
-              distort={0.4}
-              radius={1}
-              emissive="#C8102E"
-              emissiveIntensity={0.2}
-              transparent
-              opacity={0.15}
-            />
-          </Sphere>
-        </Float>
-      </Canvas>
+    <div className="absolute inset-0 z-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[#050505]" />
+      <div 
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(200,16,46,0.8), transparent),
+                            radial-gradient(2px 2px at 40% 70%, rgba(200,16,46,0.6), transparent),
+                            radial-gradient(1px 1px at 60% 20%, rgba(200,16,46,0.7), transparent),
+                            radial-gradient(2px 2px at 80% 50%, rgba(200,16,46,0.5), transparent),
+                            radial-gradient(1px 1px at 10% 80%, rgba(200,16,46,0.6), transparent),
+                            radial-gradient(2px 2px at 90% 10%, rgba(200,16,46,0.4), transparent),
+                            radial-gradient(1px 1px at 50% 90%, rgba(200,16,46,0.5), transparent),
+                            radial-gradient(2px 2px at 30% 50%, rgba(200,16,46,0.7), transparent)`,
+          backgroundSize: '200px 200px',
+          animation: 'twinkle 8s ease-in-out infinite alternate',
+        }}
+      />
+      <motion.div
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(200,16,46,0.15) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          willChange: 'transform',
+        }}
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.5, 0.8, 0.5],
+        }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      />
+      <style>{`
+        @keyframes twinkle {
+          0% { opacity: 0.3; transform: translateY(0); }
+          100% { opacity: 0.6; transform: translateY(-5px); }
+        }
+      `}</style>
     </div>
   );
 };
@@ -56,12 +72,7 @@ const HeroBackground = () => {
 const Home = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const { scrollY } = useScroll();
   
-  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
-  const scale = useTransform(scrollY, [0, 300], [1, 0.9]);
-
   // Memoize fetch function
   const fetchProjects = useCallback(async () => {
     try {
@@ -110,7 +121,6 @@ const Home = () => {
 
         <motion.div 
           className="container mx-auto px-4 relative z-10"
-          style={{ y: y1, opacity, scale }}
         >
           <div className="flex flex-col items-center">
             

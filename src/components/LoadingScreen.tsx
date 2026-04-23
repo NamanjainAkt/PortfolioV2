@@ -10,7 +10,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    const duration = 2500;
+    const duration = 800;
     const interval = 16;
     const steps = duration / interval;
     let currentStep = 0;
@@ -26,7 +26,7 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
       if (currentStep >= steps) {
         clearInterval(timer);
         setIsComplete(true);
-        setTimeout(onComplete, 600);
+        setTimeout(onComplete, 300);
       }
     }, interval);
 

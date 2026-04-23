@@ -6,7 +6,7 @@ import Footer from './components/Footer';
 import Footer2 from './components/Footer2';
 import AdminModal from './components/AdminModal';
 import BottomNav from './components/BottomNav';
-import ChatBot from './components/ChatBot';
+const LazyChatBot = lazy(() => import('./components/ChatBot'));
 import LoadingScreen from './components/LoadingScreen';
 import LoadingFallback from './components/LoadingFallback';
 import { PageTransition } from './components/PageTransition';
@@ -59,7 +59,9 @@ function App() {
           {!isAdmin && <Navbar />}
           {!isAdmin && <BottomNav />}
           <AdminModal />
-          <ChatBot />
+          <Suspense fallback={null}>
+            <LazyChatBot />
+          </Suspense>
           <main className="flex-grow">
             <Suspense fallback={<LoadingFallback />}>
               <AnimatePresence mode="wait">
