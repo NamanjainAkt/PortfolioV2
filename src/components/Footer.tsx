@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { lazy, Suspense, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail, Twitter, ArrowUp } from 'lucide-react';
-import FooterWalker from './FooterWalker';
+
+const FooterWalker = lazy(() => import('./FooterWalker'));
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -89,7 +90,9 @@ const Footer = () => {
 
       {/* Atmospheric Background Glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[20%] bg-accent-crimson/5 blur-[120px] pointer-events-none" />
-      <FooterWalker startRef={leftNRef} endRef={rightNRef} containerRef={footerRef} />
+      <Suspense fallback={null}>
+        <FooterWalker startRef={leftNRef} endRef={rightNRef} containerRef={footerRef} />
+      </Suspense>
     </footer>
   );
 };

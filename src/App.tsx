@@ -63,20 +63,18 @@ function App() {
             <LazyChatBot />
           </Suspense>
           <main className="flex-grow">
-            <Suspense fallback={<LoadingFallback />}>
-              <AnimatePresence mode="wait">
-                <Routes location={location} key={location.pathname}>
-                  <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-                  <Route path="/projects" element={<PageTransition><Projects /></PageTransition>} />
-                  <Route path="/projects/:slug" element={<PageTransition><ProjectDetail /></PageTransition>} />
-                  <Route path="/blogs" element={<PageTransition><Blogs /></PageTransition>} />
-                  <Route path="/blogs/:slug" element={<PageTransition><BlogDetail /></PageTransition>} />
-                  <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
-                  <Route path="/admin" element={<PageTransition><Admin /></PageTransition>} />
-                  <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-                </Routes>
-              </AnimatePresence>
-            </Suspense>
+            <AnimatePresence mode="wait">
+              <Routes location={location} key={location.pathname}>
+                <Route path="/" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Home /></Suspense></PageTransition>} />
+                <Route path="/projects" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Projects /></Suspense></PageTransition>} />
+                <Route path="/projects/:slug" element={<PageTransition><Suspense fallback={<LoadingFallback />}><ProjectDetail /></Suspense></PageTransition>} />
+                <Route path="/blogs" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Blogs /></Suspense></PageTransition>} />
+                <Route path="/blogs/:slug" element={<PageTransition><Suspense fallback={<LoadingFallback />}><BlogDetail /></Suspense></PageTransition>} />
+                <Route path="/contact" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Contact /></Suspense></PageTransition>} />
+                <Route path="/admin" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Admin /></Suspense></PageTransition>} />
+                <Route path="*" element={<PageTransition><Suspense fallback={<LoadingFallback />}><NotFound /></Suspense></PageTransition>} />
+              </Routes>
+            </AnimatePresence>
           </main>
           {isHome ? <Footer /> : <Footer2 />}
         </div>

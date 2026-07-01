@@ -211,7 +211,6 @@ const DroneOverlay = () => {
       className="fixed inset-0 pointer-events-none z-[100] hidden md:block"
     >
       <Canvas 
-        shadows 
         camera={{ position: [0, 0, 5], fov: 50 }}
         gl={{ alpha: true, antialias: true }}
         frameloop={isVisible ? 'always' : 'never'}

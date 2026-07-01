@@ -17,25 +17,20 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Passive scroll listener for better performance
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 80);
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // Memoized handlers
   const toggleMenu = useCallback(() => setIsOpen(prev => !prev), []);
 
-  // Memoize links rendering
   const navLinks = useMemo(() => (
     LINKS.map((link) => (
       <Link
@@ -49,7 +44,6 @@ const Navbar = () => {
             className="absolute inset-0 bg-accent-crimson/15 rounded-lg"
             style={{
               boxShadow: '0 0 20px rgba(200, 16, 46, 0.3), inset 0 1px 0 0 rgba(255,255,255,0.1)',
-              willChange: 'transform',
             }}
             transition={{
               type: 'spring',
@@ -72,7 +66,6 @@ const Navbar = () => {
     ))
   ), [location.pathname]);
 
-  // Memoize mobile links
   const mobileLinks = useMemo(() => (
     LINKS.map((link) => (
       <Link
@@ -91,66 +84,42 @@ const Navbar = () => {
   ), [location.pathname]);
 
   return (
-    <motion.nav
-      initial={false}
-      animate={{
-        maxWidth: scrolled ? '672px' : '100%',
-        marginTop: scrolled ? '16px' : '0px',
-        paddingLeft: scrolled ? '16px' : '0px',
-        paddingRight: scrolled ? '16px' : '0px',
-      }}
-      transition={{
-        type: 'spring',
-        stiffness: 300,
-        damping: 30,
-      }}
-      className="fixed left-0 right-0 z-50 mx-auto"
-      style={{ willChange: 'max-width, margin-top' }}
+    <nav
+      className={clsx(
+        'fixed left-0 right-0 z-50 mx-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
+        scrolled ? 'max-w-[672px] translate-y-4 px-4 md:px-0' : 'max-w-full translate-y-0 px-0'
+      )}
     >
-      <motion.div
+      <div
         className={clsx(
-          'relative h-14 md:h-16 flex items-center justify-between overflow-hidden',
+          'relative h-14 md:h-16 flex items-center justify-between overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]',
           scrolled
-            ? 'rounded-full px-5 md:px-6'
-            : 'border-b border-border/50 px-4 md:px-8 container mx-auto'
+            ? 'rounded-full px-5 md:px-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.1)] border border-white/10'
+            : 'rounded-none px-4 md:px-8 border-b border-b-white/10 border-t-transparent border-x-transparent shadow-none'
         )}
-        animate={{
-          borderRadius: scrolled ? '9999px' : '0px',
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 30,
-        }}
         style={{
-          background: scrolled
-            ? 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.02) 100%)'
-            : 'rgba(10,10,10,0.8)',
+          backgroundColor: scrolled ? 'rgba(30, 30, 30, 0.7)' : 'rgba(10, 10, 10, 0.8)',
           backdropFilter: 'blur(20px) saturate(180%)',
           WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-          boxShadow: scrolled
-            ? '0 8px 32px 0 rgba(0,0,0,0.37), inset 0 1px 0 0 rgba(255,255,255,0.1)'
-            : 'none',
-          willChange: 'border-radius, box-shadow',
         }}
       >
         {/* Animated gradient shimmer for liquid effect */}
-        <motion.div
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          animate={{
-            background: [
-              'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-              'linear-gradient(90deg, transparent 100%, rgba(255,255,255,0.1) 50%, transparent 0%)',
-            ],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-          style={{ willChange: 'background' }}
-        />
-        
+        <div className="absolute inset-0 opacity-30 pointer-events-none overflow-hidden">
+          <motion.div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              willChange: 'transform',
+            }}
+            animate={{ x: ['-100%', '100%'] }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              ease: 'linear',
+            }}
+          />
+        </div>
+
         {/* Inner glow effect */}
         <div 
           className="absolute inset-0 pointer-events-none"
@@ -172,7 +141,6 @@ const Navbar = () => {
                 padding: '1px',
               }}
             />
-            {/* Subtle noise texture overlay */}
             <div 
               className="absolute inset-0 rounded-full opacity-[0.03] pointer-events-none"
               style={{
@@ -205,7 +173,7 @@ const Navbar = () => {
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
@@ -221,7 +189,6 @@ const Navbar = () => {
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-              willChange: 'transform, opacity',
             }}
           >
             <div className="flex flex-col p-4 gap-2">
@@ -230,7 +197,7 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </nav>
   );
 };
 

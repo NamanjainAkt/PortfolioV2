@@ -31,13 +31,9 @@ const HeroBackground = () => {
         className="absolute inset-0 opacity-30"
         style={{
           backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(200,16,46,0.8), transparent),
-                            radial-gradient(2px 2px at 40% 70%, rgba(200,16,46,0.6), transparent),
-                            radial-gradient(1px 1px at 60% 20%, rgba(200,16,46,0.7), transparent),
-                            radial-gradient(2px 2px at 80% 50%, rgba(200,16,46,0.5), transparent),
-                            radial-gradient(1px 1px at 10% 80%, rgba(200,16,46,0.6), transparent),
-                            radial-gradient(2px 2px at 90% 10%, rgba(200,16,46,0.4), transparent),
-                            radial-gradient(1px 1px at 50% 90%, rgba(200,16,46,0.5), transparent),
-                            radial-gradient(2px 2px at 30% 50%, rgba(200,16,46,0.7), transparent)`,
+                            radial-gradient(2px 2px at 60% 70%, rgba(200,16,46,0.6), transparent),
+                            radial-gradient(1px 1px at 80% 20%, rgba(200,16,46,0.7), transparent),
+                            radial-gradient(2px 2px at 30% 80%, rgba(200,16,46,0.5), transparent)`,
           backgroundSize: '200px 200px',
           animation: 'twinkle 8s ease-in-out infinite alternate',
         }}
@@ -47,7 +43,6 @@ const HeroBackground = () => {
         style={{
           background: 'radial-gradient(circle, rgba(200,16,46,0.15) 0%, transparent 70%)',
           filter: 'blur(60px)',
-          willChange: 'transform',
         }}
         animate={{
           scale: [1, 1.1, 1],
@@ -61,8 +56,8 @@ const HeroBackground = () => {
       />
       <style>{`
         @keyframes twinkle {
-          0% { opacity: 0.3; transform: translateY(0); }
-          100% { opacity: 0.6; transform: translateY(-5px); }
+          0% { opacity: 0.3; }
+          100% { opacity: 0.6; }
         }
       `}</style>
     </div>
@@ -127,9 +122,8 @@ const Home = () => {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
               className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-crimson/10 border border-accent-crimson/20 mb-8 backdrop-blur-md"
-              style={{ willChange: 'transform' }}
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-crimson opacity-75"></span>
@@ -144,9 +138,8 @@ const Home = () => {
               <motion.h1
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="text-5xl sm:text-7xl md:text-9xl lg:text-[12rem] font-serif font-black tracking-tighter text-white uppercase leading-[0.8]"
-                style={{ willChange: 'transform' }}
               >
                 NAMAN<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-crimson via-accent-glow to-accent-crimson">JAIN</span>
@@ -159,7 +152,7 @@ const Home = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
               className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-8 mb-10"
             >
               <div className="flex items-center gap-2 text-secondary font-mono text-sm md:text-lg">
@@ -171,7 +164,7 @@ const Home = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
               className="flex flex-col sm:flex-row items-center gap-6"
             >
               <div className="flex gap-4">
@@ -215,10 +208,9 @@ const Home = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 cursor-pointer group"
           onClick={handleScrollToProjects}
-          style={{ willChange: 'transform' }}
         >
           <div className="w-[1px] h-12 bg-gradient-to-b from-accent-crimson to-transparent relative overflow-hidden">
             <motion.div 

@@ -12,6 +12,7 @@ type Props = {
 const FooterWalker: React.FC<Props> = ({ startRef, endRef, containerRef }) => {
   const [layout, setLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 })
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null)
+  const [isVisible, setIsVisible] = useState(true)
   const WALK_BOUNDS = useMemo(() => ({ min: -5, max: 5 }), [])
   const FOV = 35
   const cameraZ = useMemo(() => {
@@ -30,8 +31,16 @@ const FooterWalker: React.FC<Props> = ({ startRef, endRef, containerRef }) => {
     const ro = new ResizeObserver(update)
     if (containerRef.current) ro.observe(containerRef.current as Element)
     window.addEventListener('resize', update)
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0, rootMargin: '500px' }
+    )
+    if (containerRef.current) observer.observe(containerRef.current as Element)
+
     return () => {
       ro.disconnect()
+      observer.disconnect()
       window.removeEventListener('resize', update)
     }
   }, [containerRef])
@@ -64,6 +73,7 @@ const FooterWalker: React.FC<Props> = ({ startRef, endRef, containerRef }) => {
         <Canvas
           dpr={[1, 2]}
           gl={{ alpha: true, antialias: true }}
+          frameloop={isVisible ? 'always' : 'never'}
           camera={{ position: [0, 1.2, cameraZ], fov: FOV }}
           style={{ background: 'transparent', pointerEvents: 'none' }}
         >
