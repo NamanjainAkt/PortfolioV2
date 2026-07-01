@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Footer2 from './components/Footer2';
@@ -77,6 +78,7 @@ function App() {
             </AnimatePresence>
           </main>
           {isHome ? <Footer /> : <Footer2 />}
+          <Analytics />
         </div>
       )}
     </>
