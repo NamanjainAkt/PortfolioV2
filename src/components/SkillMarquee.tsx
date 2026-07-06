@@ -1,37 +1,36 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { TechIcon } from './TechIcon';
 
 interface Skill {
   name: string;
-  iconClass: string;
   color?: string;
+  iconName?: string;
 }
 
 const skillsRow1: Skill[] = [
-  { name: 'React', iconClass: 'devicon-react-original colored', color: '#61DAFB' },
-  { name: 'TypeScript', iconClass: 'devicon-typescript-plain colored', color: '#3178C6' },
-  { name: 'Node.js', iconClass: 'devicon-nodejs-plain colored', color: '#339933' },
-  { name: 'Express', iconClass: 'devicon-express-original', color: '#FFFFFF' },
-  { name: 'MongoDB', iconClass: 'devicon-mongodb-plain colored', color: '#47A248' },
-  { name: 'JavaScript', iconClass: 'devicon-javascript-plain colored', color: '#F7DF1E' },
-  { name: 'Next.js', iconClass: 'devicon-nextjs-plain', color: '#FFFFFF' },
-  { name: 'Tailwind', iconClass: 'devicon-tailwindcss-original colored', color: '#06B6D4' },
+  { name: 'React', color: '#61DAFB' },
+  { name: 'TypeScript', color: '#3178C6' },
+  { name: 'Node.js', color: '#339933' },
+  { name: 'Express', color: '#FFFFFF' },
+  { name: 'MongoDB', color: '#47A248' },
+  { name: 'JavaScript', color: '#F7DF1E' },
+  { name: 'Next.js', color: '#FFFFFF' },
+  { name: 'Tailwind', color: '#06B6D4' },
 ];
 
 const skillsRow2: Skill[] = [
-  { name: 'Docker', iconClass: 'devicon-docker-plain colored', color: '#2496ED' },
-  { name: 'Git', iconClass: 'devicon-git-plain colored', color: '#F05032' },
-  { name: 'GitHub', iconClass: 'devicon-github-original', color: '#FFFFFF' },
-  { name: 'VS Code', iconClass: 'devicon-vscode-plain colored', color: '#007ACC' },
-  { name: 'Postman', iconClass: 'devicon-postman-plain colored', color: '#FF6C37' },
-  { name: 'React Native', iconClass: 'devicon-react-original colored', color: '#61DAFB' },
-  { name: 'Vercel', iconClass: 'devicon-vercel-original', color: '#FFFFFF' },
-  { name: 'HTML5', iconClass: 'devicon-html5-plain colored', color: '#E34F26' },
+  { name: 'Docker', color: '#2496ED' },
+  { name: 'Git', color: '#F05032' },
+  { name: 'GitHub', color: '#FFFFFF' },
+  { name: 'VS Code', color: '#007ACC' },
+  { name: 'Postman', color: '#FF6C37' },
+  { name: 'React Native', color: '#61DAFB', iconName: 'React' },
+  { name: 'Vercel', color: '#FFFFFF' },
+  { name: 'HTML5', color: '#E34F26' },
 ];
 
 const SkillItem = ({ skill }: { skill: Skill }) => {
-  const isDarkIcon = skill.name === 'Next.js' || skill.name === 'Express' || skill.name === 'Vercel' || skill.name === 'GitHub';
-  
   return (
     <div className="flex flex-col items-center mx-2 sm:mx-4 md:mx-6 group cursor-pointer py-4">
       <div className="relative">
@@ -44,10 +43,7 @@ const SkillItem = ({ skill }: { skill: Skill }) => {
             style={{ backgroundColor: skill.color || '#C8102E' }}
           />
 
-          <i 
-            className={`${skill.iconClass} text-2xl sm:text-3xl md:text-4xl transition-all duration-500 group-hover:scale-110`}
-            style={isDarkIcon ? { color: '#E0E0E0', filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.3))' } : {}}
-          />
+          <TechIcon name={skill.iconName || skill.name} className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 transition-all duration-500 group-hover:scale-110" />
 
           {/* Corner Accents */}
           <div className="absolute top-2 left-2 w-1.5 h-1.5 border-t border-l border-white/10 group-hover:border-accent-crimson/50 transition-colors" />

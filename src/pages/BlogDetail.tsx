@@ -6,12 +6,9 @@ import { ArrowLeft, List, Type, Palette, Maximize2, Terminal, Share2, Bookmark }
 import clsx from 'clsx';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 
-// Lazy load heavy markdown components
-const ReactMarkdown = lazy(() => import('react-markdown'));
-const SyntaxHighlighter = lazy(() => 
-  import('react-syntax-highlighter').then(mod => ({ default: mod.Prism }))
+const MarkdownRenderer = lazy(() => 
+  import('../components/MarkdownRenderer').then(m => ({ default: m.MarkdownRenderer }))
 );
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface Blog {
   id: string;
@@ -174,42 +171,8 @@ const BlogDetail = () => {
     return () => observer.disconnect();
   }, [headings]);
 
-  // Memoized markdown components
+  // Memoized markdown components (code handled by MarkdownRenderer)
   const markdownComponents = useMemo(() => ({
-    code({ className, children }: { className?: string; children?: React.ReactNode }) {
-      const match = /language-(\w+)/.exec(className || '');
-      const codeString = String(children).replace(/\n$/, '');
-      
-      return match ? (
-        <div className="my-12 rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-[#0A0A0A]">
-          <div className="bg-white/5 px-6 py-3 flex items-center justify-between border-b border-white/5">
-            <div className="flex items-center gap-2">
-              <Terminal size={12} className="text-accent-crimson" />
-              <span className="text-[10px] font-mono uppercase tracking-widest opacity-50">{match[1]}</span>
-            </div>
-            <div className="flex gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500/30" />
-              <div className="w-2 h-2 rounded-full bg-yellow-500/30" />
-              <div className="w-2 h-2 rounded-full bg-green-500/30" />
-            </div>
-          </div>
-          <Suspense fallback={<div className="p-8 text-tertiary font-mono text-sm">Loading code...</div>}>
-            <SyntaxHighlighter
-              style={vscDarkPlus}
-              language={match[1]}
-              PreTag="div"
-              className="!m-0 !p-8 !bg-transparent"
-            >
-              {codeString}
-            </SyntaxHighlighter>
-          </Suspense>
-        </div>
-      ) : (
-        <code className="px-1.5 py-0.5 rounded font-mono text-[0.9em] bg-accent-crimson/10 text-accent-crimson border border-accent-crimson/20">
-          {children}
-        </code>
-      );
-    },
     h1: ({ children }: { children?: React.ReactNode }) => {
       const id = extractPlainText(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
       return (
@@ -391,9 +354,7 @@ const BlogDetail = () => {
               'prose-headings:uppercase prose-headings:font-black prose-headings:tracking-tighter prose-p:font-light prose-p:leading-loose prose-img:rounded-[2.5rem] prose-img:border prose-img:border-white/5 prose-blockquote:border-l-4 prose-blockquote:border-accent-crimson prose-blockquote:bg-white/[0.02] prose-blockquote:rounded-r-2xl prose-a:text-accent-crimson prose-a:no-underline hover:prose-a:underline'
             )}>
               <Suspense fallback={<MarkdownFallback />}>
-                <ReactMarkdown components={markdownComponents}>
-                  {blog.content}
-                </ReactMarkdown>
+                <MarkdownRenderer content={blog.content} components={markdownComponents} />
               </Suspense>
             </div>
 

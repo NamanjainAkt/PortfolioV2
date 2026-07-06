@@ -11,10 +11,10 @@ const LazyChatBot = lazy(() => import('./components/ChatBot'));
 import LoadingScreen from './components/LoadingScreen';
 import LoadingFallback from './components/LoadingFallback';
 import { PageTransition } from './components/PageTransition';
-import { CustomCursor } from './components/CustomCursor';
-import { CommandPalette } from './components/CommandPalette';
-import { ScrollProgress } from './components/ScrollProgress';
-import { Spotlight } from './components/Spotlight';
+const CustomCursor = lazy(() => import('./components/CustomCursor').then(m => ({ default: m.CustomCursor })));
+const CommandPalette = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
+const ScrollProgress = lazy(() => import('./components/ScrollProgress').then(m => ({ default: m.ScrollProgress })));
+const Spotlight = lazy(() => import('./components/Spotlight').then(m => ({ default: m.Spotlight })));
 
 // Lazy load page components for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -58,10 +58,12 @@ function App() {
           transition={{ duration: 0.4 }}
           className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0"
         >
-          <CustomCursor />
-          <ScrollProgress />
-          <Spotlight />
-          <CommandPalette />
+          <Suspense fallback={null}>
+            <CustomCursor />
+            <ScrollProgress />
+            <Spotlight />
+            <CommandPalette />
+          </Suspense>
           <ScrollToTop />
           {!isAdmin && <Navbar />}
           {!isAdmin && <BottomNav />}

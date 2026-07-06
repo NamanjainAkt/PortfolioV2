@@ -20,7 +20,6 @@ export default defineConfig({
           'vendor-animations': ['framer-motion'],
           'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
           'vendor-ui': ['lucide-react', 'clsx', 'tailwind-merge'],
-          'vendor-markdown': ['react-markdown', 'react-syntax-highlighter'],
           'vendor-forms': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
         }
       }
