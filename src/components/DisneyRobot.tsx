@@ -79,10 +79,10 @@ export function DisneyRobot(props: GroupProps) {
     [nodes]
   )
   
-  // Log discovered meshes for debugging
-  useEffect(() => {
-    console.log('DisneyRobot - Discovered meshes:', allMeshes.map(([name]) => name))
-  }, [allMeshes])
+  // Log discovered meshes for debugging (disabled in production)
+  // useEffect(() => {
+  //   console.log('DisneyRobot - Discovered meshes:', allMeshes.map(([name]) => name))
+  // }, [allMeshes])
   
   // Keyboard controls
   useEffect(() => {

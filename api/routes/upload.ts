@@ -15,6 +15,7 @@ if (!cloudName || !apiKey || !apiSecret) {
   console.error('  - CLOUDINARY_CLOUD_NAME:', cloudName ? '✓' : '✗');
   console.error('  - CLOUDINARY_API_KEY:', apiKey ? '✓' : '✗');
   console.error('  - CLOUDINARY_API_SECRET:', apiSecret ? '✓' : '✗');
+  throw new Error('Cloudinary not configured');
 }
 
 cloudinary.config({
@@ -30,11 +31,11 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Accept only image files
-    if (file.mimetype.startsWith('image/')) {
+    // Accept only image files (not SVGs)
+    if (file.mimetype.startsWith('image/') && file.mimetype !== 'image/svg+xml') {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Only image files (JPEG, PNG, WebP, GIF) are allowed'));
     }
   },
 });
@@ -105,7 +106,6 @@ router.get('/signature', authenticateToken, (req, res) => {
       signature,
       timestamp,
       cloudName,
-      apiKey,
     });
   } catch (error) {
     console.error('[Cloudinary] Error generating signature:', error);

@@ -10,6 +10,7 @@ interface LightboxProps {
   onClose: () => void;
   onNext: () => void;
   onPrev: () => void;
+  onGoTo?: (index: number) => void;
 }
 
 export const Lightbox = ({
@@ -19,6 +20,7 @@ export const Lightbox = ({
   onClose,
   onNext,
   onPrev,
+  onGoTo,
 }: LightboxProps) => {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -158,11 +160,7 @@ export const Lightbox = ({
                   key={idx}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (idx < currentIndex) {
-                      for (let i = currentIndex; i > idx; i--) onPrev();
-                    } else if (idx > currentIndex) {
-                      for (let i = currentIndex; i < idx; i++) onNext();
-                    }
+                    onGoTo?.(idx);
                   }}
                   className={`w-12 h-12 rounded overflow-hidden border-2 transition-all ${
                     idx === currentIndex

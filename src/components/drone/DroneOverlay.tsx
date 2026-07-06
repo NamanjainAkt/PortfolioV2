@@ -208,7 +208,7 @@ const DroneOverlay = () => {
   return (
     <div 
       id="drone-container"
-      className="fixed inset-0 pointer-events-none z-[100] hidden md:block"
+      className="fixed inset-0 pointer-events-none z-[50] hidden md:block"
     >
       <Canvas 
         camera={{ position: [0, 0, 5], fov: 50 }}

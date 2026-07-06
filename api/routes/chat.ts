@@ -1,8 +1,19 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { context } from '../lib/context.js';
 
 const router = express.Router();
+
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Too many requests. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.use(chatLimiter);
 
 // Initialize Gemini API
 // We'll initialize the client lazily in the handler to allow for missing env var during dev setup
@@ -27,6 +38,11 @@ router.post('/', async (req, res) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
+    // Filter out malformed history items
+    const validHistory = (history || []).filter(
+      (msg: any) => msg && typeof msg.role === 'string' && typeof msg.content === 'string'
+    );
+
     // Construct the chat history for Gemini
     // We prepend the system context
     const chat = model.startChat({
@@ -39,7 +55,7 @@ router.post('/', async (req, res) => {
           role: "model",
           parts: [{ text: "Understood. I am Mars, Naman's AI assistant. I will answer questions based on the provided context." }],
         },
-        ...(history || []).map((msg: any) => ({
+        ...(validHistory).map((msg: any) => ({
           role: msg.role === 'user' ? 'user' : 'model',
           parts: [{ text: msg.content }],
         })),
@@ -51,11 +67,10 @@ router.post('/', async (req, res) => {
     const text = response.text();
 
     res.json({ reply: text });
-  } catch (error: any) {
-    console.error('Chat API Error:', error);
-    const errorMessage = error?.message || 'Unknown error occurred';
+  } catch (error) {
+    console.error('Chat error:', error);
     res.status(500).json({
-      error: `Failed to generate response: ${errorMessage}`,
+      error: 'Failed to generate response. Please try again.',
       reply: "I apologize, but I'm experiencing technical difficulties right now. Please try again in a moment."
     });
   }

@@ -124,7 +124,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
     >
       <motion.div 
         initial={{ scale: 0.9, y: 20 }}
@@ -345,7 +345,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
                 Abort
             </button>
             <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={loading}
                 className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-accent-crimson hover:text-white transition-all duration-500 shadow-xl shadow-white/5 disabled:opacity-50 flex items-center"
             >

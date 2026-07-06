@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, Twitter, ArrowUp } from 'lucide-react';
+import { Github, Linkedin, Mail, ArrowUp } from 'lucide-react';
 
 const FooterWalker = lazy(() => import('./FooterWalker'));
 

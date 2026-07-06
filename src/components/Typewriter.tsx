@@ -19,15 +19,6 @@ const Typewriter: React.FC<TypewriterProps> = ({
   const [index, setIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [blink, setBlink] = useState(true);
-
-  // Blinking cursor effect
-  useEffect(() => {
-    const timeout2 = setTimeout(() => {
-      setBlink(!blink);
-    }, 500);
-    return () => clearTimeout(timeout2);
-  }, [blink]);
 
   useEffect(() => {
     if (index === words.length) {

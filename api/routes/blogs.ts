@@ -34,13 +34,17 @@ router.get('/:slug', async (req, res) => {
 // Create blog (Admin only)
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, slug, content, featuredImage } = req.body;
+    const { title, slug, content, featuredImage, category } = req.body;
+    if (!title || !slug || !content) {
+      return res.status(400).json({ success: false, error: 'Missing required fields: title, slug, content' });
+    }
     const blog = await prisma.blog.create({
       data: {
         title,
         slug,
         content,
         featuredImage,
+        category,
       },
     });
     res.json(blog);
@@ -52,7 +56,10 @@ router.post('/', authenticateToken, async (req, res) => {
 // Update blog (Admin only)
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { title, slug, content, featuredImage } = req.body;
+    const { title, slug, content, featuredImage, category } = req.body;
+    if (!title || !slug || !content) {
+      return res.status(400).json({ success: false, error: 'Missing required fields: title, slug, content' });
+    }
     const blog = await prisma.blog.update({
       where: { id: req.params.id },
       data: {
@@ -60,10 +67,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
         slug,
         content,
         featuredImage,
+        category,
       },
     });
     res.json(blog);
   } catch (error) {
+    if ((error as any)?.code === 'P2025') {
+      return res.status(404).json({ success: false, error: 'Resource not found' });
+    }
+    console.error('Failed to update blog:', error);
     res.status(500).json({ error: 'Failed to update blog' });
   }
 });
@@ -76,6 +88,10 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     });
     res.json({ message: 'Blog deleted' });
   } catch (error) {
+    if ((error as any)?.code === 'P2025') {
+      return res.status(404).json({ success: false, error: 'Resource not found' });
+    }
+    console.error('Failed to delete blog:', error);
     res.status(500).json({ error: 'Failed to delete blog' });
   }
 });

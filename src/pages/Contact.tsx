@@ -137,6 +137,12 @@ const Contact = () => {
       const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
       const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
+      if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+        setErrors(prev => ({ ...prev, message: 'Contact form is not configured. Please email me directly.' }));
+        setIsSubmitting(false);
+        return;
+      }
+
       await emailjs.send(
         SERVICE_ID,
         TEMPLATE_ID,
@@ -179,7 +185,7 @@ const Contact = () => {
           <Canvas 
             dpr={[1, 1.5]} 
             camera={{ position: [0, 0, 5], fov: 45 }} 
-            frameloop="always"
+            frameloop="demand"
           >
             <Suspense fallback={null}>
               <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />

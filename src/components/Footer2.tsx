@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Github, Linkedin, Mail, Twitter, Terminal, ShieldCheck } from 'lucide-react';
+import { Github, Linkedin, Mail, Terminal, ShieldCheck } from 'lucide-react';
 
 const Footer2 = () => {
   const socialLinks = [

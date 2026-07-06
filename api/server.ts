@@ -1,6 +1,7 @@
 /**
  * local server entry file, for local development
  */
+import { prisma } from './lib/prisma.js';
 import app from './app.js';
 
 /**
@@ -15,16 +16,18 @@ const server = app.listen(PORT, () => {
 /**
  * close server
  */
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('SIGTERM signal received');
+  await prisma.$disconnect();
   server.close(() => {
     console.log('Server closed');
     process.exit(0);
   });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('SIGINT signal received');
+  await prisma.$disconnect();
   server.close(() => {
     console.log('Server closed');
     process.exit(0);

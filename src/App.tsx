@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
@@ -44,10 +44,12 @@ function App() {
   const isHome = location.pathname === '/';
   const isAdmin = location.pathname.startsWith('/admin');
 
+  const handleLoadingComplete = useCallback(() => setIsLoading(false), []);
+
   return (
     <>
       <AnimatePresence mode="wait">
-        {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
+        {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
       </AnimatePresence>
       
       {!isLoading && (

@@ -102,11 +102,9 @@ export const useDynamicLoadingConfig = () => {
           if (lowFpsCount >= 3) {
             setQuality((prev) => {
               if (prev === 'high') {
-                console.log('[LoadingScreen] FPS dropped, reducing to medium quality');
                 return 'medium';
               }
               if (prev === 'medium') {
-                console.log('[LoadingScreen] FPS dropped, reducing to low quality');
                 return 'low';
               }
               return prev;
@@ -122,7 +120,7 @@ export const useDynamicLoadingConfig = () => {
       checkTimeout = setTimeout(() => {
         performanceMonitor.stop();
         setIsMonitoring(false);
-        console.log('[LoadingScreen] Performance monitoring complete');
+        // Performance monitoring complete
       }, 10000);
     };
 

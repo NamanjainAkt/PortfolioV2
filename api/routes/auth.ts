@@ -1,16 +1,34 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
 import prisma from '../lib/prisma.js';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Check if admin exists
 router.get('/status', async (req, res) => {
-  const admin = await prisma.adminAuth.findFirst();
-  res.json({ initialized: !!admin });
+  try {
+    const admin = await prisma.adminAuth.findFirst();
+    res.json({ initialized: !!admin });
+  } catch (error) {
+    console.error('Auth status check failed:', error);
+    res.status(500).json({ error: 'Failed to check auth status' });
+  }
 });
+
+// Apply rate limiter to login and setup (status is exempt)
+router.use('/login', authLimiter);
+router.use('/setup', authLimiter);
 
 // Setup admin password (only if none exists)
 router.post('/setup', async (req, res) => {
@@ -21,8 +39,8 @@ router.post('/setup', async (req, res) => {
     }
 
     const { password } = req.body;
-    if (!password) {
-      return res.status(400).json({ error: 'Password required' });
+    if (!password || typeof password !== 'string' || password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -40,6 +58,11 @@ router.post('/setup', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { password } = req.body;
+
+    if (typeof password !== 'string' || !password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
     const admin = await prisma.adminAuth.findFirst();
 
     if (!admin) {

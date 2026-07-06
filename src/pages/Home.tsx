@@ -72,6 +72,7 @@ const Home = () => {
   const fetchProjects = useCallback(async () => {
     try {
       const res = await fetch('/api/projects?limit=5&orderBy=displayOrder');
+      if (!res.ok) throw new Error(`Failed to fetch projects: ${res.status}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setProjects(data);

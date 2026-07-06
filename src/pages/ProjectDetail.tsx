@@ -100,6 +100,7 @@ const ProjectDetail = () => {
         onClose={() => setLightboxOpen(false)}
         onNext={() => setCurrentImageIndex((p) => (p + 1) % project.images.length)}
         onPrev={() => setCurrentImageIndex((p) => (p - 1 + project.images.length) % project.images.length)}
+        onGoTo={(idx) => setCurrentImageIndex(idx)}
       />
 
       {/* Cinematic Background Elements */}

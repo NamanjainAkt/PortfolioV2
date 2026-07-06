@@ -11,6 +11,7 @@ import cors from 'cors'
 import path from 'path'
 import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
+import multer from 'multer'
 import authRoutes from './routes/auth.js'
 import projectsRoutes from './routes/projects.js'
 import blogsRoutes from './routes/blogs.js'
@@ -24,9 +25,18 @@ const __dirname = path.dirname(__filename)
 // load env
 dotenv.config()
 
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+
 const app: express.Application = express()
 
-app.use(cors())
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://namanx.vercel.app', 'http://localhost:5173']
+    : ['http://localhost:5173', 'http://localhost:3000'],
+}))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
@@ -57,10 +67,17 @@ app.use(
  */
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(error);
-  res.status(500).json({
-    success: false,
-    error: 'Server internal error',
-  })
+
+  // Multer file size error
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ success: false, error: 'File too large. Maximum size is 10MB.' });
+    }
+    return res.status(400).json({ success: false, error: error.message });
+  }
+
+  // Generic error
+  res.status(500).json({ success: false, error: 'Server internal error' });
 })
 
 /**

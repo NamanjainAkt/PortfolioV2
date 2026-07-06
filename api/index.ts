@@ -5,5 +5,10 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import app from './app.js';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
-  return app(req, res);
+  try {
+    return app(req, res);
+  } catch (error) {
+    console.error('Handler error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }

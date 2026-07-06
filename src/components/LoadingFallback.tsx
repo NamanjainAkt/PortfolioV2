@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const LoadingFallback = () => {
   return (
-    <div className="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-[90] bg-[#050505] flex flex-col items-center justify-center">
       <div className="flex flex-col items-center gap-8">
         {/* Animated Loader */}
         <div className="relative">

@@ -62,6 +62,15 @@ const MarkdownFallback = () => (
   </div>
 );
 
+const extractPlainText = (children: React.ReactNode): string => {
+  if (typeof children === 'string') return children;
+  if (Array.isArray(children)) return children.map(extractPlainText).join('');
+  if (children && typeof children === 'object' && 'props' in children) {
+    return extractPlainText((children as any).props.children);
+  }
+  return String(children);
+};
+
 const BlogDetail = () => {
   const { slug } = useParams();
   const [blog, setBlog] = useState<Blog | null>(null);
@@ -91,12 +100,11 @@ const BlogDetail = () => {
   });
 
   // Parallax Logic
-  const { scrollY } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
   const y = useTransform(scrollY, [0, 800], [0, 300]);
   const opacity = useTransform(scrollY, [0, 500], [1, 0]);
   const titleY = useTransform(scrollY, [0, 500], [0, -100]);
 
-  const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   // Save preferences to localStorage
@@ -203,7 +211,7 @@ const BlogDetail = () => {
       );
     },
     h1: ({ children }: { children?: React.ReactNode }) => {
-      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+      const id = extractPlainText(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
       return (
         <h1 id={id} className="pt-12 mb-8 flex items-center gap-4 group scroll-mt-24">
           <span className="text-accent-crimson opacity-20 group-hover:opacity-100 transition-opacity font-mono">#</span>
@@ -212,7 +220,7 @@ const BlogDetail = () => {
       );
     },
     h2: ({ children }: { children?: React.ReactNode }) => {
-      const id = String(children).toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+      const id = extractPlainText(children).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
       return (
         <h2 id={id} className="pt-12 mb-6 flex items-center gap-4 group scroll-mt-24">
           <span className="text-accent-crimson opacity-20 group-hover:opacity-100 transition-opacity font-mono">##</span>
@@ -270,7 +278,7 @@ const BlogDetail = () => {
               </span>
               <div className="w-1 h-1 rounded-full bg-accent-crimson" />
               <span className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-70 text-white">
-                {format(new Date(blog.createdAt), 'MMMM dd, yyyy')}
+                {blog.createdAt ? format(new Date(blog.createdAt), 'MMMM dd, yyyy') : 'N/A'}
               </span>
             </div>
           </FadeInWhenVisible>

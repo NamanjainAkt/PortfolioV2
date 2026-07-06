@@ -140,7 +140,7 @@ const Blogs = () => {
                         </span>
                         <div className="w-1 h-1 rounded-full bg-white/10" />
                         <span className="text-[9px] font-mono text-tertiary uppercase tracking-widest">
-                          {format(new Date(blog.createdAt), 'dd.MM.yyyy')}
+                          {blog.createdAt ? format(new Date(blog.createdAt), 'dd.MM.yyyy') : 'N/A'}
                         </span>
                       </div>
 
@@ -149,7 +149,7 @@ const Blogs = () => {
                       </h2>
                       
                       <p className="text-secondary text-sm md:text-base font-light line-clamp-1 max-w-2xl opacity-40 group-hover:opacity-100 transition-opacity duration-500 italic">
-                        {blog.content.slice(0, 150).replace(/[#*_]/g, '')}...
+                        {blog.content ? (blog.content.length > 150 ? blog.content.slice(0, 150).replace(/[#*_]/g, '') + '...' : blog.content.replace(/[#*_]/g, '')) : ''}
                       </p>
                     </div>
 

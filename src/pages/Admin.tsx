@@ -46,7 +46,7 @@ const Admin = () => {
     if (activeTab === 'reorder') {
       fetchProjects();
     } else {
-      fetchItems();
+      fetchItems(activeTab);
     }
     setIsMobileMenuOpen(false);
   }, [activeTab]);
@@ -87,10 +87,10 @@ const Admin = () => {
     setProjects(reorderedProjects);
   };
 
-  const fetchItems = async () => {
+  const fetchItems = async (tab: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/${activeTab}`);
+      const res = await fetch(`/api/${tab}`);
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -109,7 +109,7 @@ const Admin = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        fetchItems();
+        fetchItems(activeTab);
       }
     } catch (error) {
       alert('Failed to delete');
@@ -127,7 +127,7 @@ const Admin = () => {
   };
 
   const handleFormSuccess = () => {
-    fetchItems();
+    fetchItems(activeTab);
     setIsFormOpen(false);
     setEditingItem(null);
   };

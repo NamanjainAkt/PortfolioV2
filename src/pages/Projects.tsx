@@ -149,7 +149,7 @@ const Projects = () => {
                       <div className="absolute top-6 left-6 flex gap-2">
                         <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
                           <Sparkles size={10} className="text-accent-glow" />
-                          <span className="text-[8px] font-mono text-secondary uppercase tracking-widest uppercase">{project.category || 'Development'}</span>
+                          <span className="text-[8px] font-mono text-secondary uppercase tracking-widest">{project.category || 'Development'}</span>
                         </div>
                       </div>
                     </div>

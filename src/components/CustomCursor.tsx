@@ -37,6 +37,14 @@ export const CustomCursor = () => {
     };
   }, [cursorX, cursorY, ringX, ringY]);
 
+  // Inject cursor-hiding styles once
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `@media (pointer: fine) { * { cursor: none !important; } }`;
+    document.head.appendChild(style);
+    return () => { style.remove(); };
+  }, []);
+
   // Don't render on touch devices
   if (typeof window !== 'undefined' && !window.matchMedia('(pointer: fine)').matches) {
     return null;
@@ -75,14 +83,6 @@ export const CustomCursor = () => {
         }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       />
-
-      <style>{`
-        @media (pointer: fine) {
-          * {
-            cursor: none !important;
-          }
-        }
-      `}</style>
     </>
   );
 };
