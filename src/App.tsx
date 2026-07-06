@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -47,13 +47,17 @@ function App() {
   const handleLoadingComplete = useCallback(() => setIsLoading(false), []);
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
-      </AnimatePresence>
-      
-      {!isLoading && (
-        <div className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0">
+    <AnimatePresence mode="wait">
+      {isLoading ? (
+        <LoadingScreen key="loading" onComplete={handleLoadingComplete} />
+      ) : (
+        <motion.div
+          key="app"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0"
+        >
           <CustomCursor />
           <ScrollProgress />
           <Spotlight />
@@ -81,9 +85,9 @@ function App() {
           </main>
           {isHome ? <Footer /> : <Footer2 />}
           <Analytics />
-        </div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 }
 
