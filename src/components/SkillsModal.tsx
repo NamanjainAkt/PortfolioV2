@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Code2, Smartphone, Bot, Wrench } from 'lucide-react';
+import { TechIcon } from './TechIcon';
 
 interface SkillsModalProps {
   isOpen: boolean;
@@ -9,35 +10,35 @@ interface SkillsModalProps {
 
 interface Skill {
   name: string;
-  iconClass: string;
+  iconName: string;
 }
 
 const allSkills: Record<string, Skill[]> = {
   core: [
-    { name: 'TypeScript', iconClass: 'devicon-typescript-plain colored' },
-    { name: 'React.js', iconClass: 'devicon-react-original colored' },
-    { name: 'Node.js', iconClass: 'devicon-nodejs-plain colored' },
-    { name: 'Express', iconClass: 'devicon-express-original colored' },
-    { name: 'MongoDB', iconClass: 'devicon-mongodb-plain colored' },
-    { name: 'JavaScript', iconClass: 'devicon-javascript-plain colored' },
-    { name: 'Next.js', iconClass: 'devicon-nextjs-plain colored' },
-    { name: 'Tailwind', iconClass: 'devicon-tailwindcss-original colored' },
+    { name: 'TypeScript', iconName: 'TypeScript' },
+    { name: 'React.js', iconName: 'React' },
+    { name: 'Node.js', iconName: 'Nodejs' },
+    { name: 'Express', iconName: 'Express' },
+    { name: 'MongoDB', iconName: 'MongoDB' },
+    { name: 'JavaScript', iconName: 'JavaScript' },
+    { name: 'Next.js', iconName: 'Nextjs' },
+    { name: 'Tailwind', iconName: 'Tailwind' },
   ],
   mobile: [
-    { name: 'React Native', iconClass: 'devicon-react-original colored' },
-    { name: 'Expo', iconClass: 'devicon-react-original colored' },
+    { name: 'React Native', iconName: 'ReactNative' },
+    { name: 'Expo', iconName: 'Expo' },
   ],
   ai: [
-    { name: 'OpenAI API', iconClass: 'devicon-openapi-plain colored' },
-    { name: 'Gemini API', iconClass: 'devicon-google-plain colored' },
+    { name: 'OpenAI API', iconName: 'OpenAI' },
+    { name: 'Gemini API', iconName: 'Gemini' },
   ],
   tools: [
-    { name: 'Docker', iconClass: 'devicon-docker-plain colored' },
-    { name: 'Git', iconClass: 'devicon-git-plain colored' },
-    { name: 'GitHub', iconClass: 'devicon-github-original colored' },
-    { name: 'VS Code', iconClass: 'devicon-vscode-plain colored' },
-    { name: 'Postman', iconClass: 'devicon-postman-plain colored' },
-    { name: 'Vercel', iconClass: 'devicon-vercel-original colored' },
+    { name: 'Docker', iconName: 'Docker' },
+    { name: 'Git', iconName: 'Git' },
+    { name: 'GitHub', iconName: 'GitHub' },
+    { name: 'VS Code', iconName: 'VSCode' },
+    { name: 'Postman', iconName: 'Postman' },
+    { name: 'Vercel', iconName: 'Vercel' },
   ],
 };
 
@@ -101,7 +102,7 @@ const SkillsModal: React.FC<SkillsModalProps> = ({ isOpen, onClose }) => {
                     Complete Skill Arsenal
                   </motion.h2>
                   <p className="text-secondary text-sm mt-1">
-                    16+ technologies across 4 categories
+                    18+ technologies across 4 categories
                   </p>
                 </div>
                 <motion.button
@@ -190,7 +191,7 @@ const SkillCategory: React.FC<{
             className="flex flex-col items-center p-4 bg-elevated/30 border border-border rounded-xl hover:border-accent-crimson/30 hover:bg-elevated/50 transition-all group cursor-pointer"
           >
             <div className="relative mb-3">
-              <i className={`${skill.iconClass} text-4xl md:text-5xl transition-transform duration-300 group-hover:scale-110`} />
+              <TechIcon name={skill.iconName} className="w-10 h-10 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-110" />
               <div className="absolute inset-0 bg-accent-crimson/0 group-hover:bg-accent-crimson/20 blur-xl rounded-full transition-all duration-300" />
             </div>
             <span className="text-xs md:text-sm text-secondary group-hover:text-primary transition-colors text-center font-mono">
