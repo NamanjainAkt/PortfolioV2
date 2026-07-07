@@ -34,7 +34,7 @@ const SkillItem = ({ skill }: { skill: Skill }) => {
   return (
     <div className="flex flex-col items-center mx-2 sm:mx-4 md:mx-6 group cursor-pointer py-4">
       <div className="relative">
-        <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm transition-all duration-500 group-hover:bg-accent-crimson/10 group-hover:border-accent-crimson/30 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+        <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center rounded-2xl bg-white border border-white/20 backdrop-blur-sm transition-all duration-500 group-hover:bg-accent-crimson/10 group-hover:border-accent-crimson/30 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
           
           <div 
             className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-xl"
