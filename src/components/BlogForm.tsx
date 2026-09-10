@@ -132,7 +132,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
+        <form id="blog-form" onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
           <div className="space-y-6">
             <div className="flex items-center gap-3 border-b border-white/5 pb-4">
               <Info size={16} className="text-accent-crimson" />
@@ -249,6 +249,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
             </button>
             <button
                 type="submit"
+                form="blog-form"
                 disabled={loading}
                 className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-accent-crimson hover:text-white transition-all duration-500 shadow-xl shadow-white/5 disabled:opacity-50 flex items-center"
             >

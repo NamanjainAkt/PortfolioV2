@@ -150,7 +150,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
+        <form id="project-form" onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
           {/* Section 1: Core Identity */}
           <div className="space-y-6">
             <div className="flex items-center gap-3 border-b border-white/5 pb-4">
@@ -346,6 +346,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
             </button>
             <button
                 type="submit"
+                form="project-form"
                 disabled={loading}
                 className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-accent-crimson hover:text-white transition-all duration-500 shadow-xl shadow-white/5 disabled:opacity-50 flex items-center"
             >
