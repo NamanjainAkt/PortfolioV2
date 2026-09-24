@@ -9,6 +9,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     return app(req, res);
   } catch (error) {
     console.error('Handler error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 }

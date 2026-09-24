@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Environment } from '@react-three/drei';
+import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 
 const DroneBody = () => {
@@ -98,10 +98,10 @@ const LandingGear = () => {
 };
 
 interface QuadcopterProps {
-  mousePosition: { x: number; y: number };
+  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
 }
 
-const Quadcopter = ({ mousePosition }: QuadcopterProps) => {
+const Quadcopter = ({ mouseRef }: QuadcopterProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const positionRef = useRef({ x: 0, y: 0 });
   const rotationRef = useRef({ x: 0, z: 0 });
@@ -112,22 +112,18 @@ const Quadcopter = ({ mousePosition }: QuadcopterProps) => {
     const lerpFactor = 2.5 * delta;
     const maxTilt = 0.4;
     
-    // Calculate target with a fixed offset (escort distance)
-    const targetX = (mousePosition.x * 4) + 1.2;
-    const targetY = (mousePosition.y * 2.5) + 0.8;
+    const targetX = (mouseRef.current.x * 4) + 1.2;
+    const targetY = (mouseRef.current.y * 2.5) + 0.8;
 
-    // Smooth position update using refs
     positionRef.current.x = THREE.MathUtils.lerp(positionRef.current.x, targetX, lerpFactor);
     positionRef.current.y = THREE.MathUtils.lerp(positionRef.current.y, targetY, lerpFactor);
 
-    const tiltX = -mousePosition.y * maxTilt;
-    const tiltZ = -mousePosition.x * maxTilt;
+    const tiltX = -mouseRef.current.y * maxTilt;
+    const tiltZ = -mouseRef.current.x * maxTilt;
     
-    // Smooth rotation update
     rotationRef.current.x = THREE.MathUtils.lerp(rotationRef.current.x, tiltX, lerpFactor);
     rotationRef.current.z = THREE.MathUtils.lerp(rotationRef.current.z, tiltZ, lerpFactor);
     
-    // Apply updates
     groupRef.current.position.x = positionRef.current.x;
     groupRef.current.position.y = positionRef.current.y + Math.sin(state.clock.elapsedTime * 2) * 0.002;
     groupRef.current.rotation.x = rotationRef.current.x;
@@ -155,28 +151,13 @@ const Quadcopter = ({ mousePosition }: QuadcopterProps) => {
 };
 
 const DroneOverlay = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(true);
   const mouseRef = useRef({ x: 0, y: 0 });
-  const rafRef = useRef<number>();
-
-  // Throttled mouse handler using RAF
-  const updateMousePosition = useCallback(() => {
-    setMousePosition(mouseRef.current);
-    rafRef.current = undefined;
-  }, []);
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    // Convert pixel coordinates to NDC (-1 to 1)
-    mouseRef.current = {
-      x: (event.clientX / window.innerWidth) * 2 - 1,
-      y: -(event.clientY / window.innerHeight) * 2 + 1,
-    };
-    
-    if (!rafRef.current) {
-      rafRef.current = requestAnimationFrame(updateMousePosition);
-    }
-  }, [updateMousePosition]);
+    mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  }, []);
 
   // Visibility check - pause rendering when not visible
   useEffect(() => {
@@ -199,9 +180,6 @@ const DroneOverlay = () => {
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
     };
   }, [handleMouseMove]);
 
@@ -212,7 +190,7 @@ const DroneOverlay = () => {
     >
       <Canvas 
         camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ alpha: true, antialias: true }}
+        gl={{ alpha: true, antialias: false, powerPreference: 'low-power' }}
         frameloop={isVisible ? 'always' : 'never'}
         style={{ pointerEvents: 'none' }}
       >
@@ -226,10 +204,8 @@ const DroneOverlay = () => {
           rotationIntensity={0.2} 
           floatIntensity={0.5}
         >
-          <Quadcopter mousePosition={mousePosition} />
+          <Quadcopter mouseRef={mouseRef} />
         </Float>
-        
-        <Environment preset="city" />
       </Canvas>
     </div>
   );

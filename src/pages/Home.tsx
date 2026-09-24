@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail, FileText, Cpu } from 'lucide-react';
 import Typewriter from '../components/Typewriter';
@@ -7,7 +7,7 @@ import SkillSection from '../components/SkillSection';
 import WorkExperience from '../components/WorkExperience';
 import ProjectCarouselRevamp from '../components/ProjectCarouselRevamp';
 import { Project } from '../types/project';
-import DroneOverlay from '../components/drone/DroneOverlay';
+const DroneOverlay = lazy(() => import('../components/drone/DroneOverlay'));
 
 // Static data moved outside component to prevent recreation on render
 const ROLES = [
@@ -68,25 +68,25 @@ const Home = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Memoize fetch function
-  const fetchProjects = useCallback(async () => {
-    try {
-      const res = await fetch('/api/projects?limit=5&orderBy=displayOrder');
-      if (!res.ok) throw new Error(`Failed to fetch projects: ${res.status}`);
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setProjects(data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch projects');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    const controller = new AbortController();
+    const fetchProjects = async () => {
+      try {
+        const res = await fetch('/api/projects?limit=5&orderBy=displayOrder', { signal: controller.signal });
+        if (!res.ok) throw new Error(`Failed to fetch projects: ${res.status}`);
+        const data = await res.json();
+        if (!controller.signal.aborted && Array.isArray(data)) {
+          setProjects(data);
+        }
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') console.error('Failed to fetch projects');
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    };
     fetchProjects();
-  }, [fetchProjects]);
+    return () => controller.abort();
+  }, []);
 
   // Memoize scroll handler
   const handleScrollToProjects = useCallback(() => {
@@ -107,7 +107,9 @@ const Home = () => {
 
   return (
     <div className="pt-0 bg-[#050505]">
-      <DroneOverlay />
+      <Suspense fallback={null}>
+        <DroneOverlay />
+      </Suspense>
       
       <section id="home" className="relative min-h-[100vh] flex items-center justify-center overflow-hidden">
         <HeroBackground />

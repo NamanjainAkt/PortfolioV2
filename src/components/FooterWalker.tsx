@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Environment } from '@react-three/drei'
 import { WalkerExp } from './WalkerExp'
 
 type Props = {
@@ -72,14 +71,13 @@ const FooterWalker: React.FC<Props> = ({ startRef, endRef, containerRef }) => {
       >
         <Canvas
           dpr={[1, 2]}
-          gl={{ alpha: true, antialias: true }}
+          gl={{ alpha: true, antialias: false, powerPreference: 'low-power' }}
           frameloop={isVisible ? 'always' : 'never'}
           camera={{ position: [0, 1.2, cameraZ], fov: FOV }}
           style={{ background: 'transparent', pointerEvents: 'none' }}
         >
           <ambientLight intensity={0.6} />
           <pointLight position={[0, 2, 2]} intensity={0.6} />
-          <Environment preset="city" />
           <group position={[0, -0.6, 0]}>
             <WalkerExp
               scale={0.5}

@@ -11,11 +11,15 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }, (err, user) => {
     if (err) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    (req as any).user = user;
+    const payload = user as any;
+    if (!payload || payload.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    (req as any).user = payload;
     next();
   });
 };

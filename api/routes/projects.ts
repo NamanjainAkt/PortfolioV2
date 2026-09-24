@@ -4,6 +4,20 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
+const handlePrismaError = (error: any, res: any, fallback: string) => {
+  if (error?.code === 'P2002') {
+    return res.status(409).json({ success: false, error: 'Slug already exists' });
+  }
+  if (error?.code === 'P2023') {
+    return res.status(400).json({ success: false, error: 'Invalid ID format' });
+  }
+  if (error?.code === 'P2025') {
+    return res.status(404).json({ success: false, error: 'Resource not found' });
+  }
+  console.error(fallback, error);
+  return res.status(500).json({ success: false, error: fallback });
+};
+
 // Get all projects (with optional limit and ordering)
 router.get('/', async (req, res) => {
   try {
@@ -11,9 +25,10 @@ router.get('/', async (req, res) => {
     
     let take: number | undefined;
     if (limit !== undefined) {
-      const parsed = parseInt(limit as string, 10);
-      if (isNaN(parsed) || parsed < 1) {
-        return res.status(400).json({ success: false, error: 'Invalid limit parameter' });
+      const raw = String(limit).trim();
+      const parsed = Number(raw);
+      if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
+        return res.status(400).json({ success: false, error: 'Invalid limit parameter (must be 1-100)' });
       }
       take = parsed;
     }
@@ -39,8 +54,8 @@ router.put('/reorder', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'projects array is required' });
     }
     for (const p of projects) {
-      if (!p.id || typeof p.displayOrder !== 'number') {
-        return res.status(400).json({ success: false, error: 'Each project must have id and displayOrder' });
+      if (!p.id || typeof p.displayOrder !== 'number' || !Number.isFinite(p.displayOrder)) {
+        return res.status(400).json({ success: false, error: 'Each project must have id and a finite displayOrder' });
       }
     }
     
@@ -89,9 +104,8 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'images must be an array' });
     }
     
-    // Get highest displayOrder and add 1 (new projects at top)
-    const highestOrder = await prisma.project.findFirst({
-      orderBy: { displayOrder: 'desc' },
+    const lowestOrder = await prisma.project.findFirst({
+      orderBy: { displayOrder: 'asc' },
       select: { displayOrder: true },
     });
     
@@ -107,12 +121,12 @@ router.post('/', authenticateToken, async (req, res) => {
         category: category || 'Development',
         githubUrl,
         liveUrl,
-        displayOrder: (highestOrder?.displayOrder ?? 0) + 1,
+        displayOrder: (lowestOrder?.displayOrder ?? 1) - 1,
       },
     });
     res.json(project);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create project' });
+  } catch (error: any) {
+    return handlePrismaError(error, res, 'Failed to create project');
   }
 });
 
@@ -146,28 +160,19 @@ router.put('/:id', authenticateToken, async (req, res) => {
       },
     });
     res.json(project);
-  } catch (error) {
-    if ((error as any)?.code === 'P2025') {
-      return res.status(404).json({ success: false, error: 'Resource not found' });
-    }
-    console.error('Failed to update project:', error);
-    res.status(500).json({ error: 'Failed to update project' });
+  } catch (error: any) {
+    return handlePrismaError(error, res, 'Failed to update project');
   }
 });
 
-// Delete project (Admin only)
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     await prisma.project.delete({
       where: { id: req.params.id },
     });
     res.json({ message: 'Project deleted' });
-  } catch (error) {
-    if ((error as any)?.code === 'P2025') {
-      return res.status(404).json({ success: false, error: 'Resource not found' });
-    }
-    console.error('Failed to delete project:', error);
-    res.status(500).json({ error: 'Failed to delete project' });
+  } catch (error: any) {
+    return handlePrismaError(error, res, 'Failed to delete project');
   }
 });
 

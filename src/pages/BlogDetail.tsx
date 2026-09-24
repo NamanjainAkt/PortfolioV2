@@ -74,26 +74,22 @@ const BlogDetail = () => {
   const [loading, setLoading] = useState(true);
   const [activeHeading, setActiveHeading] = useState<string>('');
 
-  // Reader Customization State
+  const safeGet = (key: string): string | null => {
+    try { return localStorage.getItem(key); } catch { return null; }
+  };
   const [theme, setTheme] = useState<ThemeType>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('blogTheme') as ThemeType) || 'slate';
-    }
-    return 'slate';
+    const v = safeGet('blogTheme') as ThemeType | null;
+    return v || 'slate';
   });
   
   const [fontFamily, setFontFamily] = useState<FontFamilyType>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('blogFont') as FontFamilyType) || 'sans';
-    }
-    return 'sans';
+    const v = safeGet('blogFont') as FontFamilyType | null;
+    return v || 'sans';
   });
   
   const [fontSize, setFontSize] = useState<FontSizeType>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('blogFontSize') as FontSizeType) || 'md';
-    }
-    return 'md';
+    const v = safeGet('blogFontSize') as FontSizeType | null;
+    return v || 'md';
   });
 
   // Parallax Logic
@@ -104,30 +100,33 @@ const BlogDetail = () => {
 
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-  // Save preferences to localStorage
   useEffect(() => {
-    localStorage.setItem('blogTheme', theme);
-    localStorage.setItem('blogFont', fontFamily);
-    localStorage.setItem('blogFontSize', fontSize);
+    try {
+      localStorage.setItem('blogTheme', theme);
+      localStorage.setItem('blogFont', fontFamily);
+      localStorage.setItem('blogFontSize', fontSize);
+    } catch { /* ignore */ }
   }, [theme, fontFamily, fontSize]);
 
-  // Fetch blog data
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
     const fetchBlog = async () => {
       try {
-        const res = await fetch(`/api/blogs/${slug}`);
+        const res = await fetch(`/api/blogs/${slug}`, { signal });
         if (res.ok) {
           const data = await res.json();
-          setBlog(data);
+          if (!signal.aborted) setBlog(data);
         }
-      } catch {
-        console.error('Failed to fetch blog');
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') console.error('Failed to fetch blog');
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     };
     fetchBlog();
     window.scrollTo(0, 0);
+    return () => controller.abort();
   }, [slug]);
 
   // Memoized headings extraction
@@ -241,7 +240,7 @@ const BlogDetail = () => {
               </span>
               <div className="w-1 h-1 rounded-full bg-accent-crimson" />
               <span className="text-[10px] font-mono uppercase tracking-[0.3em] opacity-70 text-white">
-                {blog.createdAt ? format(new Date(blog.createdAt), 'MMMM dd, yyyy') : 'N/A'}
+                {(() => { try { return blog.createdAt ? format(new Date(blog.createdAt), 'MMMM dd, yyyy') : 'N/A'; } catch { return 'N/A'; }})()}
               </span>
             </div>
           </FadeInWhenVisible>

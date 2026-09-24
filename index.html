@@ -62,12 +62,32 @@
   <body>
     <div id="root" style="background-color:#050505;min-height:100vh"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Cal element-click embed code begins -->
     <script type="text/javascript">
-      (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
-      Cal("init", "30min", {origin:"https://app.cal.com"});
-      Cal.ns["30min"]("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+      (function() {
+        function loadCal() {
+          if (window.Cal) return;
+          var s = document.createElement('script');
+          s.src = 'https://app.cal.com/embed/embed.js';
+          s.async = true;
+          s.onload = function() {
+            Cal('init', '30min', {origin:'https://app.cal.com'});
+            Cal.ns['30min']('ui', {'hideEventTypeDetails':false,'layout':'month_view'});
+          };
+          document.head.appendChild(s);
+        }
+        function onCalTrigger() { loadCal(); document.removeEventListener('click', onCalTrigger); }
+        document.addEventListener('click', function(e) {
+          var t = e.target;
+          if (t && t.closest && t.closest('[data-cal-link]')) { loadCal(); }
+        });
+        window.addEventListener('load', function() {
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(function(){
+              if (document.querySelector('[data-cal-link]')) loadCal();
+            }, { timeout: 5000 });
+          }
+        });
+      })();
     </script>
-    <!-- Cal element-click embed code ends -->
   </body>
 </html>

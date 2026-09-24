@@ -36,35 +36,39 @@ const ProjectDetail = () => {
   });
 
   useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const fetchProject = async () => {
       try {
-        const res = await fetch(`/api/projects/${slug}`);
+        const res = await fetch(`/api/projects/${slug}`, { signal });
         if (res.ok) {
           const data = await res.json();
-          setProject(data);
+          if (!signal.aborted) setProject(data);
         }
-      } catch (error) {
-        console.error('Failed to fetch project', error);
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') console.error('Failed to fetch project', error);
       } finally {
-        setLoading(false);
+        if (!signal.aborted) setLoading(false);
       }
     };
 
     const fetchAllProjects = async () => {
       try {
-        const res = await fetch('/api/projects');
+        const res = await fetch('/api/projects', { signal });
         if (res.ok) {
           const data = await res.json();
-          setAllProjects(Array.isArray(data) ? data : []);
+          if (!signal.aborted) setAllProjects(Array.isArray(data) ? data : []);
         }
-      } catch (error) {
-        console.error('Failed to fetch projects', error);
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') console.error('Failed to fetch projects', error);
       }
     };
 
     fetchProject();
     fetchAllProjects();
     window.scrollTo(0, 0);
+    return () => controller.abort();
   }, [slug]);
 
   const relatedProjects = allProjects

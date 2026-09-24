@@ -43,24 +43,26 @@ const Admin = () => {
       navigate('/');
       return;
     }
+    const controller = new AbortController();
     if (activeTab === 'reorder') {
-      fetchProjects();
+      fetchProjects(controller.signal);
     } else {
-      fetchItems(activeTab);
+      fetchItems(activeTab, controller.signal);
     }
     setIsMobileMenuOpen(false);
-  }, [activeTab]);
+    return () => controller.abort();
+  }, [activeTab, navigate]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const res = await fetch('/api/projects?orderBy=displayOrder');
+      const res = await fetch('/api/projects?orderBy=displayOrder', { signal });
       const data = await res.json();
-      setProjects(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch projects');
+      if (!signal?.aborted) setProjects(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') console.error('Failed to fetch projects');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
@@ -87,16 +89,16 @@ const Admin = () => {
     setProjects(reorderedProjects);
   };
 
-  const fetchItems = async (tab: string) => {
+  const fetchItems = async (tab: string, signal?: AbortSignal) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/${tab}`);
+      const res = await fetch(`/api/${tab}`, { signal });
       const data = await res.json();
-      setItems(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to fetch items');
+      if (!signal?.aborted) setItems(Array.isArray(data) ? data : []);
+    } catch (error: any) {
+      if (error?.name !== 'AbortError') console.error('Failed to fetch items');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
@@ -371,7 +373,7 @@ const Admin = () => {
                             <span className="text-[10px] font-mono text-tertiary uppercase tracking-widest">/{item.slug}</span>
                             <div className="w-1 h-1 rounded-full bg-white/20" />
                             <span className="text-[10px] font-mono text-tertiary uppercase tracking-widest">
-                              {new Date(item.createdAt).toLocaleDateString()}
+                              {(() => { try { return new Date(item.createdAt).toLocaleDateString(); } catch { return 'N/A'; }})()}
                             </span>
                           </div>
                         </div>

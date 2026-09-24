@@ -4,11 +4,35 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-// Get all blogs
+const handleBlogPrismaError = (error: any, res: any, fallback: string) => {
+  if (error?.code === 'P2002') {
+    return res.status(409).json({ success: false, error: 'Slug already exists' });
+  }
+  if (error?.code === 'P2023') {
+    return res.status(400).json({ success: false, error: 'Invalid ID format' });
+  }
+  if (error?.code === 'P2025') {
+    return res.status(404).json({ success: false, error: 'Resource not found' });
+  }
+  console.error(fallback, error);
+  return res.status(500).json({ success: false, error: fallback });
+};
+
 router.get('/', async (req, res) => {
   try {
+    const { limit } = req.query;
+    let take: number | undefined;
+    if (limit !== undefined) {
+      const raw = String(limit).trim();
+      const parsed = Number(raw);
+      if (!Number.isInteger(parsed) || parsed < 1 || parsed > 100) {
+        return res.status(400).json({ success: false, error: 'Invalid limit parameter (must be 1-100)' });
+      }
+      take = parsed;
+    }
     const blogs = await prisma.blog.findMany({
       orderBy: { createdAt: 'desc' },
+      take,
     });
     res.json(blogs);
   } catch (error) {
@@ -48,8 +72,8 @@ router.post('/', authenticateToken, async (req, res) => {
       },
     });
     res.json(blog);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create blog' });
+  } catch (error: any) {
+    return handleBlogPrismaError(error, res, 'Failed to create blog');
   }
 });
 
@@ -71,28 +95,19 @@ router.put('/:id', authenticateToken, async (req, res) => {
       },
     });
     res.json(blog);
-  } catch (error) {
-    if ((error as any)?.code === 'P2025') {
-      return res.status(404).json({ success: false, error: 'Resource not found' });
-    }
-    console.error('Failed to update blog:', error);
-    res.status(500).json({ error: 'Failed to update blog' });
+  } catch (error: any) {
+    return handleBlogPrismaError(error, res, 'Failed to update blog');
   }
 });
 
-// Delete blog (Admin only)
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     await prisma.blog.delete({
       where: { id: req.params.id },
     });
     res.json({ message: 'Blog deleted' });
-  } catch (error) {
-    if ((error as any)?.code === 'P2025') {
-      return res.status(404).json({ success: false, error: 'Resource not found' });
-    }
-    console.error('Failed to delete blog:', error);
-    res.status(500).json({ error: 'Failed to delete blog' });
+  } catch (error: any) {
+    return handleBlogPrismaError(error, res, 'Failed to delete blog');
   }
 });
 

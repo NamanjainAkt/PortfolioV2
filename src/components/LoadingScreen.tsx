@@ -98,13 +98,12 @@ const LoadingScreen = ({ onComplete }: LoadingScreenProps) => {
           </span>
         </motion.div>
 
-        {/* Progress bar */}
         <div className="w-64 sm:w-80 h-[2px] bg-white/10 relative overflow-hidden rounded-full">
           <motion.div
-            className="absolute inset-y-0 left-0 bg-accent-crimson rounded-full"
+            className="absolute inset-y-0 left-0 w-full bg-accent-crimson rounded-full origin-left"
             style={{ 
-              width: `${progress}%`,
-              willChange: 'width',
+              scaleX: progress / 100,
+              willChange: 'transform',
             }}
             transition={{ duration: 0.1 }}
           />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense, useCallback } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
@@ -8,7 +8,6 @@ import Footer2 from './components/Footer2';
 import AdminModal from './components/AdminModal';
 import BottomNav from './components/BottomNav';
 const LazyChatBot = lazy(() => import('./components/ChatBot'));
-import LoadingScreen from './components/LoadingScreen';
 import LoadingFallback from './components/LoadingFallback';
 import { PageTransition } from './components/PageTransition';
 const CustomCursor = lazy(() => import('./components/CustomCursor').then(m => ({ default: m.CustomCursor })));
@@ -38,58 +37,65 @@ const ScrollToTop = () => {
 };
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
 
   const isHome = location.pathname === '/';
   const isAdmin = location.pathname.startsWith('/admin');
 
-  const handleLoadingComplete = useCallback(() => setIsLoading(false), []);
+  useEffect(() => {
+    const w = window as unknown as { requestIdleCallback?: (cb: () => void) => number; cancelIdleCallback?: (id: number) => void };
+    const idle = w.requestIdleCallback;
+    const prefetch = () => {
+      import('./pages/Projects');
+      import('./pages/Blogs');
+      import('./pages/Contact');
+    };
+    if (idle) {
+      const id = idle(prefetch);
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const t = setTimeout(prefetch, 2000);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <AnimatePresence mode="wait">
-      {isLoading ? (
-        <LoadingScreen key="loading" onComplete={handleLoadingComplete} />
-      ) : (
-        <motion.div
-          key="app"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0"
-        >
-          <Suspense fallback={null}>
-            <CustomCursor />
-            <ScrollProgress />
-            <Spotlight />
-            <CommandPalette />
-          </Suspense>
-          <ScrollToTop />
-          {!isAdmin && <Navbar />}
-          {!isAdmin && <BottomNav />}
-          <AdminModal />
-          <Suspense fallback={null}>
-            <LazyChatBot />
-          </Suspense>
-          <main className="flex-grow">
-            <AnimatePresence mode="wait">
-              <Routes location={location} key={location.pathname}>
-                <Route path="/" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Home /></Suspense></PageTransition>} />
-                <Route path="/projects" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Projects /></Suspense></PageTransition>} />
-                <Route path="/projects/:slug" element={<PageTransition><Suspense fallback={<LoadingFallback />}><ProjectDetail /></Suspense></PageTransition>} />
-                <Route path="/blogs" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Blogs /></Suspense></PageTransition>} />
-                <Route path="/blogs/:slug" element={<PageTransition><Suspense fallback={<LoadingFallback />}><BlogDetail /></Suspense></PageTransition>} />
-                <Route path="/contact" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Contact /></Suspense></PageTransition>} />
-                <Route path="/admin" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Admin /></Suspense></PageTransition>} />
-                <Route path="*" element={<PageTransition><Suspense fallback={<LoadingFallback />}><NotFound /></Suspense></PageTransition>} />
-              </Routes>
-            </AnimatePresence>
-          </main>
-          {isHome ? <Footer /> : <Footer2 />}
-          <Analytics />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div
+      key="app"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0"
+    >
+      <Suspense fallback={null}>
+        <CustomCursor />
+        <ScrollProgress />
+        <Spotlight />
+        <CommandPalette />
+      </Suspense>
+      <ScrollToTop />
+      {!isAdmin && <Navbar />}
+      {!isAdmin && <BottomNav />}
+      <AdminModal />
+      <Suspense fallback={null}>
+        <LazyChatBot />
+      </Suspense>
+      <main className="flex-grow">
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Home /></Suspense></PageTransition>} />
+            <Route path="/projects" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Projects /></Suspense></PageTransition>} />
+            <Route path="/projects/:slug" element={<PageTransition><Suspense fallback={<LoadingFallback />}><ProjectDetail /></Suspense></PageTransition>} />
+            <Route path="/blogs" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Blogs /></Suspense></PageTransition>} />
+            <Route path="/blogs/:slug" element={<PageTransition><Suspense fallback={<LoadingFallback />}><BlogDetail /></Suspense></PageTransition>} />
+            <Route path="/contact" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Contact /></Suspense></PageTransition>} />
+            <Route path="/admin" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Admin /></Suspense></PageTransition>} />
+            <Route path="*" element={<PageTransition><Suspense fallback={<LoadingFallback />}><NotFound /></Suspense></PageTransition>} />
+          </Routes>
+        </AnimatePresence>
+      </main>
+      {isHome ? <Footer /> : <Footer2 />}
+      <Analytics />
+    </motion.div>
   );
 }
 

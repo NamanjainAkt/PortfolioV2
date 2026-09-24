@@ -5,7 +5,15 @@ import rateLimit from 'express-rate-limit';
 import prisma from '../lib/prisma.js';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-secret-change-in-production';
+
+const statusLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Too many requests. Try again shortly.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -15,8 +23,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Check if admin exists
-router.get('/status', async (req, res) => {
+router.get('/status', statusLimiter, async (req, res) => {
   try {
     const admin = await prisma.adminAuth.findFirst();
     res.json({ initialized: !!admin });
@@ -26,13 +33,19 @@ router.get('/status', async (req, res) => {
   }
 });
 
-// Apply rate limiter to login and setup (status is exempt)
 router.use('/login', authLimiter);
 router.use('/setup', authLimiter);
 
-// Setup admin password (only if none exists)
 router.post('/setup', async (req, res) => {
   try {
+    const setupToken = process.env.ADMIN_SETUP_TOKEN;
+    if (setupToken) {
+      const provided = req.headers['x-setup-token'] as string | undefined;
+      if (provided !== setupToken) {
+        return res.status(403).json({ error: 'Setup is not authorized' });
+      }
+    }
+
     const existingAdmin = await prisma.adminAuth.findFirst();
     if (existingAdmin) {
       return res.status(400).json({ error: 'Admin already initialized' });
@@ -66,15 +79,15 @@ router.post('/login', async (req, res) => {
     const admin = await prisma.adminAuth.findFirst();
 
     if (!admin) {
-      return res.status(400).json({ error: 'Admin not initialized' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isValid = await bcrypt.compare(password, admin.passwordHash);
     if (!isValid) {
-      return res.status(401).json({ error: 'Invalid password' });
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: admin.id, role: 'admin' }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: admin.id, role: 'admin' }, JWT_SECRET, { expiresIn: '1d', algorithm: 'HS256' });
     res.json({ token });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });

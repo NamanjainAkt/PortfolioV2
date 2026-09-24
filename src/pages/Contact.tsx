@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect, Suspense, lazy } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Github, Linkedin, Send, Check, Loader2, Radio, Globe, Zap } from 'lucide-react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Stars, Environment, OrbitControls } from '@react-three/drei';
+import { Float, Stars, OrbitControls } from '@react-three/drei';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
@@ -185,7 +185,8 @@ const Contact = () => {
           <Canvas 
             dpr={[1, 1.5]} 
             camera={{ position: [0, 0, 5], fov: 45 }} 
-            frameloop="demand"
+            gl={{ antialias: false, powerPreference: 'low-power' }}
+            frameloop="always"
           >
             <Suspense fallback={null}>
               <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
@@ -195,7 +196,6 @@ const Contact = () => {
               
               <MouseFollowSatellite />
               
-              <Environment preset="night" />
               <OrbitControls enableZoom={false} enablePan={false} />
             </Suspense>
           </Canvas>
