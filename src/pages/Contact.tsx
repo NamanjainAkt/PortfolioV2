@@ -1,14 +1,8 @@
-import { useState, useCallback, useRef, useEffect, Suspense, lazy } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Github, Linkedin, Send, Check, Loader2, Radio, Globe, Zap } from 'lucide-react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Stars, OrbitControls } from '@react-three/drei';
 import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
-import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
-
-// Lazy load Satellite component for code splitting
-const Satellite = lazy(() => import('../components/Satellite').then(m => ({ default: m.Satellite })));
 
 interface FormErrors {
   name?: string;
@@ -23,43 +17,6 @@ const CONTACT_CHANNELS = [
   { icon: Linkedin, name: 'LinkedIn', value: 'linkedin.com/in/naman-jain-akt', href: 'https://linkedin.com/in/naman-jain-akt', label: 'NEURAL_NET' },
 ];
 
-const MouseFollowSatellite = () => {
-  const { mouse, viewport } = useThree();
-  const satelliteRef = useRef<THREE.Group>(null);
-  const targetRef = useRef({ x: 0, y: 0 });
-  const rotationRef = useRef(0);
-
-  useFrame((state) => {
-    if (!satelliteRef.current) return;
-    
-    // Always rotate continuously
-    rotationRef.current += 0.005;
-    satelliteRef.current.rotation.y = rotationRef.current;
-    
-    // Add subtle floating motion
-    const t = state.clock.getElapsedTime();
-    satelliteRef.current.position.y += Math.sin(t * 2) * 0.0005;
-    
-    // Calculate target position based on mouse
-    targetRef.current.x = (mouse.x * viewport.width) / 4 - 0.5;
-    targetRef.current.y = (mouse.y * viewport.height) / 4 + 1;
-    
-    // Smooth lerp position
-    satelliteRef.current.position.x = THREE.MathUtils.lerp(satelliteRef.current.position.x, targetRef.current.x, 0.05);
-    satelliteRef.current.position.y = THREE.MathUtils.lerp(satelliteRef.current.position.y, targetRef.current.y + Math.sin(t * 2) * 0.1, 0.05);
-  });
-
-  return (
-    <group ref={satelliteRef}>
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        <Suspense fallback={null}>
-          <Satellite scale={0.9} />
-        </Suspense>
-      </Float>
-    </group>
-  );
-};
-
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -71,17 +28,6 @@ const Contact = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Check for mobile on mount
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(!window.matchMedia('(pointer: fine)').matches);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const validateField = useCallback((name: string, value: string): string | undefined => {
     switch (name) {
@@ -179,29 +125,6 @@ const Contact = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-[#050505] overflow-hidden">
-      {/* 3D Background Layer - Hidden on mobile */}
-      {!isMobile && (
-        <div className="absolute inset-0 z-0">
-          <Canvas 
-            dpr={[1, 1.5]} 
-            camera={{ position: [0, 0, 5], fov: 45 }} 
-            gl={{ antialias: false, powerPreference: 'low-power' }}
-            frameloop="always"
-          >
-            <Suspense fallback={null}>
-              <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
-              <ambientLight intensity={0.2} />
-              <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
-              <pointLight position={[-10, -10, -10]} intensity={0.5} color="#C8102E" />
-              
-              <MouseFollowSatellite />
-              
-              <OrbitControls enableZoom={false} enablePan={false} />
-            </Suspense>
-          </Canvas>
-        </div>
-      )}
-
       {/* Content Layer */}
       <div className="relative z-10 pt-28 pb-20 container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
