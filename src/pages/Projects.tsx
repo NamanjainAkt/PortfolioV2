@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowUpRight } from 'lucide-react';
 import { clsx } from 'clsx';
-import { ArrowUpRight, FolderGit2, MonitorSmartphone, Sparkles, Command, ShieldCheck } from 'lucide-react';
-import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
 interface Project {
@@ -21,7 +19,6 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  // Memoized fetch function
   const fetchProjects = useCallback(async () => {
     try {
       const res = await fetch('/api/projects?orderBy=displayOrder');
@@ -38,183 +35,138 @@ const Projects = () => {
     fetchProjects();
   }, [fetchProjects]);
 
-  // Memoize categories
-  const categories = useMemo(() => 
-    ['all', ...Array.from(new Set(projects.map(p => p.category || 'Development')))]
-  , [projects]);
+  const categories = useMemo(
+    () => ['all', ...Array.from(new Set(projects.map((p) => p.category || 'Development')))],
+    [projects]
+  );
 
-  // Memoize filtered projects
-  const filteredProjects = useMemo(() => 
-    filter === 'all' ? projects : projects.filter(p => (p.category || 'Development') === filter)
-  , [filter, projects]);
-
-  // Memoized filter handler
-  const handleFilterChange = useCallback((cat: string) => {
-    setFilter(cat);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-accent-crimson/20 border-t-accent-crimson rounded-full animate-spin" />
-      </div>
-    );
-  }
+  const filteredProjects = useMemo(
+    () => (filter === 'all' ? projects : projects.filter((p) => (p.category || 'Development') === filter)),
+    [filter, projects]
+  );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-primary pb-32 overflow-x-hidden">
-      {/* Cinematic Header */}
-      <section className="relative pt-32 pb-20 border-b border-white/5">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(200,16,46,0.05),transparent_70%)] pointer-events-none" />
-        
-        <div className="container mx-auto px-4 max-w-6xl relative z-10 text-center md:text-left">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
-            <div className="space-y-6">
-              <FadeInWhenVisible>
-                <div className="flex items-center justify-center md:justify-start gap-3">
-                  <Command size={14} className="text-accent-crimson" />
-                  <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.5em]">Operational Deployment</span>
-                </div>
-              </FadeInWhenVisible>
-              <FadeInWhenVisible delay={0.1}>
-                <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif font-black tracking-tighter uppercase leading-[0.85]">
-                  PROJECT <span className="text-accent-crimson">BASE .</span>
-                </h1>
-              </FadeInWhenVisible>
-            </div>
+    <div className="frame">
+      <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />
 
-            {/* Compact Category Filter */}
-            <FadeInWhenVisible delay={0.2} className="w-full md:w-auto">
-              <div className="flex flex-wrap justify-center gap-2 p-1 bg-white/[0.03] border border-white/10 rounded-2xl backdrop-blur-md">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => handleFilterChange(cat)}
-                    className={clsx(
-                      'px-3 py-2 sm:px-6 sm:py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest transition-all duration-500',
-                      filter === cat 
-                        ? 'bg-accent-crimson text-white shadow-lg shadow-accent-crimson/20' 
-                        : 'text-tertiary hover:bg-white/5 hover:text-primary'
-                    )}
-                    style={{ willChange: 'transform' }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </FadeInWhenVisible>
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <p className="mono-label">Archive — Selected work</p>
+
+          <div className="mt-4 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-4xl font-medium tracking-tightest sm:text-6xl">Projects.</h1>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-secondary">
+                A record of the systems, products and interfaces I&apos;ve built — from schema to
+                shipped screen.
+              </p>
+            </div>
+            <p className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+              {loading ? '—' : String(projects.length).padStart(2, '0')} entries
+            </p>
           </div>
+
+          {!loading && categories.length > 2 && (
+            <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-4">
+              <span className="mono-label">Filter</span>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setFilter(cat)}
+                  className={clsx(
+                    'font-mono text-[10px] uppercase tracking-[0.16em] transition-colors duration-200',
+                    filter === cat
+                      ? 'text-primary'
+                      : 'text-tertiary hover:text-primary'
+                  )}
+                >
+                  {filter === cat && <span className="mr-1.5" aria-hidden="true">—</span>}
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Main Grid */}
-      <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
-          <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project, index) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                style={{ willChange: 'transform, opacity' }}
-              >
-                <Link to={`/projects/${project.slug}`} className="group block h-full">
-                  <div 
-                    className="h-full flex flex-col bg-[#111] border border-white/5 rounded-[2.5rem] overflow-hidden hover:border-accent-crimson/30 transition-all duration-500 hover:-translate-y-3"
-                    style={{ willChange: 'transform' }}
-                  >
-                    
-                    {/* Visual Asset */}
-                    <div className="aspect-[16/10] overflow-hidden relative">
-                      {project.images[0] ? (
-                        <img
-                          src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.large })}
-                          alt=""
-                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 saturate-50 group-hover:saturate-100"
-                          loading="lazy"
-                          style={{ willChange: 'transform' }}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-[#151515] flex items-center justify-center">
-                          <FolderGit2 size={60} className="text-white/5" />
-                        </div>
-                      )}
-                      
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent opacity-60" />
-                      
-                      {/* Top Badges */}
-                      <div className="absolute top-6 left-6 flex gap-2">
-                        <div className="px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full flex items-center gap-2">
-                          <Sparkles size={10} className="text-accent-glow" />
-                          <span className="text-[8px] font-mono text-secondary uppercase tracking-widest">{project.category || 'Development'}</span>
-                        </div>
+      <section>
+        <div className="page-column py-8 sm:py-10">
+          {loading ? (
+            <div className="border-t border-line" aria-label="Loading projects">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="flex animate-pulse items-center gap-4 border-b border-line py-5 sm:gap-6">
+                  <div className="h-14 w-20 shrink-0 bg-surface sm:h-20 sm:w-32" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-2.5 w-20 bg-surface" />
+                    <div className="h-4 w-1/3 bg-surface" />
+                    <div className="h-2.5 w-2/3 bg-surface" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="border-y border-line py-20 text-center">
+              <p className="mono-label">No projects</p>
+              <p className="mt-3 text-sm text-secondary">
+                Nothing published in this category yet.
+              </p>
+            </div>
+          ) : (
+            <div className="border-t border-line">
+              {filteredProjects.map((project) => (
+                <Link
+                  key={project.id}
+                  to={`/projects/${project.slug}`}
+                  className="group grid grid-cols-[80px_1fr_auto] items-center gap-4 border-b border-line py-5 transition-colors duration-300 hover:bg-surface sm:grid-cols-[128px_1fr_auto] sm:gap-6"
+                >
+                  <div className="h-14 w-20 overflow-hidden border border-line bg-surface sm:h-20 sm:w-32">
+                    {project.images[0] ? (
+                      <img
+                        src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.thumbnail })}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center font-mono text-[10px] tracking-[0.2em] text-tertiary">
+                        {project.title.slice(0, 2).toUpperCase()}
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Content Section */}
-                    <div className="p-6 sm:p-8 md:p-10 flex flex-col flex-1 relative">
-                      <div className="absolute top-0 right-10 -translate-y-1/2 w-12 h-12 rounded-2xl bg-accent-crimson flex items-center justify-center shadow-xl shadow-accent-crimson/20 transform group-hover:rotate-12 transition-transform duration-500">
-                        <ArrowUpRight size={20} className="text-white" />
-                      </div>
-
-                      <h2 className="text-3xl font-serif font-black text-white mb-4 group-hover:text-accent-crimson transition-colors uppercase tracking-tighter leading-none">
-                        {project.title}
-                      </h2>
-                      
-                      <p className="text-secondary text-sm font-light line-clamp-3 mb-8 leading-relaxed italic opacity-60 group-hover:opacity-100 transition-opacity">
-                        {project.overview}
-                      </p>
-
-                      <div className="mt-auto pt-6 border-t border-white/5">
-                        <div className="flex flex-wrap gap-2">
-                          {project.techStack.slice(0, 3).map(tech => (
-                            <span key={tech} className="px-2 py-0.5 bg-white/5 border border-white/5 rounded text-[8px] font-mono text-tertiary uppercase tracking-widest group-hover:border-accent-crimson/30 group-hover:text-secondary transition-colors">
-                              {tech}
-                            </span>
-                          ))}
-                          {project.techStack.length > 3 && (
-                            <span className="text-[8px] font-mono text-accent-crimson uppercase pt-1">+{project.techStack.length - 3} More</span>
-                          )}
-                        </div>
-                      </div>
+                  <div className="min-w-0">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-tertiary">
+                      {project.category || 'Development'}
+                    </p>
+                    <h2 className="mt-1 text-lg font-medium tracking-tight sm:text-xl">
+                      {project.title}
+                    </h2>
+                    <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-secondary">
+                      {project.overview}
+                    </p>
+                    <div className="mt-2 hidden flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[9px] uppercase tracking-[0.12em] text-tertiary sm:flex">
+                      {project.techStack.slice(0, 4).map((tech, i) => (
+                        <span key={tech} className="flex items-center gap-2">
+                          {i > 0 && <span aria-hidden="true">·</span>}
+                          {tech}
+                        </span>
+                      ))}
                     </div>
                   </div>
+
+                  <ArrowUpRight
+                    size={16}
+                    className="text-tertiary transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                  />
                 </Link>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {filteredProjects.length === 0 && (
-          <div className="text-center py-40 border border-dashed border-white/10 rounded-[4rem]">
-            <MonitorSmartphone size={48} className="text-white/5 mx-auto mb-6" />
-            <p className="font-mono text-[10px] text-tertiary uppercase tracking-[0.5em]">System was unable to synchronize requested project data.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Global Status Bar */}
-      <div className="fixed bottom-0 left-0 right-0 py-4 bg-[#050505]/80 backdrop-blur-xl border-t border-white/5 z-50 hidden md:block">
-        <div className="container mx-auto px-8 max-w-7xl flex justify-between items-center text-[8px] font-mono text-tertiary uppercase tracking-[0.4em]">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-accent-crimson animate-pulse" />
-              <span>Project Core v2.0</span>
+              ))}
             </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={10} />
-              <span>Encryption Active</span>
-            </div>
-          </div>
-          <div className="flex gap-8">
-            <span>Total Entities: {projects.length}</span>
-            <span>Filter: {filter}</span>
-          </div>
+          )}
         </div>
-      </div>
+      </section>
+
+      <div className="hatch h-2.5 border-t border-line" aria-hidden="true" />
     </div>
   );
 };

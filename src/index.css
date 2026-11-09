@@ -4,57 +4,322 @@
 
 @layer base {
   :root {
-    --background: 10 10 10;
-    --foreground: 237 237 237;
+    --bg: 252 252 251;
+    --fg: 12 12 12;
+    --muted: 102 102 100;
+    --muted-2: 112 112 108;
+    --line: 226 226 223;
+    --surface: 247 247 245;
+    --elevated: 241 241 238;
+    color-scheme: light;
+  }
+
+  .dark {
+    --bg: 10 10 10;
+    --fg: 238 238 235;
+    --muted: 158 158 153;
+    --muted-2: 116 116 112;
+    --line: 38 38 36;
+    --surface: 16 16 16;
+    --elevated: 22 22 22;
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   body {
     @apply bg-background text-primary font-sans antialiased;
+    font-feature-settings: "ss01" 1, "cv11" 1;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+    @apply font-sans;
+    text-wrap: balance;
   }
 
-  code, pre {
+  p {
+    text-wrap: pretty;
+  }
+
+  code, pre, kbd {
     @apply font-mono;
   }
 
   ::selection {
-    @apply bg-accent-crimson text-white;
+    background-color: rgb(var(--fg));
+    color: rgb(var(--bg));
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--fg));
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--bg));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--line));
+    border-radius: 999px;
+    border: 2px solid rgb(var(--bg));
   }
 }
 
-/* Logo Styles removed - using Tailwind in FuturisticLogo.tsx */
-
-/* Marquee Animations */
-@keyframes marquee-left {
-  0% {
-    transform: translateX(0);
+@layer components {
+  .page-column {
+    @apply mx-auto w-full max-w-page px-6 sm:px-8;
   }
-  100% {
-    transform: translateX(-50%);
+
+  .frame {
+    @apply relative mx-auto w-full max-w-wide border-x border-line;
+  }
+
+  /* Patterned rails along the frame edges */
+  .frame::before,
+  .frame::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(var(--line)) 0,
+      rgb(var(--line)) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .frame::before {
+    left: 0;
+  }
+
+  .frame::after {
+    right: 0;
+  }
+
+  .mono-label {
+    @apply font-mono text-[10px] uppercase tracking-[0.2em] text-tertiary;
+  }
+
+  .rule-label {
+    @apply flex items-center gap-3 mono-label before:h-px before:w-6 before:bg-line;
+  }
+
+  .hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(var(--line)) 0,
+      rgb(var(--line)) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  }
+
+  .dot-grid {
+    background-image: radial-gradient(rgb(var(--line)) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+
+  .annotation {
+    @apply font-hand text-[19px] leading-tight text-tertiary;
+  }
+
+  .link-underline {
+    @apply relative inline-flex items-center gap-1;
+  }
+
+  .link-underline::after {
+    content: "";
+    @apply absolute left-0 -bottom-0.5 h-px w-full origin-left scale-x-0 bg-current transition-transform duration-300 ease-smooth;
+  }
+
+  .link-underline:hover::after {
+    @apply scale-x-100;
+  }
+
+  .btn-solid {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[13px] font-medium text-background transition-all duration-300 ease-smooth hover:opacity-80 active:scale-[0.98];
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-line px-5 py-2.5 text-[13px] font-medium text-primary transition-all duration-300 ease-smooth hover:border-primary hover:bg-surface active:scale-[0.98];
+  }
+
+  .meta-row {
+    @apply flex items-baseline justify-between gap-6 border-b border-line py-3 text-sm last:border-b-0;
+  }
+
+  .footer-wordmark {
+    @apply block select-none whitespace-nowrap text-center font-medium leading-[0.85] tracking-tightest text-transparent;
+    font-size: clamp(3.25rem, 13vw, 10rem);
+    -webkit-text-stroke: 1px rgb(var(--line));
+    transition: -webkit-text-stroke-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .footer-wordmark-fill {
+    -webkit-text-stroke-width: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(var(--fg)) 0,
+      rgb(var(--fg)) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+    background-size: 200% 100%;
+    background-position: 0 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    transition:
+      opacity 500ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-position 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .wordmark-block:hover .footer-wordmark {
+    -webkit-text-stroke-color: rgb(var(--fg));
+  }
+
+  .wordmark-block:hover .footer-wordmark-fill {
+    background-position: 60% 0;
+  }
+
+  .contrib-cell {
+    opacity: 0;
+    animation: contrib-in 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+      fill 160ms ease;
+  }
+
+  .contrib-cell:hover {
+    transform: scale(1.4);
+  }
+
+  .contrib-cell[data-level="0"] {
+    fill: rgb(var(--line));
+  }
+
+  .contrib-cell[data-level="1"] {
+    fill: rgb(var(--muted-2) / 0.55);
+  }
+
+  .contrib-cell[data-level="2"] {
+    fill: rgb(var(--muted) / 0.8);
+  }
+
+  .contrib-cell[data-level="3"] {
+    fill: rgb(var(--fg) / 0.62);
+  }
+
+  .contrib-cell[data-level="4"] {
+    fill: rgb(var(--fg) / 0.92);
+  }
+
+  .contrib-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  .contrib-swatch[data-level="0"] {
+    background-color: rgb(var(--line));
+  }
+
+  .contrib-swatch[data-level="1"] {
+    background-color: rgb(var(--muted-2) / 0.55);
+  }
+
+  .contrib-swatch[data-level="2"] {
+    background-color: rgb(var(--muted) / 0.8);
+  }
+
+  .contrib-swatch[data-level="3"] {
+    background-color: rgb(var(--fg) / 0.62);
+  }
+
+  .contrib-swatch[data-level="4"] {
+    background-color: rgb(var(--fg) / 0.92);
   }
 }
 
-@keyframes marquee-right {
-  0% {
-    transform: translateX(-50%);
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
-  100% {
-    transform: translateX(0);
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
   }
 }
 
-.animate-marquee-left {
-  animation: marquee-left 30s linear infinite;
+/* Markdown prose mapped to the monochrome theme */
+.prose {
+  --tw-prose-body: rgb(var(--muted));
+  --tw-prose-headings: rgb(var(--fg));
+  --tw-prose-lead: rgb(var(--muted));
+  --tw-prose-links: rgb(var(--fg));
+  --tw-prose-bold: rgb(var(--fg));
+  --tw-prose-counters: rgb(var(--muted-2));
+  --tw-prose-bullets: rgb(var(--line));
+  --tw-prose-hr: rgb(var(--line));
+  --tw-prose-quotes: rgb(var(--fg));
+  --tw-prose-quote-borders: rgb(var(--line));
+  --tw-prose-captions: rgb(var(--muted-2));
+  --tw-prose-code: rgb(var(--fg));
+  --tw-prose-pre-code: rgb(var(--fg));
+  --tw-prose-pre-bg: rgb(var(--surface));
+  --tw-prose-th-borders: rgb(var(--line));
+  --tw-prose-td-borders: rgb(var(--line));
+  max-width: none;
 }
 
-.animate-marquee-right {
-  animation: marquee-right 30s linear infinite;
+.prose :where(a):not(:where([class~="not-prose"] *)) {
+  text-decoration-color: rgb(var(--line));
+  text-underline-offset: 3px;
+}
+
+.prose :where(a):hover {
+  text-decoration-color: rgb(var(--fg));
+}
+
+@keyframes contrib-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

@@ -162,9 +162,9 @@ export const Lightbox = ({
                     e.stopPropagation();
                     onGoTo?.(idx);
                   }}
-                  className={`w-12 h-12 rounded overflow-hidden border-2 transition-all ${
+                  className={`h-12 w-12 overflow-hidden border-2 transition-all ${
                     idx === currentIndex
-                      ? 'border-accent-crimson opacity-100'
+                      ? 'border-primary opacity-100'
                       : 'border-transparent opacity-50 hover:opacity-80'
                   }`}
                 >

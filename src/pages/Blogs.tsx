@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { format } from 'date-fns';
-import { ArrowUpRight, Search, Terminal, Fingerprint } from 'lucide-react';
-import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
+import { ArrowUpRight, Search } from 'lucide-react';
 
 interface Blog {
   id: string;
@@ -15,12 +12,34 @@ interface Blog {
   category?: string;
 }
 
+const formatDate = (value: string) => {
+  try {
+    return new Date(value).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return '—';
+  }
+};
+
+const plainText = (content: string) => {
+  if (!content) return '';
+  return content
+    .replace(/^#\s+.+\r?\n+/, '')
+    .replace(/[#*_>`[\]()]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const readTime = (content: string) => Math.max(1, Math.ceil(content.split(/\s+/).length / 200));
+
 const Blogs = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Memoized fetch function
   const fetchBlogs = useCallback(async () => {
     try {
       const res = await fetch('/api/blogs');
@@ -37,148 +56,114 @@ const Blogs = () => {
     fetchBlogs();
   }, [fetchBlogs]);
 
-  // Memoized filtered blogs
   const filteredBlogs = useMemo(() => {
     if (!searchQuery.trim()) return blogs;
     const query = searchQuery.toLowerCase();
-    return blogs.filter(blog => 
-      blog.title.toLowerCase().includes(query) ||
-      (blog.category && blog.category.toLowerCase().includes(query))
+    return blogs.filter(
+      (blog) =>
+        blog.title.toLowerCase().includes(query) ||
+        (blog.category && blog.category.toLowerCase().includes(query))
     );
   }, [blogs, searchQuery]);
 
-  // Memoized search handler
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
-
-  if (loading) return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-2 border-accent-crimson/20 border-t-accent-crimson rounded-full animate-spin" />
-        <p className="font-mono text-[9px] text-accent-glow uppercase tracking-[0.4em]">Decrypting Neural Data...</p>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-accent-crimson/30 overflow-x-hidden">
-      {/* Immersive Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[60%] h-[60%] bg-[radial-gradient(circle_at_center,rgba(200,16,46,0.03)_0%,transparent_70%)]" />
-        <div className="absolute bottom-0 left-0 w-[50%] h-[50%] bg-[radial-gradient(circle_at_center,rgba(200,16,46,0.02)_0%,transparent_70%)]" />
-      </div>
+    <div className="frame">
+      <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />
 
-      {/* Header Section */}
-      <section className="relative pt-32 pb-12 z-10">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 border-b border-white/5 pb-12">
-            <div className="space-y-6">
-              <FadeInWhenVisible>
-                <div className="flex items-center gap-3">
-                  <Fingerprint size={16} className="text-accent-crimson" />
-                  <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.5em]">Identity Archive</span>
-                </div>
-              </FadeInWhenVisible>
-              <FadeInWhenVisible delay={0.1}>
-                <h1 className="text-4xl sm:text-6xl md:text-8xl font-serif font-black tracking-tight uppercase leading-[0.8]">
-                  JOURNAL <span className="text-accent-crimson">.</span>
-                </h1>
-              </FadeInWhenVisible>
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <p className="mono-label">Notes — Writing</p>
+
+          <div className="mt-4 flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-4xl font-medium tracking-tightest sm:text-6xl">Writing.</h1>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-secondary">
+                Occasional notes on systems, interfaces and the craft of building software.
+              </p>
             </div>
+            <p className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+              {loading ? '—' : String(blogs.length).padStart(2, '0')} posts
+            </p>
+          </div>
 
-            <FadeInWhenVisible delay={0.2} className="w-full md:w-96">
-              <div className="relative group">
-                <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-tertiary group-focus-within:text-accent-crimson transition-colors" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="FILTER BY PROTOCOL..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full bg-transparent border-b border-white/10 py-4 pl-8 text-[10px] font-mono tracking-widest uppercase focus:outline-none focus:border-accent-crimson transition-all placeholder:text-tertiary/20"
-                />
-              </div>
-            </FadeInWhenVisible>
+          <div className="mt-9 border-t border-line pt-4">
+            <label className="flex items-center gap-3">
+              <Search size={14} className="shrink-0 text-tertiary" aria-hidden="true" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search posts"
+                aria-label="Search posts"
+                className="w-full bg-transparent py-1.5 text-sm text-primary outline-none placeholder:text-tertiary"
+              />
+            </label>
           </div>
         </div>
       </section>
 
-      {/* Modern List Grid */}
-      <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
-        <div className="grid gap-px bg-white/5 border border-white/5 rounded-3xl overflow-hidden">
-          <AnimatePresence mode="popLayout">
-            {filteredBlogs.map((blog, index) => (
-              <motion.div 
-                key={blog.id}
-                layout
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                className="bg-[#050505] group"
-                style={{ willChange: 'transform, opacity' }}
-              >
-                <Link to={`/blogs/${blog.slug}`} className="block p-5 sm:p-8 md:p-12 relative overflow-hidden">
-                  {/* Background Blur Overlay on Hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-all duration-700 pointer-events-none overflow-hidden">
-                    {blog.featuredImage && (
-                      <img 
-                        src={blog.featuredImage} 
-                        className="w-full h-full object-cover blur-2xl scale-110 saturate-150" 
-                        alt="" 
-                        loading="lazy"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]" />
-                  </div>
-
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 relative z-10">
-                    <div className="flex-1 space-y-4">
-                      <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-mono text-accent-crimson font-black uppercase tracking-[0.3em]">
-                          {blog.category || 'Architecture'}
-                        </span>
-                        <div className="w-1 h-1 rounded-full bg-white/10" />
-                        <span className="text-[9px] font-mono text-tertiary uppercase tracking-widest">
-                          {blog.createdAt ? format(new Date(blog.createdAt), 'dd.MM.yyyy') : 'N/A'}
-                        </span>
-                      </div>
-
-                      <h2 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-white group-hover:text-accent-crimson transition-all duration-500 leading-tight">
+      <section>
+        <div className="page-column py-8 sm:py-10">
+          {loading ? (
+            <div className="border-t border-line" aria-label="Loading posts">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse border-b border-line py-5">
+                  <div className="h-2.5 w-28 bg-surface" />
+                  <div className="mt-3 h-5 w-2/3 bg-surface" />
+                  <div className="mt-2 h-3 w-full bg-surface" />
+                </div>
+              ))}
+            </div>
+          ) : filteredBlogs.length === 0 ? (
+            <div className="border-y border-line py-20 text-center">
+              <p className="mono-label">No posts</p>
+              <p className="mt-3 text-sm text-secondary">
+                {searchQuery ? `Nothing matches “${searchQuery}”.` : 'No posts published yet.'}
+              </p>
+            </div>
+          ) : (
+            <div className="border-t border-line">
+              {filteredBlogs.map((blog) => {
+                const excerpt = plainText(blog.content);
+                return (
+                  <Link
+                    key={blog.id}
+                    to={`/blogs/${blog.slug}`}
+                    className="group grid grid-cols-[1fr_auto] items-start gap-4 border-b border-line py-5 transition-colors duration-300 hover:bg-surface sm:gap-6 sm:py-6"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-tertiary">
+                        {blog.category || 'Notes'} · {formatDate(blog.createdAt)}
+                        <span className="sm:hidden"> · {readTime(blog.content || '')} min</span>
+                      </p>
+                      <h2 className="mt-1.5 text-lg font-medium tracking-tight sm:text-xl">
                         {blog.title}
                       </h2>
-                      
-                      <p className="text-secondary text-sm md:text-base font-light line-clamp-1 max-w-2xl opacity-40 group-hover:opacity-100 transition-opacity duration-500 italic">
-                        {blog.content ? (blog.content.length > 150 ? blog.content.slice(0, 150).replace(/[#*_]/g, '') + '...' : blog.content.replace(/[#*_]/g, '')) : ''}
-                      </p>
+                      {excerpt && (
+                        <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-secondary">
+                          {excerpt}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-6">
-                      <div className="hidden md:flex flex-col items-end">
-                        <span className="text-[9px] font-mono text-tertiary uppercase tracking-widest">Read Latency</span>
-                        <span className="text-xs font-mono text-white">{Math.ceil(blog.content.split(/\s+/).length / 200)}M</span>
-                      </div>
-                      <div 
-                        className="w-12 h-12 rounded-2xl border border-white/5 flex items-center justify-center group-hover:bg-accent-crimson group-hover:border-accent-crimson transition-all duration-500"
-                        style={{ willChange: 'transform' }}
-                      >
-                        <ArrowUpRight size={20} className="text-white transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </div>
+                    <div className="flex items-center gap-4 pt-1">
+                      <span className="hidden shrink-0 font-mono text-[10px] text-tertiary sm:block">
+                        {readTime(blog.content || '')} min
+                      </span>
+                      <ArrowUpRight
+                        size={15}
+                        className="text-tertiary transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                      />
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
+      </section>
 
-        {filteredBlogs.length === 0 && (
-          <div className="text-center py-40 bg-white/[0.01] border border-dashed border-white/5 rounded-3xl">
-            <Terminal size={48} className="text-white/5 mx-auto mb-6" />
-            <p className="font-mono text-[10px] text-tertiary uppercase tracking-[0.5em]">No synchronization protocols found for requested query.</p>
-          </div>
-        )}
-      </div>
+      <div className="hatch h-2.5 border-t border-line" aria-hidden="true" />
     </div>
   );
 };

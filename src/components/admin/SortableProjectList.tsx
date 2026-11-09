@@ -16,7 +16,7 @@ import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Save, Loader2, Sparkles } from 'lucide-react';
+import { GripVertical, Save, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Project } from '../../types/project';
 import { getOptimizedImageUrl, ImageSizes } from '../../lib/imageUtils';
@@ -46,45 +46,48 @@ const SortableItem: React.FC<{ project: Project; index: number }> = ({ project, 
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-6 p-6 bg-[#0a0a0a] border border-white/5 rounded-[2rem] mb-4 transition-all duration-300 ${
-        isDragging ? 'shadow-2xl shadow-accent-crimson/20 border-accent-crimson/50 scale-[1.02] opacity-80' : 'hover:border-white/10'
+      className={`flex items-center gap-4 rounded-lg border bg-background p-4 transition-shadow duration-200 ${
+        isDragging ? 'border-primary shadow-xl' : 'border-line'
       }`}
     >
       <button
-        className="p-3 bg-white/5 rounded-xl text-tertiary hover:text-white cursor-grab active:cursor-grabbing transition-colors"
+        className="inline-flex h-8 w-8 shrink-0 cursor-grab items-center justify-center rounded-md border border-line text-tertiary transition-colors hover:border-primary hover:text-primary active:cursor-grabbing"
+        aria-label={`Reorder ${project.title}`}
         {...attributes}
         {...listeners}
       >
-        <GripVertical size={20} />
+        <GripVertical size={16} />
       </button>
-      
-      <div className="w-16 h-16 rounded-xl bg-white/5 overflow-hidden flex-shrink-0 border border-white/5">
+
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border border-line bg-surface">
         {project.images[0] ? (
           <img
             src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.thumbnail })}
             alt={project.title}
-            className="w-full h-full object-cover"
+            width={48}
+            height={48}
+            className="h-full w-full object-cover"
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-tertiary">
-            <Sparkles size={20} />
+          <div className="flex h-full w-full items-center justify-center text-tertiary">
+            <GripVertical size={16} />
           </div>
         )}
       </div>
-      
-      <div className="flex-1">
-        <h3 className="text-lg font-serif font-black uppercase tracking-tight group-hover:text-accent-crimson transition-colors">
-          {project.title}
-        </h3>
-        <p className="text-[10px] font-mono text-tertiary uppercase tracking-widest line-clamp-1">/{project.slug}</p>
+
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate text-sm font-medium tracking-tight">{project.title}</h3>
+        <p className="mt-0.5 truncate font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+          /{project.slug}
+        </p>
       </div>
-      
-      <div className="flex flex-col items-end">
-        <span className="text-[10px] font-mono text-tertiary uppercase tracking-widest mb-1">Position</span>
-        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-mono text-accent-glow font-bold">
+
+      <div className="flex items-center gap-2">
+        <span className="mono-label hidden sm:block">Position</span>
+        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-line font-mono text-xs tabular-nums text-secondary">
           {index + 1}
-        </div>
+        </span>
       </div>
     </div>
   );
@@ -140,38 +143,43 @@ const SortableProjectList: React.FC<SortableProjectListProps> = ({
     }
   };
 
+  if (projects.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-line px-6 py-20 text-center">
+        <GripVertical className="text-tertiary" size={20} />
+        <p className="text-sm text-secondary">No projects to reorder yet.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8 bg-white/5 border border-white/10 p-6 rounded-[2rem]">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-accent-glow/10 rounded-xl flex items-center justify-center">
-            <GripVertical className="text-accent-glow" size={20} />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-white uppercase tracking-tight">Sequence Control</p>
-            <p className="text-[10px] font-mono text-tertiary uppercase tracking-[0.2em]">Drag entities to re-prioritize</p>
-          </div>
+    <div className="mx-auto max-w-3xl">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
+        <div>
+          <p className="text-sm font-medium tracking-tight">Display order</p>
+          <p className="mono-label mt-0.5">Drag rows to reprioritise</p>
         </div>
-        
+
         <AnimatePresence>
           {hasChanges && (
             <motion.button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-3 px-8 py-3 bg-accent-crimson text-white rounded-xl hover:bg-accent-crimson/90 transition-all shadow-xl shadow-accent-crimson/20 disabled:opacity-50 font-bold uppercase tracking-widest text-xs"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              className="btn-solid disabled:opacity-50"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
             >
               {isSaving ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Synchronizing...
+                  <Loader2 size={14} className="animate-spin" />
+                  Saving…
                 </>
               ) : (
                 <>
-                  <Save size={16} />
-                  Save Sequence
+                  <Save size={14} />
+                  Save order
                 </>
               )}
             </motion.button>
@@ -188,12 +196,11 @@ const SortableProjectList: React.FC<SortableProjectListProps> = ({
           items={projects.map((p) => p.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-4">
+          <div className="space-y-2">
             {projects.map((project, index) => (
               <SortableItem key={project.id} project={project} index={index} />
             ))}
-          </div>
-        </SortableContext>
+          </div>        </SortableContext>
       </DndContext>
     </div>
   );

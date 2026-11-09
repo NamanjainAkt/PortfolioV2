@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
-import { X, Loader2, ImageIcon, Newspaper, Info, FileText, Sparkles, Trash } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { X, Loader2, ImageIcon, Newspaper, Info, FileText, Trash } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface BlogFormProps {
-  initialData?: any;
+  initialData?: Partial<BlogDraft>;
   onClose: () => void;
   onSuccess: () => void;
 }
+
+interface BlogDraft {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  featuredImage: string;
+}
+
+const FIELD_CLASS =
+  'w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-primary transition-colors duration-200 placeholder:text-tertiary focus:border-primary';
+
+const SECTION_LABEL = 'mono-label';
 
 const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -18,6 +31,19 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -56,9 +82,9 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
             }));
         }
 
-    } catch (err: any) {
+    } catch (err) {
         console.error('[Upload] Error:', err);
-        setError(err.message || 'Image upload failed');
+        setError(err instanceof Error ? err.message : 'Image upload failed');
     } finally {
         setUploading(false);
     }
@@ -94,7 +120,7 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
 
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -102,103 +128,119 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-background/70 p-4 backdrop-blur-sm sm:items-center"
     >
-      <motion.div 
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="bg-[#0a0a0a] border border-white/5 w-full max-w-4xl rounded-[2.5rem] shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 8 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="blog-form-title"
+        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-line bg-background shadow-2xl"
       >
         {/* Header */}
-        <div className="p-8 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-accent-crimson rounded-2xl flex items-center justify-center shadow-lg shadow-accent-crimson/20">
-              <Newspaper className="text-white" size={24} />
+        <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-5 sm:px-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-line bg-surface text-primary">
+              <Newspaper size={18} />
             </div>
             <div>
-              <h2 className="text-2xl font-serif font-black tracking-tighter uppercase leading-none">
-                {initialData ? 'Modify' : 'Publish'} <span className="text-accent-crimson">Article</span>
+              <h2 id="blog-form-title" className="text-lg font-medium tracking-tight">
+                {initialData ? 'Edit entry' : 'New entry'}
               </h2>
-              <p className="text-[10px] font-mono text-tertiary uppercase tracking-[0.4em] mt-1">Content Management System</p>
+              <p className="mono-label mt-0.5">Journal entry</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 bg-white/5 rounded-2xl text-tertiary hover:text-white hover:bg-white/10 transition-all">
-            <X size={24} />
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line text-secondary transition-colors hover:border-primary hover:text-primary"
+          >
+            <X size={17} />
           </button>
         </div>
 
-        <form id="blog-form" onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-              <Info size={16} className="text-accent-crimson" />
-              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Metadata</span>
+        <form id="blog-form" onSubmit={handleSubmit} className="flex-1 space-y-8 overflow-y-auto overscroll-contain px-6 py-7 sm:px-8">
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 border-b border-line pb-3">
+              <Info size={14} className="text-tertiary" />
+              <span className={SECTION_LABEL}>Metadata</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Article Title</label>
+                <label htmlFor="blog-title" className="mono-label block">Title</label>
                 <input
+                  id="blog-title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="The future of systems..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors"
+                  placeholder="The future of systems…"
+                  className={FIELD_CLASS}
+                  autoComplete="off"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">URL Slug</label>
+                <label htmlFor="blog-slug" className="mono-label block">Slug</label>
                 <input
+                  id="blog-slug"
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
                   placeholder="article-slug"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors font-mono"
+                  className={`${FIELD_CLASS} font-mono`}
+                  autoComplete="off"
+                  spellCheck={false}
                   required
                 />
               </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-              <ImageIcon size={16} className="text-accent-crimson" />
-              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Visual Identity</span>
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 border-b border-line pb-3">
+              <ImageIcon size={14} className="text-tertiary" />
+              <span className={SECTION_LABEL}>Featured image</span>
             </div>
 
             {formData.featuredImage ? (
-              <div className="relative group aspect-video rounded-[2rem] overflow-hidden border border-white/5 bg-white/5">
-                <img 
-                  src={formData.featuredImage} 
-                  alt="Featured" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              <div className="group relative aspect-video overflow-hidden rounded-md border border-line bg-surface">
+                <img
+                  src={formData.featuredImage}
+                  alt="Featured"
+                  width={320}
+                  height={180}
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                <div className="absolute inset-0 flex items-center justify-center bg-background/70 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={handleRemoveImage}
-                    className="bg-accent-crimson text-white px-6 py-3 rounded-2xl flex items-center gap-2 font-bold uppercase tracking-widest text-xs shadow-xl"
+                    className="btn-outline bg-background"
                   >
-                    <Trash size={16} />
-                    Replace Image
+                    <Trash size={14} />
+                    Remove image
                   </button>
                 </div>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/5 rounded-[2rem] cursor-pointer hover:border-accent-crimson/50 hover:bg-white/[0.02] transition-all group">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <label className="flex h-44 w-full cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-line text-tertiary transition-colors hover:border-primary hover:text-primary">
+                <div className="flex flex-col items-center justify-center">
                   {uploading ? (
-                    <Loader2 size={32} className="text-accent-crimson animate-spin mb-3" />
+                    <Loader2 size={22} className="mb-2 animate-spin" />
                   ) : (
-                    <Sparkles size={32} className="text-tertiary group-hover:text-accent-crimson transition-colors mb-3" />
+                    <ImageIcon size={22} className="mb-2" />
                   )}
-                  <p className="text-xs font-mono text-tertiary uppercase tracking-widest group-hover:text-white transition-colors">
-                    {uploading ? 'Processing Image...' : 'Deploy Featured Visual'}
+                  <p className="mono-label">
+                    {uploading ? 'Uploading image…' : 'Upload featured image'}
                   </p>
                 </div>
                 <input
@@ -212,49 +254,47 @@ const BlogForm: React.FC<BlogFormProps> = ({ initialData, onClose, onSuccess }) 
             )}
           </div>
 
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-              <FileText size={16} className="text-accent-crimson" />
-              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Article Body</span>
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 border-b border-line pb-3">
+              <FileText size={14} className="text-tertiary" />
+              <span className={SECTION_LABEL}>Article body</span>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Markdown Content</label>
+              <label htmlFor="blog-content" className="mono-label block">Markdown</label>
               <textarea
+                id="blog-content"
                 name="content"
                 value={formData.content}
                 onChange={handleChange}
-                placeholder="Write your article in markdown..."
-                className="w-full h-96 bg-white/5 border border-white/10 rounded-[2rem] px-8 py-8 text-white focus:border-accent-crimson outline-none transition-colors font-mono text-sm resize-none custom-scrollbar"
+                placeholder="Write your article in markdown…"
+                className={`${FIELD_CLASS} h-96 resize-none py-3 font-mono text-[13px] leading-relaxed`}
+                spellCheck={false}
                 required
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-4 bg-accent-crimson/10 border border-accent-crimson/20 rounded-2xl flex items-center gap-4">
-              <X size={20} className="text-accent-crimson" />
-              <p className="text-accent-crimson text-xs font-mono uppercase tracking-widest">{error}</p>
+            <div role="alert" className="flex items-center gap-3 rounded-md border border-line bg-surface px-4 py-3">
+              <X size={15} className="shrink-0 text-primary" aria-hidden="true" />
+              <p className="text-xs text-primary">{error}</p>
             </div>
           )}
         </form>
 
-        <div className="p-8 border-t border-white/5 sticky bottom-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-10 rounded-b-lg flex justify-end gap-6">
-            <button
-                type="button"
-                onClick={onClose}
-                className="px-8 py-4 text-tertiary hover:text-white font-mono text-xs uppercase tracking-widest transition-colors"
-            >
+        <div className="flex items-center justify-end gap-3 border-t border-line bg-background px-6 py-4 sm:px-8">
+            <button type="button" onClick={onClose} className="btn-outline">
                 Discard
             </button>
             <button
                 type="submit"
                 form="blog-form"
                 disabled={loading}
-                className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-accent-crimson hover:text-white transition-all duration-500 shadow-xl shadow-white/5 disabled:opacity-50 flex items-center"
+                className="btn-solid disabled:opacity-50"
             >
-                {loading && <Loader2 size={16} className="animate-spin mr-3" />}
-                {initialData ? 'Update Core' : 'Execute Publication'}
+                {loading && <Loader2 size={14} className="animate-spin" />}
+                {initialData ? 'Save changes' : 'Publish entry'}
             </button>
         </div>
       </motion.div>

@@ -32,7 +32,7 @@ const AdminModal = () => {
       const res = await fetch('/api/auth/status');
       const data = await res.json();
       setIsInitialized(data.initialized);
-    } catch (err) {
+    } catch {
       console.error('Failed to check admin status');
     }
   };
@@ -67,7 +67,7 @@ const AdminModal = () => {
       } else {
         setError(data.error || 'Operation failed');
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong');
     } finally {
       setLoading(false);
@@ -92,10 +92,10 @@ const AdminModal = () => {
             </button>
 
             <div className="flex flex-col items-center mb-6">
-              <div className="w-12 h-12 bg-elevated rounded-full flex items-center justify-center mb-4 text-accent-crimson">
-                <Lock size={24} />
+              <div className="w-12 h-12 bg-elevated rounded-full flex items-center justify-center mb-4 text-primary">
+                <Lock size={22} strokeWidth={1.6} />
               </div>
-              <h2 className="text-2xl font-serif font-bold text-primary">
+              <h2 className="text-2xl font-medium tracking-tight text-primary">
                 {isInitialized ? 'System Access' : 'Initialize System'}
               </h2>
               <p className="text-secondary text-sm">
@@ -110,13 +110,13 @@ const AdminModal = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isInitialized ? "Passphrase" : "Create Passphrase"}
-                  className="w-full bg-background border border-border rounded px-4 py-3 text-primary focus:outline-none focus:border-accent-crimson transition-colors"
+                  className="w-full bg-background border border-line rounded px-4 py-3 text-primary focus:outline-none focus:border-primary transition-colors"
                   autoFocus
                 />
               </div>
 
               {error && (
-                <p className={`text-sm text-center ${error.includes('initialized') ? 'text-success' : 'text-accent-crimson'}`}>
+                <p className={`text-sm text-center ${error.includes('initialized') ? 'text-success' : 'text-warning'}`}>
                   {error}
                 </p>
               )}
@@ -124,7 +124,7 @@ const AdminModal = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white text-black font-medium py-3 rounded hover:bg-gray-200 transition-colors disabled:opacity-50"
+                className="w-full bg-primary text-background font-medium py-3 rounded hover:opacity-80 transition-opacity disabled:opacity-50"
               >
                 {loading ? 'Processing...' : (isInitialized ? 'Unlock' : 'Initialize')}
               </button>

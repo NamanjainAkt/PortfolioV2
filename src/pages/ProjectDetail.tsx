@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion, useScroll, useSpring } from 'framer-motion';
-import { ArrowLeft, Github, ExternalLink, ArrowRight, FolderGit2, Boxes, Terminal, ShieldAlert, Sparkles, Globe } from 'lucide-react';
-import { FadeInWhenVisible } from '../components/FadeInWhenVisible';
+import { ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
 import { Lightbox } from '../components/Lightbox';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 
@@ -18,6 +16,7 @@ interface Project {
   githubUrl: string;
   liveUrl: string;
   category?: string;
+  createdAt?: string;
 }
 
 const ProjectDetail = () => {
@@ -27,13 +26,6 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,8 +38,8 @@ const ProjectDetail = () => {
           const data = await res.json();
           if (!signal.aborted) setProject(data);
         }
-      } catch (error: any) {
-        if (error?.name !== 'AbortError') console.error('Failed to fetch project', error);
+      } catch (error) {
+        if ((error as Error)?.name !== 'AbortError') console.error('Failed to fetch project', error);
       } finally {
         if (!signal.aborted) setLoading(false);
       }
@@ -60,8 +52,8 @@ const ProjectDetail = () => {
           const data = await res.json();
           if (!signal.aborted) setAllProjects(Array.isArray(data) ? data : []);
         }
-      } catch (error: any) {
-        if (error?.name !== 'AbortError') console.error('Failed to fetch projects', error);
+      } catch (error) {
+        if ((error as Error)?.name !== 'AbortError') console.error('Failed to fetch projects', error);
       }
     };
 
@@ -71,32 +63,49 @@ const ProjectDetail = () => {
     return () => controller.abort();
   }, [slug]);
 
-  const relatedProjects = allProjects
-    .filter((p) => p.slug !== slug)
-    .slice(0, 3);
+  const relatedProjects = allProjects.filter((p) => p.slug !== slug).slice(0, 3);
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
     setLightboxOpen(true);
   };
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-2 border-accent-crimson/20 border-t-accent-crimson rounded-full animate-spin" />
-        <p className="font-mono text-xs text-accent-glow uppercase tracking-[0.4em]">Compiling Assets...</p>
-      </div>
-    </div>
-  );
+  const year = project?.createdAt ? new Date(project.createdAt).getFullYear() : null;
 
-  if (!project) return <div className="pt-32 text-center text-secondary">Project not found</div>;
+  if (loading) {
+    return (
+      <div className="frame min-h-[70vh]">
+        <div className="page-column py-16">
+          <div className="animate-pulse space-y-4">
+            <div className="h-2.5 w-24 bg-surface" />
+            <div className="h-12 w-2/3 bg-surface" />
+            <div className="h-4 w-1/2 bg-surface" />
+            <div className="mt-10 aspect-[16/9] w-full bg-surface" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="frame">
+        <div className="page-column py-24 text-center">
+          <p className="mono-label">404 — Not found</p>
+          <p className="mt-4 text-sm text-secondary">This project doesn&apos;t exist or was removed.</p>
+          <Link to="/projects" className="btn-outline mt-6">
+            <ArrowLeft size={14} />
+            Back to projects
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white selection:bg-accent-crimson/30 overflow-x-hidden">
-      {/* Progress Bar */}
-      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-accent-crimson z-[60] origin-left" style={{ scaleX }} />
+    <div className="frame">
+      <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />
 
-      {/* Lightbox */}
       <Lightbox
         images={project.images}
         currentIndex={currentImageIndex}
@@ -107,244 +116,191 @@ const ProjectDetail = () => {
         onGoTo={(idx) => setCurrentImageIndex(idx)}
       />
 
-      {/* Cinematic Background Elements */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-accent-crimson/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-accent-crimson/3 rounded-full blur-[100px]" />
-      </div>
+      <article>
+        <header className="border-b border-line">
+          <div className="page-column py-10 sm:py-14">
+            <Link
+              to="/projects"
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary transition-colors hover:text-primary"
+            >
+              <ArrowLeft size={13} className="transition-transform duration-300 group-hover:-translate-x-0.5" />
+              All projects
+            </Link>
 
-      {/* Cinematic Hero */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-32 pb-20 overflow-hidden">
-        {/* Background Atmosphere */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/40 via-[#050505]/90 to-[#050505]" />
+            <p className="mono-label mt-8">
+              {project.category || 'Development'}
+              {year ? ` — ${year}` : ''}
+            </p>
+
+            <h1 className="mt-3 text-4xl font-medium leading-[0.95] tracking-tightest sm:text-6xl">
+              {project.title}
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-secondary">
+              {project.overview}
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-2.5">
+              {project.liveUrl && (
+                <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="btn-solid">
+                  Visit live
+                  <ArrowUpRight size={14} />
+                </a>
+              )}
+              {project.githubUrl && (
+                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="btn-outline">
+                  <Github size={14} strokeWidth={1.6} />
+                  Source
+                </a>
+              )}
+            </div>
+          </div>
+
           {project.images[0] && (
-            <motion.img
-              initial={{ scale: 1.2, opacity: 0 }}
-              animate={{ scale: 1, opacity: 0.25 }}
-              transition={{ duration: 2, ease: "easeOut" }}
-              src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.hero })}
-              className="w-full h-full object-cover blur-3xl saturate-200"
-              alt=""
-              loading="eager"
-            />
+            <div className="page-column pb-10 sm:pb-14">
+              <button
+                type="button"
+                onClick={() => openLightbox(0)}
+                className="group block w-full overflow-hidden border border-line bg-surface"
+                aria-label="Open cover image"
+              >
+                <img
+                  src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.hero })}
+                  alt={project.title}
+                  className="aspect-[16/9] w-full object-cover transition-transform duration-700 ease-smooth group-hover:scale-[1.015]"
+                  loading="eager"
+                />
+              </button>
+            </div>
           )}
-        </div>
+        </header>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-6xl mx-auto">
-            <FadeInWhenVisible>
-              <Link to="/projects" className="inline-flex items-center gap-3 text-[10px] font-mono font-bold text-tertiary hover:text-accent-crimson transition-all mb-16 group uppercase tracking-[0.4em]">
-                <ArrowLeft size={14} className="group-hover:-translate-x-2 transition-transform" />
-                Return to Master Archives
-              </Link>
-            </FadeInWhenVisible>
-
-            <div className="grid lg:grid-cols-12 gap-16 items-center">
-              <div className="lg:col-span-10 lg:offset-1">
-                <FadeInWhenVisible delay={0.1}>
-                  <div className="flex items-center gap-4 mb-8">
-                    <span className="px-4 py-1.5 bg-accent-crimson/10 border border-accent-crimson/20 rounded-full text-[9px] font-mono text-accent-glow uppercase font-black tracking-[0.3em]">
-                      {project.category || 'System Architecture'}
-                    </span>
-                    <div className="h-px w-16 bg-white/10" />
+        {(project.problem || project.solution) && (
+          <section className="border-b border-line">
+            <div className="page-column py-12 sm:py-16">
+              <div className="grid gap-10 sm:grid-cols-2 sm:gap-12">
+                {project.problem && (
+                  <div>
+                    <p className="mono-label flex items-center gap-2">
+                      <span className="h-1 w-1 bg-primary" aria-hidden="true" />
+                      Problem
+                    </p>
+                    <p className="mt-4 text-sm leading-relaxed text-secondary">{project.problem}</p>
                   </div>
-                </FadeInWhenVisible>
-                
-                <FadeInWhenVisible delay={0.2}>
-                  <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter mb-10 leading-[0.85] uppercase">
-                    {project.title}
-                  </h1>
-                </FadeInWhenVisible>
-
-                <FadeInWhenVisible delay={0.3}>
-                  <p className="text-secondary text-lg md:text-xl leading-relaxed font-light max-w-3xl mb-12 border-l-2 border-accent-crimson/30 pl-8 italic">
-                    {project.overview}
-                  </p>
-                </FadeInWhenVisible>
-
-                <FadeInWhenVisible delay={0.4}>
-                  <div className="flex flex-wrap gap-6">
-                    {project.liveUrl && (
-                      <motion.a 
-                        href={project.liveUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-4 px-6 py-4 sm:px-10 sm:py-5 bg-primary text-surface rounded-2xl font-black uppercase tracking-widest text-xs group relative overflow-hidden"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <div className="absolute inset-0 bg-accent-crimson translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                        <Globe size={18} className="relative z-10 group-hover:text-white transition-colors" />
-                        <span className="relative z-10 group-hover:text-white transition-colors">Live Deployment</span>
-                        <ArrowRight size={16} className="relative z-10 group-hover:translate-x-2 transition-transform group-hover:text-white" />
-                      </motion.a>
-                    )}
-                    {project.githubUrl && (
-                      <motion.a 
-                        href={project.githubUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-4 px-6 py-4 sm:px-10 sm:py-5 bg-white/5 border border-white/10 rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:border-accent-crimson/50 transition-all group"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <Github size={18} className="text-tertiary group-hover:text-accent-crimson transition-colors" />
-                        <span className="text-secondary group-hover:text-white transition-colors">Source Protocol</span>
-                      </motion.a>
-                    )}
+                )}
+                {project.solution && (
+                  <div>
+                    <p className="mono-label flex items-center gap-2">
+                      <span className="h-1 w-1 bg-primary" aria-hidden="true" />
+                      Solution
+                    </p>
+                    <p className="mt-4 text-sm leading-relaxed text-secondary">{project.solution}</p>
                   </div>
-                </FadeInWhenVisible>
+                )}
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        )}
 
-      {/* Deep Content Section */}
-      <section className="py-24 relative z-10">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid lg:grid-cols-12 gap-10 sm:gap-14 lg:gap-20">
-            
-            <div className="lg:col-span-8 space-y-16 sm:space-y-24 lg:space-y-32">
-              {/* Problem Section */}
-              <FadeInWhenVisible>
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-8 text-accent-crimson">
-                    <ShieldAlert size={20} />
-                    <h2 className="text-xs font-mono font-black uppercase tracking-[0.5em]">The Core Conflict</h2>
-                  </div>
-                  <div className="relative p-6 sm:p-8 md:p-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-accent-crimson/50" />
-                    <p className="text-secondary text-lg md:text-xl leading-relaxed font-light">
-                      {project.problem || 'No problem description available.'}
-                    </p>
-                    <Sparkles className="absolute -bottom-4 -right-4 w-24 h-24 text-white/[0.02] rotate-12" />
-                  </div>
-                </div>
-              </FadeInWhenVisible>
-
-              {/* Solution Section */}
-              <FadeInWhenVisible>
-                <div className="relative">
-                  <div className="flex items-center gap-4 mb-8 text-accent-glow">
-                    <Boxes size={20} />
-                    <h2 className="text-xs font-mono font-black uppercase tracking-[0.5em]">The Resolved Architecture</h2>
-                  </div>
-                  <div className="relative p-6 sm:p-8 md:p-12 bg-white/[0.02] border border-white/5 rounded-[2.5rem] overflow-hidden">
-                    <div className="absolute top-0 right-0 w-1 h-full bg-accent-glow/50" />
-                    <p className="text-secondary text-lg md:text-xl leading-relaxed font-light">
-                      {project.solution || 'No solution description available.'}
-                    </p>
-                    <Terminal className="absolute -bottom-4 -left-4 w-24 h-24 text-white/[0.02] -rotate-12" />
-                  </div>
-                </div>
-              </FadeInWhenVisible>
-            </div>
-
-            {/* Sidebar - Tech Stack */}
-            <div className="lg:col-span-4">
-              <div className="sticky top-32">
-                <FadeInWhenVisible direction="left">
-                  <div className="p-6 sm:p-8 lg:p-10 bg-[#111]/40 border border-white/5 rounded-[2.5rem] backdrop-blur-2xl">
-                    <div className="flex items-center gap-3 mb-10 text-accent-crimson">
-                      <Terminal size={16} />
-                      <h3 className="text-[10px] font-mono font-black uppercase tracking-[0.4em]">System Specs</h3>
-                    </div>
-                    <div className="space-y-4">
-                      {project.techStack.map((tech, idx) => (
-                        <motion.div 
-                          key={tech}
-                          initial={{ opacity: 0, x: 20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ delay: idx * 0.05 }}
-                          className="flex items-center justify-between py-3 border-b border-white/5 group/tech"
-                        >
-                          <span className="text-xs font-mono text-tertiary group-hover/tech:text-white transition-colors">{tech}</span>
-                          <div className="w-1.5 h-1.5 rounded-full bg-accent-crimson/20 group-hover/tech:bg-accent-crimson transition-all shadow-[0_0_8px_rgba(200,16,46,0)] group-hover/tech:shadow-[0_0_8px_rgba(200,16,46,0.8)]" />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </FadeInWhenVisible>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Visual Terminal - Gallery */}
-      <section className="py-16 sm:py-24 md:py-32 relative bg-[#080808]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(200,16,46,0.02)_0%,transparent_70%)]" />
-        
-        <div className="container mx-auto px-4 max-w-6xl relative z-10">
-          <FadeInWhenVisible>
-            <div className="flex items-center gap-8 mb-20">
-              <h2 className="text-4xl md:text-6xl font-serif font-black uppercase tracking-tighter">INTERFACE <span className="text-accent-crimson">DATA</span></h2>
-              <div className="h-[1px] flex-1 bg-white/10" />
-            </div>
-          </FadeInWhenVisible>
-
-          <div className="grid md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
-            {project.images.map((img, idx) => (
-              <FadeInWhenVisible key={idx} delay={idx * 0.1}>
-                <motion.div 
-                  className="relative rounded-[2rem] overflow-hidden cursor-pointer group bg-[#111] border border-white/5 shadow-2xl"
-                  onClick={() => openLightbox(idx)}
-                  whileHover={{ y: -12, scale: 1.02 }}
-                >
-                  <img src={getOptimizedImageUrl(img, { width: ImageSizes.large })} alt="" className="w-full aspect-video object-cover opacity-70 group-hover:opacity-100 transition-all duration-700 ease-out" loading="lazy" />
-                  <div className="absolute inset-0 bg-accent-crimson/0 group-hover:bg-accent-crimson/5 transition-colors duration-500" />
-                  <div className="absolute bottom-4 left-4 px-4 py-2 sm:bottom-8 sm:left-8 sm:px-6 sm:py-3 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl text-[10px] font-mono uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-                    Visual Core {idx + 1}
-                  </div>
-                </motion.div>
-              </FadeInWhenVisible>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Related Projects - Immersive Carousel */}
-      {relatedProjects.length > 0 && (
-        <section className="py-16 sm:py-24 md:py-32 border-t border-white/5">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <FadeInWhenVisible>
-              <div className="flex justify-between items-end mb-16">
+        {project.techStack.length > 0 && (
+          <section className="border-b border-line">
+            <div className="page-column py-12 sm:py-16">
+              <div className="grid gap-8 sm:grid-cols-[220px_1fr] sm:gap-12">
                 <div>
-                  <span className="text-[10px] font-mono text-tertiary uppercase tracking-[0.5em] block mb-4">Discover More</span>
-                  <h2 className="text-4xl md:text-5xl font-serif font-black uppercase tracking-tighter">RELATED <span className="text-accent-crimson">ASSETS</span></h2>
+                  <p className="mono-label">Stack</p>
+                  <p className="mt-2 text-sm text-secondary">Tools and services used.</p>
                 </div>
-                <Link to="/projects" className="hidden md:flex items-center gap-2 text-accent-crimson font-mono text-xs font-bold uppercase tracking-widest hover:text-white transition-colors">
-                  Full Archive <ArrowRight size={16} />
-                </Link>
+                <div className="border-t border-line">
+                  {project.techStack.map((tech) => (
+                    <div key={tech} className="meta-row">
+                      <span className="font-mono text-[11px] text-primary">{tech}</span>
+                      <span className="mono-label">used</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </FadeInWhenVisible>
+            </div>
+          </section>
+        )}
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {relatedProjects.map((related, idx) => (
-                <FadeInWhenVisible key={related.id} delay={idx * 0.1}>
-                  <Link to={`/projects/${related.slug}`} className="group block bg-[#111]/50 border border-white/5 rounded-3xl overflow-hidden hover:border-accent-crimson/30 transition-all duration-500 hover:-translate-y-2">
-                    <div className="aspect-video overflow-hidden relative">
-                      {related.images[0] ? (
-                        <img src={getOptimizedImageUrl(related.images[0], { width: ImageSizes.medium })} className="w-full h-full object-cover opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" alt="" loading="lazy" />
-                      ) : (
-                        <div className="w-full h-full bg-elevated flex items-center justify-center text-tertiary">
-                          <FolderGit2 size={40} />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
-                    </div>
-                    <div className="p-5 sm:p-6 md:p-8">
-                      <h3 className="text-xl font-serif font-bold text-white group-hover:text-accent-crimson transition-colors mb-2 leading-tight uppercase tracking-tight">
-                        {related.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[9px] font-mono text-tertiary uppercase tracking-widest">
-                        <span>View Project</span>
-                        <div className="w-4 h-px bg-tertiary" />
-                      </div>
-                    </div>
-                  </Link>
-                </FadeInWhenVisible>
+        {project.images.length > 1 && (
+          <section className="border-b border-line">
+            <div className="page-column py-12 sm:py-16">
+              <div className="flex items-end justify-between border-b border-line pb-5">
+                <div>
+                  <p className="mono-label">Gallery</p>
+                  <h2 className="mt-2 text-xl font-medium tracking-tight">Screens</h2>
+                </div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+                  {String(project.images.length).padStart(2, '0')} images
+                </p>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                {project.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => openLightbox(idx)}
+                    className="group relative overflow-hidden border border-line bg-surface text-left"
+                    aria-label={`Open image ${idx + 1}`}
+                  >
+                    <img
+                      src={getOptimizedImageUrl(img, { width: ImageSizes.large })}
+                      alt=""
+                      loading="lazy"
+                      className="aspect-[16/10] w-full object-cover grayscale transition-all duration-700 ease-smooth group-hover:scale-[1.02] group-hover:grayscale-0"
+                    />
+                    <span className="absolute bottom-3 left-3 bg-background/90 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.16em] text-secondary backdrop-blur">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+      </article>
+
+      {relatedProjects.length > 0 && (
+        <section>
+          <div className="page-column py-12 sm:py-16">
+            <div className="flex items-end justify-between border-b border-line pb-5">
+              <div>
+                <p className="mono-label">More</p>
+                <h2 className="mt-2 text-xl font-medium tracking-tight">Other projects.</h2>
+              </div>
+              <Link to="/projects" className="link-underline text-[12px] text-secondary hover:text-primary">
+                All projects
+                <ArrowUpRight size={13} />
+              </Link>
+            </div>
+
+            <div className="mt-2">
+              {relatedProjects.map((related) => (
+                <Link
+                  key={related.id}
+                  to={`/projects/${related.slug}`}
+                  className="group flex items-center justify-between gap-6 border-b border-line py-4 transition-colors duration-300 last:border-b-0 hover:bg-surface"
+                >
+                  <div className="min-w-0">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-tertiary">
+                      {related.category || 'Development'}
+                    </p>
+                    <h3 className="mt-1 truncate text-[15px] font-medium tracking-tight">{related.title}</h3>
+                  </div>
+                  <ArrowUpRight
+                    size={15}
+                    className="shrink-0 text-tertiary transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                  />
+                </Link>
               ))}
             </div>
           </div>
         </section>
       )}
+
+      <div className="hatch h-2.5 border-t border-line" aria-hidden="true" />
     </div>
   );
 };

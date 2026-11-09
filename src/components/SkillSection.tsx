@@ -1,72 +1,88 @@
-import React from 'react';
-import { FadeInWhenVisible } from './FadeInWhenVisible';
-import SkillMarquee from './SkillMarquee';
-import { motion } from 'framer-motion';
+import { TechIcon } from './TechIcon';
 
-const SkillSection: React.FC = () => {
+const GROUPS = [
+  {
+    label: 'Frontend',
+    items: [
+      'React',
+      'Next.js',
+      'TypeScript',
+      'JavaScript',
+      'Tailwind',
+      'React Native',
+      'Vite',
+      'Framer Motion',
+      'HTML5',
+      'CSS',
+    ],
+  },
+  {
+    label: 'Backend',
+    items: [
+      'Node.js',
+      'Express',
+      'REST APIs',
+      'Prisma',
+      'PostgreSQL',
+      'MongoDB',
+      'Redis',
+      'GraphQL',
+      'Firebase',
+      'Supabase',
+    ],
+  },
+  {
+    label: 'Data & AI',
+    items: ['OpenAI', 'Gemini', 'LangChain', 'Hugging Face', 'Python', 'FastAPI', 'Django'],
+  },
+  {
+    label: 'Tooling',
+    items: [
+      'Git',
+      'GitHub',
+      'Docker',
+      'Postman',
+      'Vercel',
+      'Expo',
+      'Figma',
+      'Linux',
+      'Jest',
+      'Cloudflare',
+    ],
+  },
+];
+
+const StackItem = ({ name }: { name: string }) => (
+  <li className="group flex items-center gap-2.5 text-[13px] text-secondary transition-all duration-200 ease-smooth hover:translate-x-0.5 hover:text-primary">
+    <TechIcon
+      name={name}
+      className="h-3.5 w-3.5 shrink-0 text-tertiary transition-colors duration-200 group-hover:text-primary"
+    />
+    <span className="truncate">{name}</span>
+  </li>
+);
+
+const SkillSection = () => {
   return (
-    <section className="py-24 md:py-32 relative overflow-hidden bg-[#050505] border-y border-white/5">
-      {/* Background Decorative Elements */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(200,16,46,0.05),transparent_70%)] pointer-events-none" />
-      
-      {/* Cyber Grid */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(rgba(200, 16, 46, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(200, 16, 46, 0.3) 1px, transparent 1px)`,
-          backgroundSize: '80px 80px'
-        }}
-      />
-
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-20">
-          <FadeInWhenVisible>
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="h-px w-8 bg-accent-crimson/50" />
-              <span className="text-xs font-mono text-accent-glow uppercase tracking-[0.5em]">Expertise</span>
-              <div className="h-px w-8 bg-accent-crimson/50" />
+    <div className="border-l border-t border-line">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4">
+        {GROUPS.map((group) => (
+          <div key={group.label} className="border-b border-r border-line p-5">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="mono-label">{group.label}</p>
+              <span className="font-mono text-[10px] tabular-nums text-tertiary">
+                {String(group.items.length).padStart(2, '0')}
+              </span>
             </div>
-          </FadeInWhenVisible>
-          
-          <FadeInWhenVisible delay={0.1}>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-black mb-6 tracking-tight">
-              TECH <span className="text-accent-crimson">ECOSYSTEM</span>
-            </h2>
-          </FadeInWhenVisible>
-          
-          <FadeInWhenVisible delay={0.2}>
-            <p className="text-secondary text-base md:text-lg max-w-2xl mx-auto font-light leading-relaxed">
-              A fluid showcase of the modern technologies I use to build 
-              high-performance digital solutions.
-            </p>
-          </FadeInWhenVisible>
-        </div>
-
-        {/* Enhanced Marquee */}
-        <div className="relative group">
-          {/* Decorative frame around marquee */}
-          <div className="absolute -inset-4 border border-white/5 rounded-[2rem] pointer-events-none group-hover:border-accent-crimson/10 transition-colors duration-700" />
-          
-          <FadeInWhenVisible delay={0.3}>
-            <SkillMarquee />
-          </FadeInWhenVisible>
-        </div>
-
-        {/* Bottom Tagline */}
-        <FadeInWhenVisible delay={0.5}>
-          <div className="mt-16 flex flex-col items-center">
-            <div className="flex gap-2 mb-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="w-1.5 h-1.5 rounded-full bg-accent-crimson/20" />
+            <ul className="mt-4 space-y-2.5">
+              {group.items.map((item) => (
+                <StackItem key={item} name={item} />
               ))}
-            </div>
-            <p className="font-mono text-[10px] text-tertiary uppercase tracking-[0.4em]">
-              Continuously evolving with the latest industry standards
-            </p>
+            </ul>
           </div>
-        </FadeInWhenVisible>
+        ))}
       </div>
-    </section>
+    </div>
   );
 };
 

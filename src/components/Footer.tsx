@@ -1,93 +1,139 @@
-import React, { useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, ArrowUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowUp, ArrowUpRight, Github, Linkedin, Mail } from 'lucide-react';
+
+const FOOTER_LINKS = [
+  { label: 'Work', to: '/projects' },
+  { label: 'Writing', to: '/blogs' },
+  { label: 'Contact', to: '/contact' },
+];
+
+const SOCIALS = [
+  { label: 'GitHub', href: 'https://github.com/namanjainakt/', icon: Github },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/naman-jain-akt/', icon: Linkedin },
+  { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
+];
+
+const FooterLink = ({ to, label }: { to: string; label: string }) => (
+  <Link
+    to={to}
+    className="group/link inline-flex w-fit items-center gap-1.5 text-sm text-secondary transition-colors duration-200 hover:text-primary"
+  >
+    <span className="link-underline">{label}</span>
+    <ArrowUpRight
+      size={12}
+      aria-hidden="true"
+      className="-translate-x-1 opacity-0 transition-all duration-200 ease-smooth group-hover/link:translate-x-0 group-hover/link:opacity-100"
+    />
+  </Link>
+);
 
 const Footer = () => {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const socialLinks = [
-    { name: 'GitHub', icon: Github, href: 'https://github.com/namanjainakt/' },
-    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/in/naman-jain-akt/' },
-    { name: 'Email', icon: Mail, href: 'mailto:namanjainakt@gmail.com' },
-  ];
-
-  const name = "NAMAN JAIN";
-  const containerRef = useRef<HTMLDivElement>(null)
-  const leftNRef = useRef<HTMLSpanElement>(null)
-  const rightNRef = useRef<HTMLSpanElement>(null)
-  const spaceIndex = name.indexOf(' ')
-  const leftNIndex = (() => {
-    for (let i = spaceIndex - 1; i >= 0; i--) if (name[i] === 'N') return i
-    return 0
-  })()
-  const rightNIndex = (() => {
-    for (let i = name.length - 1; i > spaceIndex; i--) if (name[i] === 'N') return i
-    return name.length - 1
-  })()
-
-  const footerRef = useRef<HTMLElement>(null)
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <footer ref={footerRef} className="relative py-24 bg-[#050505] overflow-hidden border-t border-white/5">
-      <div className="container mx-auto px-4 flex flex-col items-center">
-        
-        {/* Massive Name / Scroll to Top */}
-        <button 
-          onClick={scrollToTop}
-          className="group relative cursor-pointer mb-12"
-        >
-          <div ref={containerRef} className="relative flex overflow-hidden">
-            {name.split('').map((char, i) => (
-              <motion.span
-                key={i}
-                initial={{ y: 0 }}
-                whileHover={{ y: -20, color: '#C8102E' }}
-                transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                className="text-4xl sm:text-6xl md:text-[10rem] lg:text-[12rem] font-serif font-black tracking-tighter text-white leading-none inline-block select-none"
-                ref={i === leftNIndex ? leftNRef : i === rightNIndex ? rightNRef : undefined}
+    <footer className="border-t border-line">
+      <div className="frame">
+        <div className="page-column py-12 sm:py-16">
+          <div className="grid gap-10 sm:grid-cols-[1fr_auto]">
+            <div>
+              <p className="mono-label">Available for select work</p>
+              <h2 className="mt-3 max-w-md text-2xl font-medium tracking-tight sm:text-3xl">
+                Have a project in mind? Let&apos;s build something dependable.
+              </h2>
+              <a
+                href="mailto:namanjainakt@gmail.com"
+                className="group/mail link-underline mt-5 inline-flex items-center gap-1 text-sm text-secondary transition-colors duration-200 hover:text-primary"
               >
-                {char === ' ' ? '\u00A0' : char}
-              </motion.span>
-            ))}
-          </div>
-          
-          {/* Hover Indicator */}
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-            <ArrowUp size={24} className="text-accent-crimson animate-bounce" />
-            <span className="text-[10px] font-mono text-accent-glow uppercase tracking-[0.5em]">Back to Top</span>
-          </div>
-        </button>
+                namanjainakt@gmail.com
+                <ArrowUpRight
+                  size={14}
+                  aria-hidden="true"
+                  className="transition-transform duration-300 ease-smooth group-hover/mail:-translate-y-0.5 group-hover/mail:translate-x-0.5"
+                />
+              </a>
+            </div>
 
-        {/* Social Links */}
-        <div className="flex gap-6 sm:gap-8 md:gap-12 relative z-10">
-          {socialLinks.map((social, index) => (
-            <motion.a
-              key={social.name}
-              href={social.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-tertiary hover:text-white transition-all duration-300"
-              whileHover={{ y: -5, scale: 1.1 }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <social.icon size={24} strokeWidth={1.5} />
-            </motion.a>
-          ))}
+            <div className="grid grid-cols-2 gap-10 sm:gap-16">
+              <div>
+                <p className="mono-label">Explore</p>
+                <nav className="mt-4 flex flex-col gap-2.5" aria-label="Footer">
+                  <FooterLink to="/" label="Home" />
+                  {FOOTER_LINKS.map((link) => (
+                    <FooterLink key={link.to} to={link.to} label={link.label} />
+                  ))}
+                </nav>
+              </div>
+
+              <div>
+                <p className="mono-label">Elsewhere</p>
+                <div className="mt-4 flex flex-col gap-2">
+                  {SOCIALS.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target={social.href.startsWith('mailto:') ? undefined : '_blank'}
+                      rel="noopener noreferrer"
+                      className="group/social flex w-fit items-center gap-2.5 text-sm text-secondary transition-colors duration-200 hover:text-primary"
+                    >
+                      <span className="grid h-7 w-7 place-items-center rounded-md border border-line transition-colors duration-200 group-hover/social:border-primary group-hover/social:bg-surface">
+                        <social.icon
+                          size={13}
+                          strokeWidth={1.6}
+                          aria-hidden="true"
+                          className="transition-transform duration-300 ease-smooth group-hover/social:-translate-y-0.5"
+                        />
+                      </span>
+                      {social.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-line pt-5 sm:flex-row sm:items-center">
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+              © 2026 Naman Jain
+            </p>
+            <div className="flex items-center gap-5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+                Built with React &amp; care
+              </span>
+              <button
+                onClick={scrollToTop}
+                className="group/top flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary transition-colors duration-200 hover:text-primary active:scale-[0.98]"
+              >
+                Back to top
+                <ArrowUp
+                  size={12}
+                  aria-hidden="true"
+                  className="transition-transform duration-300 ease-smooth group-hover/top:-translate-y-0.5"
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Minimal Copyright */}
-        <div className="mt-20 text-[9px] font-mono text-tertiary/80 uppercase tracking-[0.5em]">
-          © 2026 Developed by Naman Jain
+        <div className="wordmark-block group relative overflow-hidden border-t border-line">
+          <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />
+
+          <div className="px-4 pt-6">
+            <div className="relative">
+              <p aria-hidden="true" className="footer-wordmark">
+                NAMAN JAIN
+              </p>
+              <span
+                aria-hidden="true"
+                className="footer-wordmark footer-wordmark-fill absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100"
+              >
+                NAMAN JAIN
+              </span>
+            </div>
+          </div>
+
+          <div className="hatch mt-6 h-2.5 border-t border-line" aria-hidden="true" />
         </div>
       </div>
-
-      {/* Atmospheric Background Glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[20%] bg-accent-crimson/5 blur-[120px] pointer-events-none" />
     </footer>
   );
 };

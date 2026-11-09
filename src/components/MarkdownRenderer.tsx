@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -34,23 +33,18 @@ const defaultComponents: Components = {
 
     if (match) {
       return (
-        <div className="my-12 rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-[#0A0A0A]">
-          <div className="bg-white/5 px-6 py-3 flex items-center justify-between border-b border-white/5">
-            <div className="flex items-center gap-2">
-              <Terminal size={12} className="text-accent-crimson" />
-              <span className="text-[10px] font-mono uppercase tracking-widest opacity-50">{match[1]}</span>
-            </div>
-            <div className="flex gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-500/30" />
-              <div className="w-2 h-2 rounded-full bg-yellow-500/30" />
-              <div className="w-2 h-2 rounded-full bg-green-500/30" />
-            </div>
+        <div className="my-8 overflow-hidden border border-line bg-[#0D0D0D]">
+          <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.03] px-4 py-2.5">
+            <Terminal size={12} className="text-white/40" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/45">
+              {match[1]}
+            </span>
           </div>
           <SyntaxHighlighter
             style={vscDarkPlus}
             language={match[1]}
             PreTag="div"
-            customStyle={{ margin: 0, padding: '2rem', background: 'transparent' } as React.CSSProperties}
+            customStyle={{ margin: 0, padding: '1.25rem', background: 'transparent' } as React.CSSProperties}
           >
             {codeString}
           </SyntaxHighlighter>
@@ -59,7 +53,7 @@ const defaultComponents: Components = {
     }
 
     return (
-      <code className="px-1.5 py-0.5 rounded font-mono text-[0.9em] bg-accent-crimson/10 text-accent-crimson border border-accent-crimson/20" {...props}>
+      <code className="border border-line bg-surface px-1.5 py-0.5 font-mono text-[0.85em] text-primary" {...props}>
         {children}
       </code>
     );

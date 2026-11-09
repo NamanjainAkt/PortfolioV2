@@ -1,19 +1,14 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Footer2 from './components/Footer2';
 import AdminModal from './components/AdminModal';
-import BottomNav from './components/BottomNav';
-const LazyChatBot = lazy(() => import('./components/ChatBot'));
 import LoadingFallback from './components/LoadingFallback';
 import { PageTransition } from './components/PageTransition';
-const CustomCursor = lazy(() => import('./components/CustomCursor').then(m => ({ default: m.CustomCursor })));
+
 const CommandPalette = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
-const ScrollProgress = lazy(() => import('./components/ScrollProgress').then(m => ({ default: m.ScrollProgress })));
-const Spotlight = lazy(() => import('./components/Spotlight').then(m => ({ default: m.Spotlight })));
 
 // Lazy load page components for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -28,18 +23,17 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 // Scroll to top on route change
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-  
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  
+
   return null;
 };
 
 function App() {
   const location = useLocation();
 
-  const isHome = location.pathname === '/';
   const isAdmin = location.pathname.startsWith('/admin');
 
   useEffect(() => {
@@ -59,26 +53,13 @@ function App() {
   }, []);
 
   return (
-    <motion.div
-      key="app"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="min-h-screen flex flex-col font-sans text-primary bg-background pb-16 md:pb-0"
-    >
+    <div className="min-h-screen flex flex-col font-sans text-primary bg-background">
       <Suspense fallback={null}>
-        <CustomCursor />
-        <ScrollProgress />
-        <Spotlight />
         <CommandPalette />
       </Suspense>
       <ScrollToTop />
       {!isAdmin && <Navbar />}
-      {!isAdmin && <BottomNav />}
       <AdminModal />
-      <Suspense fallback={null}>
-        <LazyChatBot />
-      </Suspense>
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
@@ -93,9 +74,9 @@ function App() {
           </Routes>
         </AnimatePresence>
       </main>
-      {isHome ? <Footer /> : <Footer2 />}
+      {!isAdmin && <Footer />}
       <Analytics />
-    </motion.div>
+    </div>
   );
 }
 

@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { X, Upload, Loader2, Sparkles, Globe, Github, Info, Layers, Target, Rocket } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { X, Upload, Loader2, Globe, Github, Info, Layers, Target, Rocket, ChevronDown } from 'lucide-react';
+import { motion } from 'framer-motion';
+import type { Project } from '../types/project';
 
 interface ProjectFormProps {
-  initialData?: any;
+  initialData?: Partial<Project>;
   onClose: () => void;
   onSuccess: () => void;
 }
+
+const FIELD_CLASS =
+  'w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-sm text-primary transition-colors duration-200 placeholder:text-tertiary focus:border-primary';
+
+const ICON_FIELD_CLASS = `${FIELD_CLASS} pl-10 font-mono`;
+
+const SECTION_LABEL = 'mono-label';
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -24,6 +32,19 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -68,9 +89,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
             images: [...prev.images, ...uploadedUrls]
         }));
 
-    } catch (err: any) {
+    } catch (err) {
         console.error('[Upload] Error:', err);
-        setError(err.message || 'Image upload failed');
+        setError(err instanceof Error ? err.message : 'Image upload failed');
     } finally {
         setUploading(false);
     }
@@ -112,7 +133,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
 
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -120,199 +141,230 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
+      transition={{ duration: 0.15 }}
+      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-background/70 p-4 backdrop-blur-sm sm:items-center"
     >
-      <motion.div 
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="bg-[#0a0a0a] border border-white/5 w-full max-w-4xl rounded-[2.5rem] shadow-2xl relative flex flex-col max-h-[90vh] overflow-hidden"
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.98, y: 8 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="project-form-title"
+        className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-line bg-background shadow-2xl"
       >
         {/* Header */}
-        <div className="p-8 border-b border-white/5 flex justify-between items-center sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-accent-crimson rounded-2xl flex items-center justify-center shadow-lg shadow-accent-crimson/20">
-              <Rocket className="text-white" size={24} />
+        <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-5 sm:px-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-line bg-surface text-primary">
+              <Rocket size={18} />
             </div>
             <div>
-              <h2 className="text-2xl font-serif font-black tracking-tighter uppercase leading-none">
-                {initialData ? 'Synchronize' : 'Deploy'} <span className="text-accent-crimson">Project</span>
+              <h2 id="project-form-title" className="text-lg font-medium tracking-tight">
+                {initialData ? 'Edit project' : 'New project'}
               </h2>
-              <p className="text-[10px] font-mono text-tertiary uppercase tracking-[0.4em] mt-1">Project Metadata Configuration</p>
+              <p className="mono-label mt-0.5">Project metadata</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-3 bg-white/5 rounded-2xl text-tertiary hover:text-white hover:bg-white/10 transition-all">
-            <X size={24} />
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line text-secondary transition-colors hover:border-primary hover:text-primary"
+          >
+            <X size={17} />
           </button>
         </div>
 
-        <form id="project-form" onSubmit={handleSubmit} className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
-          {/* Section 1: Core Identity */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-              <Info size={16} className="text-accent-crimson" />
-              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Core Identity</span>
+        <form id="project-form" onSubmit={handleSubmit} className="flex-1 space-y-8 overflow-y-auto overscroll-contain px-6 py-7 sm:px-8">
+          {/* Section 1: Core identity */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 border-b border-line pb-3">
+              <Info size={14} className="text-tertiary" />
+              <span className={SECTION_LABEL}>Core identity</span>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Operational Title</label>
+                <label htmlFor="project-title" className="mono-label block">Title</label>
                 <input
+                  id="project-title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="Enter project title"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors"
+                  className={FIELD_CLASS}
+                  autoComplete="off"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Resource Slug</label>
+                <label htmlFor="project-slug" className="mono-label block">Slug</label>
                 <input
+                  id="project-slug"
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
                   placeholder="project-identifier"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors font-mono"
+                  className={`${FIELD_CLASS} font-mono`}
+                  autoComplete="off"
+                  spellCheck={false}
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Brief Overview</label>
+              <label htmlFor="project-overview" className="mono-label block">Overview</label>
               <textarea
+                id="project-overview"
                 name="overview"
                 value={formData.overview}
                 onChange={handleChange}
                 rows={3}
-                placeholder="High-level description of the project..."
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors resize-none"
+                placeholder="High-level description of the project…"
+                className={`${FIELD_CLASS} resize-none`}
                 required
               />
             </div>
           </div>
 
-          {/* Section 2: Case Study Details */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-              <Target size={16} className="text-accent-crimson" />
-              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Case Study Architecture</span>
+          {/* Section 2: Case study */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 border-b border-line pb-3">
+              <Target size={14} className="text-tertiary" />
+              <span className={SECTION_LABEL}>Case study</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                <div className="space-y-2">
-                  <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">The Challenge</label>
+                  <label htmlFor="project-problem" className="mono-label block">The challenge</label>
                   <textarea
+                    id="project-problem"
                     name="problem"
                     value={formData.problem}
                     onChange={handleChange}
                     rows={4}
                     placeholder="What problem were you solving?"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors resize-none"
+                    className={`${FIELD_CLASS} resize-none`}
                   />
                </div>
                <div className="space-y-2">
-                  <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">The Solution</label>
+                  <label htmlFor="project-solution" className="mono-label block">The solution</label>
                   <textarea
+                    id="project-solution"
                     name="solution"
                     value={formData.solution}
                     onChange={handleChange}
                     rows={4}
                     placeholder="How did you solve it?"
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors resize-none"
+                    className={`${FIELD_CLASS} resize-none`}
                   />
                </div>
             </div>
           </div>
 
-          {/* Section 3: Technical Specs & Assets */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-              <Layers size={16} className="text-accent-crimson" />
-              <span className="text-xs font-mono uppercase tracking-[0.3em] font-bold">Technological Assets</span>
+          {/* Section 3: Tech & assets */}
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 border-b border-line pb-3">
+              <Layers size={14} className="text-tertiary" />
+              <span className={SECTION_LABEL}>Tech and assets</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Tech Stack</label>
+                <label htmlFor="project-tech" className="mono-label block">Tech stack</label>
                 <input
+                  id="project-tech"
                   name="techStack"
                   value={formData.techStack}
                   onChange={handleChange}
-                  placeholder="React, Node.js, TypeScript..."
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors"
+                  placeholder="React, Node.js, TypeScript…"
+                  className={FIELD_CLASS}
+                  autoComplete="off"
+                  spellCheck={false}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Category</label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors appearance-none"
-                >
-                  <option value="Development" className="bg-[#0a0a0a]">Development</option>
-                  <option value="Design" className="bg-[#0a0a0a]">Design</option>
-                  <option value="System" className="bg-[#0a0a0a]">System</option>
-                  <option value="Cloud" className="bg-[#0a0a0a]">Cloud</option>
-                </select>
+                <label htmlFor="project-category" className="mono-label block">Category</label>
+                <div className="relative">
+                  <select
+                    id="project-category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className={`${FIELD_CLASS} appearance-none pr-10`}
+                  >
+                    <option value="Development" className="bg-background text-primary">Development</option>
+                    <option value="Design" className="bg-background text-primary">Design</option>
+                    <option value="System" className="bg-background text-primary">System</option>
+                    <option value="Cloud" className="bg-background text-primary">Cloud</option>
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-tertiary" size={15} />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2 relative">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Repository URL</label>
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="project-github" className="mono-label block">Repository URL</label>
                 <div className="relative">
-                  <Github className="absolute left-6 top-1/2 -translate-y-1/2 text-tertiary" size={18} />
+                  <Github className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-tertiary" size={15} />
                   <input
+                    id="project-github"
                     name="githubUrl"
                     value={formData.githubUrl}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors font-mono"
+                    className={ICON_FIELD_CLASS}
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
               </div>
-              <div className="space-y-2 relative">
-                <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Live Deployment</label>
+              <div className="space-y-2">
+                <label htmlFor="project-live" className="mono-label block">Live URL</label>
                 <div className="relative">
-                  <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-tertiary" size={18} />
+                  <Globe className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-tertiary" size={15} />
                   <input
+                    id="project-live"
                     name="liveUrl"
                     value={formData.liveUrl}
                     onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-6 py-4 text-white focus:border-accent-crimson outline-none transition-colors font-mono"
+                    className={ICON_FIELD_CLASS}
+                    autoComplete="off"
+                    spellCheck={false}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <label className="text-[10px] font-mono text-tertiary uppercase tracking-widest ml-1">Visual Assets</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-3">
+              <span className="mono-label block">Images</span>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   {formData.images.map((img: string, idx: number) => (
-                      <div key={idx} className="relative group aspect-video bg-white/5 border border-white/5 rounded-2xl overflow-hidden">
-                          <img src={img} alt={`Project ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div key={idx} className="group relative aspect-video overflow-hidden rounded-md border border-line bg-surface">
+                          <img src={img} alt={`Project ${idx + 1}`} width={320} height={180} className="h-full w-full object-cover" />
                           <button
                               type="button"
                               onClick={() => removeImage(idx)}
-                              className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-md"
+                              aria-label="Remove image"
+                              className="absolute right-1.5 top-1.5 rounded-md border border-line bg-background/90 p-1.5 text-primary opacity-0 backdrop-blur transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                           >
-                              <X size={14} />
+                              <X size={13} />
                           </button>
                       </div>
                   ))}
-                  <label className="border-2 border-dashed border-white/5 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-accent-crimson/50 hover:bg-white/[0.02] transition-all aspect-video group">
+                  <label className="flex aspect-video cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-line text-tertiary transition-colors hover:border-primary hover:text-primary">
                       {uploading ? (
-                          <Loader2 size={24} className="animate-spin text-accent-crimson" />
+                          <Loader2 size={18} className="animate-spin" />
                       ) : (
                           <>
-                              <Upload size={24} className="mb-2 text-tertiary group-hover:text-accent-crimson transition-colors" />
-                              <span className="text-[10px] font-mono text-tertiary uppercase tracking-widest group-hover:text-white transition-colors">Link Media</span>
+                              <Upload size={18} className="mb-1.5" />
+                              <span className="mono-label">Add image</span>
                           </>
                       )}
                       <input
@@ -327,31 +379,27 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ initialData, onClose, onSucce
               </div>
             </div>
           </div>
-          
+
           {error && (
-            <div className="p-4 bg-accent-crimson/10 border border-accent-crimson/20 rounded-2xl flex items-center gap-4">
-              <X size={20} className="text-accent-crimson" />
-              <p className="text-accent-crimson text-xs font-mono uppercase tracking-widest">{error}</p>
+            <div role="alert" className="flex items-center gap-3 rounded-md border border-line bg-surface px-4 py-3">
+              <X size={15} className="shrink-0 text-primary" aria-hidden="true" />
+              <p className="text-xs text-primary">{error}</p>
             </div>
           )}
         </form>
-        
-        <div className="p-8 border-t border-white/5 sticky bottom-0 bg-[#0a0a0a]/80 backdrop-blur-xl z-10 rounded-b-lg flex justify-end gap-6">
-            <button
-                type="button"
-                onClick={onClose}
-                className="px-8 py-4 text-tertiary hover:text-white font-mono text-xs uppercase tracking-widest transition-colors"
-            >
-                Abort
+
+        <div className="flex items-center justify-end gap-3 border-t border-line bg-background px-6 py-4 sm:px-8">
+            <button type="button" onClick={onClose} className="btn-outline">
+                Cancel
             </button>
             <button
                 type="submit"
                 form="project-form"
                 disabled={loading}
-                className="bg-white text-black px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-accent-crimson hover:text-white transition-all duration-500 shadow-xl shadow-white/5 disabled:opacity-50 flex items-center"
+                className="btn-solid disabled:opacity-50"
             >
-                {loading && <Loader2 size={16} className="animate-spin mr-3" />}
-                {initialData ? 'Update Core' : 'Execute Deployment'}
+                {loading && <Loader2 size={14} className="animate-spin" />}
+                {initialData ? 'Save changes' : 'Create project'}
             </button>
         </div>
       </motion.div>

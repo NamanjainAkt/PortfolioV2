@@ -1,245 +1,457 @@
-import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, FileText, Cpu } from 'lucide-react';
-import Typewriter from '../components/Typewriter';
-import { MagneticSocialIcon } from '../components/MagneticSocialIcon';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  ArrowUpRight,
+  ArrowRight,
+  Calendar,
+  Download,
+  Github,
+  Linkedin,
+  Mail,
+} from 'lucide-react';
+import { SectionHeader } from '../components/SectionHeader';
 import SkillSection from '../components/SkillSection';
+import GitHubContributions from '../components/GitHubContributions';
 import WorkExperience from '../components/WorkExperience';
-import ProjectCarouselRevamp from '../components/ProjectCarouselRevamp';
-import { Project } from '../types/project';
-const DroneOverlay = lazy(() => import('../components/drone/DroneOverlay'));
+import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
+import type { Project } from '../types/project';
 
-// Static data moved outside component to prevent recreation on render
-const ROLES = [
-  "Software Architect",
-  "Full Stack Engineer",
-  "System Designer",
-  "Product Visionary"
+interface BlogItem {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  category?: string;
+}
+
+const SOCIALS = [
+  { label: 'GitHub', href: 'https://github.com/namanjainakt/', icon: Github },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/naman-jain-akt/', icon: Linkedin },
+  { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
 ];
 
-const SOCIAL_LINKS = [
-  { icon: Linkedin, href: "https://linkedin.com/in/naman-jain-akt/", label: "LinkedIn" },
-  { icon: Github, href: "https://github.com/namanjainakt/", label: "GitHub" },
-  { icon: Mail, href: "mailto:namanjainakt@gmail.com", label: "Email" },
+const ABOUT_BULLETS = [
+  'Full-stack development with React, Node.js, Express and MongoDB.',
+  'System design with a bias toward simple boundaries and clear data models.',
+  'Currently building product features at Flick, working remotely.',
+  'Open to full-time roles, freelance projects and interesting collaborations.',
 ];
 
-const HeroBackground = () => {
-  return (
-    <div className="absolute inset-0 z-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[#050505]" />
-      <div 
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(200,16,46,0.8), transparent),
-                            radial-gradient(2px 2px at 60% 70%, rgba(200,16,46,0.6), transparent),
-                            radial-gradient(1px 1px at 80% 20%, rgba(200,16,46,0.7), transparent),
-                            radial-gradient(2px 2px at 30% 80%, rgba(200,16,46,0.5), transparent)`,
-          backgroundSize: '200px 200px',
-          animation: 'twinkle 8s ease-in-out infinite alternate',
-        }}
-      />
-      <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full"
-        style={{
-          background: 'radial-gradient(circle, rgba(200,16,46,0.15) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.5, 0.8, 0.5],
-        }}
-        transition={{
-          duration: 6,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-      <style>{`
-        @keyframes twinkle {
-          0% { opacity: 0.3; }
-          100% { opacity: 0.6; }
-        }
-      `}</style>
-    </div>
-  );
+const formatDate = (value: string) => {
+  try {
+    return new Date(value).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch {
+    return '—';
+  }
 };
+
+const readTime = (content: string) => Math.max(1, Math.ceil(content.split(/\s+/).length / 200));
+
+const HandbookArrow = () => (
+  <svg width="44" height="26" viewBox="0 0 44 26" fill="none" aria-hidden="true" className="text-tertiary">
+    <path d="M2 21C11 7 25 4 40 9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    <path d="M40 9l-7-3M40 9l-4 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+  </svg>
+);
 
 const Home = () => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  
+  const [blogs, setBlogs] = useState<BlogItem[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingBlogs, setLoadingBlogs] = useState(true);
+  const [localTime, setLocalTime] = useState('');
+
+  useEffect(() => {
+    const update = () =>
+      setLocalTime(
+        new Date().toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Kolkata',
+        })
+      );
+    update();
+    const timer = setInterval(update, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
+    const { signal } = controller;
+
     const fetchProjects = async () => {
       try {
-        const res = await fetch('/api/projects?limit=5&orderBy=displayOrder', { signal: controller.signal });
+        const res = await fetch('/api/projects?limit=5&orderBy=displayOrder', { signal });
         if (!res.ok) throw new Error(`Failed to fetch projects: ${res.status}`);
         const data = await res.json();
-        if (!controller.signal.aborted && Array.isArray(data)) {
-          setProjects(data);
-        }
-      } catch (error: any) {
-        if (error?.name !== 'AbortError') console.error('Failed to fetch projects');
+        if (!signal.aborted && Array.isArray(data)) setProjects(data);
+      } catch (error) {
+        if ((error as Error)?.name !== 'AbortError') console.error('Failed to fetch projects');
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!signal.aborted) setLoadingProjects(false);
       }
     };
+
+    const fetchBlogs = async () => {
+      try {
+        const res = await fetch('/api/blogs', { signal });
+        if (!res.ok) throw new Error(`Failed to fetch blogs: ${res.status}`);
+        const data = await res.json();
+        if (!signal.aborted && Array.isArray(data)) setBlogs(data.slice(0, 3));
+      } catch (error) {
+        if ((error as Error)?.name !== 'AbortError') console.error('Failed to fetch blogs');
+      } finally {
+        if (!signal.aborted) setLoadingBlogs(false);
+      }
+    };
+
     fetchProjects();
+    fetchBlogs();
     return () => controller.abort();
   }, []);
 
-  // Memoize scroll handler
-  const handleScrollToProjects = useCallback(() => {
-    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
-  }, []);
-
-  // Memoize social links rendering
-  const socialIcons = useMemo(() => (
-    SOCIAL_LINKS.map((social, index) => (
-      <MagneticSocialIcon 
-        key={social.label}
-        icon={social.icon}
-        href={social.href}
-        index={index}
-      />
-    ))
-  ), []);
-
   return (
-    <div className="pt-0 bg-[#050505]">
-      <Suspense fallback={null}>
-        <DroneOverlay />
-      </Suspense>
-      
-      <section id="home" className="relative min-h-[100vh] flex items-center justify-center overflow-hidden">
-        <HeroBackground />
-        
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/50 to-[#050505] z-1" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#050505_100%)] z-1" />
+    <div className="frame">
+      <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />
 
-        <motion.div 
-          className="container mx-auto px-4 relative z-10"
-        >
-          <div className="flex flex-col items-center">
-            
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-crimson/10 border border-accent-crimson/20 mb-8 backdrop-blur-md"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-crimson opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-crimson"></span>
-              </span>
-              <span className="text-[10px] font-mono text-accent-crimson tracking-[0.3em] uppercase">
-                Systems Online // v2.0
-              </span>
-            </motion.div>
+      {/* Hero */}
+      <section className="border-b border-line">
+        <div className="page-column pb-10 pt-12 sm:pb-14 sm:pt-16">
+          <div className="grid gap-10 lg:grid-cols-[1fr_270px] lg:gap-16">
+            <div>
+              <p className="mono-label">Portfolio — 2026</p>
 
-            <div className="relative mb-6">
-              <motion.h1
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="text-5xl sm:text-7xl md:text-9xl lg:text-[12rem] font-serif font-black tracking-tighter text-white uppercase leading-[0.8]"
-              >
-                NAMAN<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-crimson via-accent-glow to-accent-crimson">JAIN</span>
-              </motion.h1>
-              
-              <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden lg:block h-64 w-[1px] bg-gradient-to-b from-transparent via-accent-crimson to-transparent opacity-50" />
-              <div className="absolute -right-12 top-1/2 -translate-y-1/2 hidden lg:block h-64 w-[1px] bg-gradient-to-b from-transparent via-accent-crimson to-transparent opacity-50" />
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.25 }}
-              className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 md:gap-8 mb-10"
-            >
-              <div className="flex items-center gap-2 text-secondary font-mono text-sm md:text-lg">
-                <Cpu size={16} className="text-accent-crimson" />
-                <Typewriter words={ROLES} />
+              <div className="mt-6 flex items-center gap-4">
+                <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full border border-line bg-surface">
+                  <span className="font-mono text-sm tracking-[0.18em] text-secondary">NJ</span>
+                  <span
+                    className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-success"
+                    aria-label="Available for work"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-medium tracking-tightest sm:text-5xl">Naman Jain</h1>
+                  <p className="mt-1.5 text-sm text-secondary">
+                    Full Stack Engineer &amp; System Designer
+                  </p>
+                </div>
               </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex flex-col sm:flex-row items-center gap-6"
-            >
-              <div className="flex gap-4">
-                <motion.a
+              <p className="mt-7 max-w-xl text-[15px] leading-relaxed text-secondary">
+                I turn rough ideas into shipped products — designing schemas, building APIs, and
+                crafting interfaces that stay fast and legible as they grow.
+              </p>
+
+              <div className="mt-7 flex flex-wrap items-center gap-2.5">
+                <a
                   href="/Naman_s_Resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="group relative px-5 py-3 sm:px-8 sm:py-4 bg-white text-black font-black uppercase tracking-widest text-xs rounded-none overflow-hidden"
-                  style={{ willChange: 'transform' }}
+                  className="btn-solid"
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    Resume <FileText size={14} />
+                  <Download size={14} />
+                  Resume
+                </a>
+                <a
+                  href="https://cal.com/naman-jain-akt/30min"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-outline"
+                >
+                  <Calendar size={14} />
+                  Book a call
+                </a>
+
+                <div className="ml-1 flex items-center gap-1.5">
+                  {SOCIALS.map((social) => (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target={social.href.startsWith('mailto:') ? undefined : '_blank'}
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      className="grid h-9 w-9 place-items-center rounded-full border border-line text-secondary transition-colors duration-200 hover:border-primary hover:text-primary"
+                    >
+                      <social.icon size={15} strokeWidth={1.6} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <aside>
+              <div className="border-t border-line">
+                <div className="meta-row">
+                  <span className="mono-label">Status</span>
+                  <span className="inline-flex items-center gap-1.5 text-[13px]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                    Open to work
                   </span>
-                  <motion.div 
-                    className="absolute inset-0 bg-accent-crimson translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                  />
-                </motion.a>
-
-                <motion.button
-                  data-cal-link="naman-jain-akt/30min"
-                  data-cal-namespace="30min"
-                  data-cal-config='{"layout":"month_view","useSlotsViewOnSmallScreen":"true"}'
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-5 py-3 sm:px-8 sm:py-4 border border-white/20 text-white font-black uppercase tracking-widest text-xs rounded-none hover:bg-white/5 transition-all"
-                  style={{ willChange: 'transform' }}
-                >
-                  Book a Meeting
-                </motion.button>
+                </div>
+                <div className="meta-row">
+                  <span className="mono-label">Role</span>
+                  <span className="text-right text-[13px]">Full Stack Dev @ Flick</span>
+                </div>
+                <div className="meta-row">
+                  <span className="mono-label">Based in</span>
+                  <span className="text-right text-[13px]">Raipur, India</span>
+                </div>
+                <div className="meta-row">
+                  <span className="mono-label">Local time</span>
+                  <span className="font-mono text-[12px] text-secondary">{localTime} IST</span>
+                </div>
+                <div className="meta-row">
+                  <span className="mono-label">Email</span>
+                  <a
+                    href="mailto:namanjainakt@gmail.com"
+                    className="link-underline break-all text-right text-[13px] text-secondary hover:text-primary"
+                  >
+                    namanjainakt@gmail.com
+                  </a>
+                </div>
               </div>
 
-              <div className="flex gap-4 ml-0 sm:ml-4">
-                {socialIcons}
+              <div className="mt-6 hidden items-center gap-3 sm:flex">
+                <HandbookArrow />
+                <p className="annotation">open to remote roles<br />and good problems</p>
               </div>
-            </motion.div>
+            </aside>
           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 cursor-pointer group"
-          onClick={handleScrollToProjects}
-        >
-          <div className="w-[1px] h-12 bg-gradient-to-b from-accent-crimson to-transparent relative overflow-hidden">
-            <motion.div 
-              animate={{ y: ['-100%', '100%'] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-0 bg-white"
-            />
-          </div>
-        </motion.div>
+        </div>
       </section>
 
-      <div className="relative z-10 bg-[#050505]">
-        <SkillSection />
-        <WorkExperience />
-
-        {loading ? (
-          <div className="py-24 text-center">
-            <div className="inline-block w-8 h-8 border-2 border-accent-crimson border-t-transparent rounded-full animate-spin mb-4" />
-            <div className="text-secondary font-mono tracking-[0.5em] uppercase text-[10px]">
-              Fetching Assets...
+      {/* About */}
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <SectionHeader
+            label="About"
+            title="I care about the parts users never see."
+          />
+          <div className="mt-7 grid gap-8 sm:grid-cols-[1fr_1.35fr] sm:gap-12">
+            <div className="space-y-4">
+              <p className="text-sm leading-relaxed text-secondary">
+                I&apos;m a full-stack engineer based in Raipur, India. Most of my work lives at the
+                intersection of product thinking and implementation: shaping the data model, then
+                carrying it through the API and interface.
+              </p>
+              <p className="text-sm leading-relaxed text-secondary">
+                I prefer small systems with clear edges, readable code and interfaces that explain
+                themselves. When I&apos;m not shipping, I&apos;m usually reading about systems,
+                design or the web platform.
+              </p>
             </div>
+            <ul className="space-y-4">
+              {ABOUT_BULLETS.map((bullet) => (
+                <li key={bullet} className="flex gap-3 text-sm leading-relaxed text-secondary">
+                  <span className="mt-2 h-1 w-1 shrink-0 bg-primary" aria-hidden="true" />
+                  <span>{bullet}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        ) : (
-          <ProjectCarouselRevamp projects={projects} />
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* Stack */}
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <SectionHeader
+            label="Stack"
+            title="Tools I reach for."
+            description="A pragmatic stack, chosen for speed of delivery and long-term maintainability."
+          />
+          <div className="mt-7">
+            <SkillSection />
+          </div>
+        </div>
+      </section>
+
+      {/* Activity */}
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <SectionHeader
+            label="Activity"
+            title="Shipping, most days."
+            description="A year of public commits, pull requests and issues — the unglamorous half of the work."
+          />
+          <div className="mt-7">
+            <GitHubContributions />
+          </div>
+        </div>
+      </section>
+
+      {/* Experience */}
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <SectionHeader label="Experience" title="Where I've worked." />
+          <div className="mt-7">
+            <WorkExperience />
+          </div>
+        </div>
+      </section>
+
+      {/* Selected work */}
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <SectionHeader
+            label="Selected work"
+            title="Things I've shipped."
+            action={{ label: 'All projects', to: '/projects' }}
+          />
+
+          <div className="mt-6">
+            {loadingProjects ? (
+              <div className="space-y-4" aria-label="Loading projects">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex animate-pulse items-center gap-4 border-b border-line py-4">
+                    <div className="h-12 w-16 bg-surface" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 w-1/3 bg-surface" />
+                      <div className="h-2.5 w-2/3 bg-surface" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : projects.length === 0 ? (
+              <p className="border-b border-line py-8 text-sm text-tertiary">
+                No projects published yet.
+              </p>
+            ) : (
+              <div className="border-t border-line">
+                {projects.map((project) => (
+                  <Link
+                    key={project.id}
+                    to={`/projects/${project.slug}`}
+                    className="group grid grid-cols-[64px_1fr_auto] items-center gap-4 border-b border-line py-4 transition-colors last:border-b-0 hover:bg-surface sm:grid-cols-[96px_1fr_auto] sm:gap-5"
+                  >
+                    <div className="h-11 w-16 overflow-hidden border border-line bg-surface sm:h-14 sm:w-24">
+                      {project.images[0] ? (
+                        <img
+                          src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.thumbnail })}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+                        />
+                      ) : (
+                        <div className="grid h-full w-full place-items-center font-mono text-[9px] text-tertiary">
+                          {project.title.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0">
+                      <h3 className="truncate text-[15px] font-medium tracking-tight text-primary">
+                        {project.title}
+                      </h3>
+                      <p className="mt-0.5 line-clamp-1 text-[13px] text-secondary">
+                        {project.overview}
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[9px] uppercase tracking-[0.12em] text-tertiary">
+                        <span>{project.category || 'Development'}</span>
+                        {project.techStack.slice(0, 3).map((tech) => (
+                          <span key={tech} className="flex items-center gap-1">
+                            <span aria-hidden="true">·</span>
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <ArrowUpRight
+                      size={16}
+                      className="text-tertiary transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                    />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Writing */}
+      <section className="border-b border-line">
+        <div className="page-column py-12 sm:py-16">
+          <SectionHeader
+            label="Writing"
+            title="Notes and thinking."
+            action={{ label: 'All writing', to: '/blogs' }}
+          />
+
+          <div className="mt-6">
+            {loadingBlogs ? (
+              <div className="space-y-4" aria-label="Loading posts">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="animate-pulse border-b border-line py-4">
+                    <div className="h-2.5 w-24 bg-surface" />
+                    <div className="mt-2 h-4 w-2/3 bg-surface" />
+                  </div>
+                ))}
+              </div>
+            ) : blogs.length === 0 ? (
+              <p className="border-b border-line py-8 text-sm text-tertiary">
+                No posts published yet.
+              </p>
+            ) : (
+              <div className="border-t border-line">
+                {blogs.map((blog) => (
+                  <Link
+                    key={blog.id}
+                    to={`/blogs/${blog.slug}`}
+                    className="group flex items-start justify-between gap-6 border-b border-line py-4 transition-colors last:border-b-0 hover:bg-surface"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-tertiary">
+                        {blog.category || 'Notes'} · {formatDate(blog.createdAt)}
+                      </p>
+                      <h3 className="mt-1.5 text-[15px] font-medium tracking-tight text-primary">
+                        {blog.title}
+                      </h3>
+                    </div>
+                    <span className="shrink-0 pt-1 font-mono text-[10px] text-tertiary">
+                      {readTime(blog.content || '')} min
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section>
+        <div className="page-column py-14 sm:py-24">
+          <p className="mono-label">Next</p>
+          <div className="mt-4 flex flex-col items-start gap-7 sm:flex-row sm:items-end sm:justify-between">
+            <h2 className="max-w-2xl text-3xl font-medium tracking-tightest sm:text-5xl">
+              Let&apos;s build something <span className="text-tertiary">worth keeping.</span>
+            </h2>
+            <a href="mailto:namanjainakt@gmail.com" className="btn-solid shrink-0">
+              Say hello
+              <ArrowUpRight size={14} />
+            </a>
+          </div>
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              Available for select work
+            </span>
+            <span>Raipur, IN</span>
+            <Link to="/contact" className="inline-flex items-center gap-1 text-secondary hover:text-primary">
+              Contact <ArrowRight size={11} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="hatch h-2.5 border-t border-line" aria-hidden="true" />
     </div>
   );
 };
