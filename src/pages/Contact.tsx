@@ -199,7 +199,7 @@ const Contact = () => {
                 </div>
                 <div className="meta-row">
                   <span className="mono-label">Based in</span>
-                  <span className="text-[13px]">Raipur, India</span>
+                  <span className="text-[13px]">Bhilai, Chhattisgarh</span>
                 </div>
                 <div className="meta-row">
                   <span className="mono-label">Calls</span>

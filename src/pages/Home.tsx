@@ -215,7 +215,7 @@ const Home = () => {
                 </div>
                 <div className="meta-row">
                   <span className="mono-label">Based in</span>
-                  <span className="text-right text-[13px]">Raipur, India</span>
+                  <span className="text-right text-[13px]">Bhilai, Chhattisgarh</span>
                 </div>
                 <div className="meta-row">
                   <span className="mono-label">Local time</span>
@@ -248,7 +248,7 @@ const Home = () => {
           <div className="mt-7 grid gap-8 sm:grid-cols-[1fr_1.35fr] sm:gap-12">
             <div className="space-y-4">
               <p className="text-sm leading-relaxed text-secondary">
-                I&apos;m a full-stack engineer based in Raipur, India. Most of my work lives at the
+                I&apos;m a full-stack engineer based in Bhilai, Chhattisgarh. Most of my work lives at the
                 intersection of product thinking and implementation: shaping the data model, then
                 carrying it through the API and interface.
               </p>
@@ -458,7 +458,7 @@ const Home = () => {
               <span className="h-1.5 w-1.5 rounded-full bg-success" />
               Available for select work
             </span>
-            <span>Raipur, IN</span>
+            <span>Bhilai, IN</span>
             <Link to="/contact" className="inline-flex items-center gap-1 text-secondary hover:text-primary">
               Contact <ArrowRight size={11} />
             </Link>

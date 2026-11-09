@@ -16,7 +16,7 @@ const experiences: Experience[] = [
     id: 1,
     role: 'Full Stack Developer',
     company: 'Flick',
-    location: 'Raipur, India · Remote',
+    location: 'Bhilai, Chhattisgarh · Remote',
     period: 'Nov 2025 — Present',
     isCurrent: true,
     type: 'Internship',
