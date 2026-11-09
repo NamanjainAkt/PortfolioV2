@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowUp, ArrowUpRight, Github, Linkedin, Mail } from 'lucide-react';
+import { LeetCodeIcon } from './LeetCodeIcon';
 
 const FOOTER_LINKS = [
   { label: 'Work', to: '/projects' },
@@ -10,8 +11,9 @@ const FOOTER_LINKS = [
 const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/namanjainakt/', icon: Github },
   { label: 'LinkedIn', href: 'https://linkedin.com/in/naman-jain-akt/', icon: Linkedin },
+  { label: 'LeetCode', href: 'https://leetcode.com/u/namanjainakt/', icon: LeetCodeIcon },
   { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
-];
+] as const;
 
 const FooterLink = ({ to, label }: { to: string; label: string }) => (
   <Link

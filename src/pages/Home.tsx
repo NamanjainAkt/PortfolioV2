@@ -12,7 +12,11 @@ import {
 import { SectionHeader } from '../components/SectionHeader';
 import SkillSection from '../components/SkillSection';
 import GitHubContributions from '../components/GitHubContributions';
+import LeetCodeStats from '../components/LeetCodeStats';
+import RemoteOverlap from '../components/RemoteOverlap';
+import Signature from '../components/Signature';
 import WorkExperience from '../components/WorkExperience';
+import { LeetCodeIcon } from '../components/LeetCodeIcon';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 import type { Project } from '../types/project';
 
@@ -28,8 +32,9 @@ interface BlogItem {
 const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/namanjainakt/', icon: Github },
   { label: 'LinkedIn', href: 'https://linkedin.com/in/naman-jain-akt/', icon: Linkedin },
+  { label: 'LeetCode', href: 'https://leetcode.com/u/namanjainakt/', icon: LeetCodeIcon },
   { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
-];
+] as const;
 
 const ABOUT_BULLETS = [
   'Full-stack development with React, Node.js, Express and MongoDB.',
@@ -51,13 +56,6 @@ const formatDate = (value: string) => {
 };
 
 const readTime = (content: string) => Math.max(1, Math.ceil(content.split(/\s+/).length / 200));
-
-const HandbookArrow = () => (
-  <svg width="44" height="26" viewBox="0 0 44 26" fill="none" aria-hidden="true" className="text-tertiary">
-    <path d="M2 21C11 7 25 4 40 9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-    <path d="M40 9l-7-3M40 9l-4 6" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-  </svg>
-);
 
 const Home = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -183,6 +181,8 @@ const Home = () => {
                   ))}
                 </div>
               </div>
+
+              <Signature className="mt-9" />
             </div>
 
             <aside>
@@ -217,10 +217,7 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="mt-6 hidden items-center gap-3 sm:flex">
-                <HandbookArrow />
-                <p className="annotation">open to remote roles<br />and good problems</p>
-              </div>
+              <RemoteOverlap />
             </aside>
           </div>
         </div>
@@ -273,15 +270,16 @@ const Home = () => {
       </section>
 
       {/* Activity */}
-      <section className="border-b border-line">
+      <section id="activity" className="border-b border-line">
         <div className="page-column py-12 sm:py-16">
           <SectionHeader
             label="Activity"
             title="Shipping, most days."
-            description="A year of public commits, pull requests and issues — the unglamorous half of the work."
+            description="A year of public commits, pull requests and issues, plus the problem sets keeping the fundamentals sharp."
           />
-          <div className="mt-7">
+          <div className="mt-7 space-y-4">
             <GitHubContributions />
+            <LeetCodeStats />
           </div>
         </div>
       </section>

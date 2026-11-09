@@ -33,6 +33,9 @@ import {
   siLinux,
   siJest,
   siCloudflare,
+  siClaudecode,
+  siOpencode,
+  siCursor,
 } from 'simple-icons'
 
 interface TechIconProps {
@@ -84,6 +87,26 @@ const icons: Record<string, IconRenderer> = {
   Linux: fromSi(siLinux),
   Jest: fromSi(siJest),
   Cloudflare: fromSi(siCloudflare),
+  'Claude Code': fromSi(siClaudecode),
+  OpenCode: fromSi(siOpencode),
+  Cursor: fromSi(siCursor),
+  'Gemini CLI': fromSi(siGooglegemini),
+
+  Antigravity: (cn) => (
+    <svg
+      className={cn}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5.5 18 12 5.5 18.5 18" />
+      <path d="M8.5 14.5h7" />
+    </svg>
+  ),
 
   'React Native': (cn) => (
     <svg

@@ -52,6 +52,8 @@ const GROUPS = [
   },
 ];
 
+const AI_CODING = ['Claude Code', 'OpenCode', 'Cursor', 'Antigravity', 'Gemini CLI'];
+
 const StackItem = ({ name }: { name: string }) => (
   <li className="group flex items-center gap-2.5 text-[13px] text-secondary transition-all duration-200 ease-smooth hover:translate-x-0.5 hover:text-primary">
     <TechIcon
@@ -81,6 +83,20 @@ const SkillSection = () => {
             </ul>
           </div>
         ))}
+      </div>
+
+      <div className="border-b border-r border-line p-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="mono-label">AI Coding</p>
+          <span className="font-mono text-[10px] tabular-nums text-tertiary">
+            {String(AI_CODING.length).padStart(2, '0')}
+          </span>
+        </div>
+        <ul className="mt-4 flex flex-wrap gap-x-8 gap-y-2.5">
+          {AI_CODING.map((item) => (
+            <StackItem key={item} name={item} />
+          ))}
+        </ul>
       </div>
     </div>
   );

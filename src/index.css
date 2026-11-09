@@ -134,10 +134,6 @@
     background-size: 16px 16px;
   }
 
-  .annotation {
-    @apply font-hand text-[19px] leading-tight text-tertiary;
-  }
-
   .link-underline {
     @apply relative inline-flex items-center gap-1;
   }
@@ -255,6 +251,67 @@
   .contrib-swatch[data-level="4"] {
     background-color: rgb(var(--fg) / 0.92);
   }
+
+  .signature-mark {
+    position: relative;
+    display: inline-block;
+    padding: 0 16px 7px 2px;
+  }
+
+  .signature-text {
+    display: block;
+    font-size: clamp(2.1rem, 5.5vw, 2.9rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: rgb(var(--fg));
+    transform: rotate(-7deg);
+    transform-origin: left bottom;
+    clip-path: inset(-35% 104% -35% -8%);
+  }
+
+  .signature[data-signed="true"] .signature-text {
+    animation: signature-draw 1500ms cubic-bezier(0.5, 0.05, 0.3, 1) 300ms forwards;
+  }
+
+  .signature-pen {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    color: rgb(var(--muted-2));
+    opacity: 0;
+    transform: rotate(-16deg);
+  }
+
+  .signature[data-signed="true"] .signature-pen {
+    animation: signature-pen 1500ms cubic-bezier(0.5, 0.05, 0.3, 1) 300ms forwards;
+  }
+
+  .signature-underline {
+    position: absolute;
+    left: 0;
+    right: 8px;
+    bottom: 0;
+    height: 8px;
+    color: rgb(var(--line));
+  }
+
+  .signature-underline path {
+    stroke-dasharray: 122;
+    stroke-dashoffset: 122;
+  }
+
+  .signature[data-signed="true"] .signature-underline path {
+    animation: signature-underline 700ms cubic-bezier(0.33, 1, 0.68, 1) 1500ms forwards;
+  }
+
+  .signature-caption {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+
+  .signature[data-signed="true"] .signature-caption {
+    animation: signature-caption 500ms cubic-bezier(0.33, 1, 0.68, 1) 1750ms forwards;
+  }
 }
 
 @layer utilities {
@@ -312,6 +369,45 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes signature-draw {
+  from {
+    clip-path: inset(-35% 104% -35% -8%);
+  }
+  to {
+    clip-path: inset(-35% -8% -35% -8%);
+  }
+}
+
+@keyframes signature-pen {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes signature-underline {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes signature-caption {
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

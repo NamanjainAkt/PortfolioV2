@@ -17,19 +17,41 @@ const isActive = (pathname: string, path: string) =>
 const Navbar = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 28);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const openPalette = useCallback(() => {
     window.dispatchEvent(new Event('open-command-palette'));
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-wide items-center justify-between gap-4 px-6">
+    <header
+      className={clsx(
+        'sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300 ease-smooth',
+        scrolled
+          ? 'border-b border-transparent bg-transparent'
+          : 'border-b border-line bg-background/90 backdrop-blur-md'
+      )}
+    >
+      <div
+        className={clsx(
+          'mx-auto flex items-center justify-between gap-4 border transition-[max-width,width,margin,height,padding,border-radius,border-color,background-color,box-shadow] duration-500 ease-smooth',
+          scrolled
+            ? 'mt-3 h-14 w-[calc(100%-1.5rem)] max-w-3xl rounded-full border-line bg-background/85 px-3 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.45)] backdrop-blur-xl'
+            : 'h-16 w-full max-w-wide border-transparent bg-transparent px-6'
+        )}
+      >
         <Link to="/" className="group flex items-center gap-3" aria-label="Naman Jain, home">
           <span className="grid h-7 w-7 place-items-center border border-primary font-mono text-[10px] font-medium leading-none transition-colors duration-300 group-hover:bg-primary group-hover:text-background">
             NJ
@@ -119,7 +141,12 @@ const Navbar = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden border-t border-line bg-background md:hidden"
+            className={clsx(
+              'overflow-hidden bg-background md:hidden',
+              scrolled
+                ? 'mx-auto mt-2 w-[calc(100%-1.5rem)] max-w-3xl rounded-2xl border border-line'
+                : 'border-t border-line'
+            )}
             aria-label="Mobile"
           >
             <div className="mx-auto flex max-w-wide flex-col px-6 py-3">
