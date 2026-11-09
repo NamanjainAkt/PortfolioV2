@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback, Suspense, lazy, isValidEleme
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import clsx from 'clsx';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const MarkdownRenderer = lazy(() =>
   import('../components/MarkdownRenderer').then((m) => ({ default: m.MarkdownRenderer }))
@@ -58,6 +59,24 @@ const BlogDetail = () => {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeHeading, setActiveHeading] = useState<string>('');
+
+  const description = useMemo(() => {
+    if (!blog?.content) return 'Read this article by Naman Jain on software engineering and systems.';
+    return blog.content
+      .replace(/^#\s+.+\r?\n+/, '')
+      .replace(/[#*_>`[\]()]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160);
+  }, [blog?.content]);
+
+  usePageMeta({
+    title: blog ? `${blog.title} — Writing` : 'Writing',
+    description,
+    path: `/blogs/${slug}`,
+    image: blog?.featuredImage,
+    type: 'article',
+  });
 
   useEffect(() => {
     const controller = new AbortController();

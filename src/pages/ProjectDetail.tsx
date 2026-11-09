@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
 import { Lightbox } from '../components/Lightbox';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 interface Project {
   id: string;
@@ -26,6 +27,13 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  usePageMeta({
+    title: project ? `${project.title} — Projects` : 'Project',
+    description: project?.overview || 'Project case study and engineering details by Naman Jain.',
+    path: `/projects/${slug}`,
+    image: project?.images?.[0],
+  });
 
   useEffect(() => {
     const controller = new AbortController();

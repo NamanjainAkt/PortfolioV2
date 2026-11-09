@@ -15,6 +15,9 @@ export function useTheme() {
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
     localStorage.setItem('theme', theme);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'dark' ? '#0a0a0a' : '#fcfcfb');
   }, [theme]);
 
   const toggleTheme = () => {

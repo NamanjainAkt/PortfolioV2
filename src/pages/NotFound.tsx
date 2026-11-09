@@ -1,7 +1,14 @@
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const NotFound = () => {
+  usePageMeta({
+    title: '404 — Page Not Found',
+    description: 'The requested page could not be found.',
+    noindex: true,
+  });
+
   return (
     <div className="frame">
       <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />

@@ -17,6 +17,7 @@ import RemoteOverlap from '../components/RemoteOverlap';
 import Signature from '../components/Signature';
 import WorkExperience from '../components/WorkExperience';
 import { LeetCodeIcon } from '../components/LeetCodeIcon';
+import { usePageMeta } from '../hooks/usePageMeta';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
 import type { Project } from '../types/project';
 
@@ -36,13 +37,6 @@ const SOCIALS = [
   { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
 ] as const;
 
-const ABOUT_BULLETS = [
-  'Full-stack development with React, Node.js, Express and MongoDB.',
-  'System design with a bias toward simple boundaries and clear data models.',
-  'Currently building product features at Flick, working remotely.',
-  'Open to full-time roles, freelance projects and interesting collaborations.',
-];
-
 const formatDate = (value: string) => {
   try {
     return new Date(value).toLocaleDateString('en-US', {
@@ -55,9 +49,22 @@ const formatDate = (value: string) => {
   }
 };
 
+const ABOUT_POINTS = [
+  'Start from the data model. If the schema is wrong, the API and the UI are just debt with extra steps.',
+  'Boring by default. One database, clear boundaries, no abstraction until the second real use.',
+  'Finish the last 10%. Deploy, logging and error states are what turn a demo into a product.',
+];
+
 const readTime = (content: string) => Math.max(1, Math.ceil(content.split(/\s+/).length / 200));
 
 const Home = () => {
+  usePageMeta({
+    title: 'Naman Jain — Full Stack Engineer (React, Node, TypeScript)',
+    description:
+      'Full-stack engineer building products end to end — design, schema, API, interface and deploy. React, TypeScript and Node on the surface, Postgres and Prisma underneath.',
+    path: '/',
+  });
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [blogs, setBlogs] = useState<BlogItem[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -123,37 +130,28 @@ const Home = () => {
         <div className="page-column pb-10 pt-12 sm:pb-14 sm:pt-16">
           <div className="grid gap-10 lg:grid-cols-[1fr_270px] lg:gap-16">
             <div>
-              <p className="mono-label">Portfolio — 2026</p>
-
-              <div className="mt-6 flex items-center gap-4">
-                <div className="relative h-20 w-20 shrink-0">
-                  <div className="h-full w-full overflow-hidden rounded-full border border-line bg-surface">
-                    <img
-                      src="/User_img.jpeg"
-                      alt="Naman Jain"
-                      width={1024}
-                      height={1024}
-                      loading="eager"
-                      decoding="async"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <span
-                    className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-success"
-                    aria-label="Available for work"
+              <div className="flex items-center gap-4">
+                <picture>
+                  <source srcSet="/User_img-256.webp" type="image/webp" />
+                  <img
+                    src="/User_img-256.jpg"
+                    alt="Naman Jain"
+                    width={256}
+                    height={256}
+                    loading="eager"
+                    decoding="async"
+                    className="h-20 w-20 shrink-0 rounded-full border border-line bg-surface object-cover"
                   />
-                </div>
+                </picture>
                 <div>
-                  <h1 className="text-4xl font-medium tracking-tightest sm:text-5xl">Naman Jain</h1>
-                  <p className="mt-1.5 text-sm text-secondary">
-                    Full Stack Engineer &amp; System Designer
-                  </p>
+                  <h1 className="text-[2.6rem] leading-[0.98] tracking-tightest sm:text-6xl">Naman Jain</h1>
+                  <p className="mt-2 text-sm text-secondary">Full Stack Engineer — React, Node, Postgres</p>
                 </div>
               </div>
 
-              <p className="mt-7 max-w-xl text-[15px] leading-relaxed text-secondary">
-                I turn rough ideas into shipped products — designing schemas, building APIs, and
-                crafting interfaces that stay fast and legible as they grow.
+              <p className="mt-8 max-w-xl text-[15px] leading-relaxed text-secondary">
+                I build software from scratch: data model first, then the API, then the interface. Mostly
+                React and TypeScript on top, Node and Postgres underneath.
               </p>
 
               <div className="mt-7 flex flex-wrap items-center gap-2.5">
@@ -254,10 +252,12 @@ const Home = () => {
               </p>
             </div>
             <ul className="space-y-4">
-              {ABOUT_BULLETS.map((bullet) => (
-                <li key={bullet} className="flex gap-3 text-sm leading-relaxed text-secondary">
-                  <span className="mt-2 h-1 w-1 shrink-0 bg-primary" aria-hidden="true" />
-                  <span>{bullet}</span>
+              {ABOUT_POINTS.map((point, index) => (
+                <li key={point} className="flex gap-4 text-sm leading-relaxed text-secondary">
+                  <span className="select-none font-mono text-[11px] text-tertiary pt-0.5">
+                    0{index + 1}
+                  </span>
+                  <span>{point}</span>
                 </li>
               ))}
             </ul>

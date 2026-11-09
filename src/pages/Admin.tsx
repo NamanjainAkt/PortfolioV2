@@ -20,6 +20,7 @@ import ProjectForm from '../components/ProjectForm';
 import BlogForm from '../components/BlogForm';
 import SortableProjectList from '../components/admin/SortableProjectList';
 import { Project } from '../types/project';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 const TABS = [
   {
@@ -70,6 +71,12 @@ interface AdminEntry {
 }
 
 const Admin = () => {
+  usePageMeta({
+    title: 'Admin Console — Naman Jain',
+    description: 'Internal administrative interface.',
+    path: '/admin',
+    noindex: true,
+  });
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'projects' | 'blogs' | 'reorder'>('projects');
   const [items, setItems] = useState<AdminEntry[]>([]);

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Search } from 'lucide-react';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 interface Blog {
   id: string;
@@ -36,6 +37,13 @@ const plainText = (content: string) => {
 const readTime = (content: string) => Math.max(1, Math.ceil(content.split(/\s+/).length / 200));
 
 const Blogs = () => {
+  usePageMeta({
+    title: 'Writing — Articles & Notes by Naman Jain',
+    description:
+      'Writing on full-stack architecture, system design, web performance, and developer experience.',
+    path: '/blogs',
+  });
+
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

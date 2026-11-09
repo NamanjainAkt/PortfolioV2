@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { clsx } from 'clsx';
 import { getOptimizedImageUrl, ImageSizes } from '../lib/imageUtils';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 interface Project {
   id: string;
@@ -15,6 +16,13 @@ interface Project {
 }
 
 const Projects = () => {
+  usePageMeta({
+    title: 'Work — Projects by Naman Jain',
+    description:
+      'Selected engineering projects across full-stack web applications, tooling, and systems design. Built with React, TypeScript, Node.js and Postgres.',
+    path: '/projects',
+  });
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');

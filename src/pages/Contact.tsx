@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Mail, Github, Linkedin, ArrowUpRight, Check, Loader2 } from 'lucide-react';
 import emailjs from '@emailjs/browser';
+import { usePageMeta } from '../hooks/usePageMeta';
 
 interface FormErrors {
   name?: string;
@@ -30,6 +31,13 @@ const CONTACT_CHANNELS = [
 ];
 
 const Contact = () => {
+  usePageMeta({
+    title: 'Contact — Get in Touch with Naman Jain',
+    description:
+      'Get in touch with Naman Jain for full-time opportunities, freelance projects, technical advising, or questions about software architecture.',
+    path: '/contact',
+  });
+
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});

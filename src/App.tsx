@@ -54,13 +54,19 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-primary bg-background">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:font-mono focus:text-xs focus:text-background focus:outline-none"
+      >
+        Skip to content
+      </a>
       <Suspense fallback={null}>
         <CommandPalette />
       </Suspense>
       <ScrollToTop />
       {!isAdmin && <Navbar />}
       <AdminModal />
-      <main className="flex-grow">
+      <main id="main-content" className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Suspense fallback={<LoadingFallback />}><Home /></Suspense></PageTransition>} />
