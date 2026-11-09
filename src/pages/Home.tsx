@@ -126,8 +126,18 @@ const Home = () => {
               <p className="mono-label">Portfolio — 2026</p>
 
               <div className="mt-6 flex items-center gap-4">
-                <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full border border-line bg-surface">
-                  <span className="font-mono text-sm tracking-[0.18em] text-secondary">NJ</span>
+                <div className="relative h-20 w-20 shrink-0">
+                  <div className="h-full w-full overflow-hidden rounded-full border border-line bg-surface">
+                    <img
+                      src="/User_img.jpeg"
+                      alt="Naman Jain"
+                      width={1024}
+                      height={1024}
+                      loading="eager"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
                   <span
                     className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-background bg-success"
                     aria-label="Available for work"
