@@ -141,7 +141,7 @@ const Home = () => {
                       height={512}
                       loading="eager"
                       decoding="async"
-                      className="h-28 w-28 sm:h-36 sm:w-36 rounded-2xl border border-line bg-surface object-cover shadow-sm"
+                      className="h-28 w-28 sm:h-36 sm:w-36 rounded-2xl border border-line/60 object-cover mix-blend-multiply dark:invert dark:mix-blend-screen"
                     />
                   </picture>
                   <span
