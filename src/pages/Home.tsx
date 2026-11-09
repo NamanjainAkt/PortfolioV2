@@ -130,19 +130,26 @@ const Home = () => {
         <div className="page-column pb-10 pt-12 sm:pb-14 sm:pt-16">
           <div className="grid gap-10 lg:grid-cols-[1fr_270px] lg:gap-16">
             <div>
-              <div className="flex items-center gap-4">
-                <picture>
-                  <source srcSet="/User_img-256.webp" type="image/webp" />
-                  <img
-                    src="/User_img-256.jpg"
-                    alt="Naman Jain"
-                    width={256}
-                    height={256}
-                    loading="eager"
-                    decoding="async"
-                    className="h-20 w-20 shrink-0 rounded-full border border-line bg-surface object-cover"
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
+                <div className="relative w-fit shrink-0">
+                  <picture>
+                    <source srcSet="/User_img-512.webp" type="image/webp" />
+                    <img
+                      src="/User_img-512.jpg"
+                      alt="Naman Jain"
+                      width={512}
+                      height={512}
+                      loading="eager"
+                      decoding="async"
+                      className="h-28 w-28 sm:h-36 sm:w-36 rounded-2xl border border-line bg-surface object-cover shadow-sm"
+                    />
+                  </picture>
+                  <span
+                    className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-background bg-success"
+                    aria-label="Available for work"
+                    title="Available for work"
                   />
-                </picture>
+                </div>
                 <div>
                   <h1 className="text-[2.6rem] leading-[0.98] tracking-tightest sm:text-6xl">Naman Jain</h1>
                   <p className="mt-2 text-sm text-secondary">Full Stack Engineer — React, Node, Postgres</p>
