@@ -61,7 +61,7 @@ const Home = () => {
   usePageMeta({
     title: 'Naman Jain — Full Stack Engineer (React, Node, TypeScript)',
     description:
-      'Full-stack engineer building products end to end — design, schema, API, interface and deploy. React, TypeScript and Node on the surface, Postgres and Prisma underneath.',
+      'Full-stack engineer building products end to end — design, schema, API, interface and deploy. React, TypeScript and Node on the surface, MongoDB and Prisma underneath.',
     path: '/',
   });
 

@@ -23,12 +23,25 @@ const app: express.Application = express()
 app.set('trust proxy', 1)
 
 if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-  console.error('FATAL: JWT_SECRET environment variable is required');
+  console.error('FATAL: JWT_SECRET environment variable is required in production');
+  throw new Error('JWT_SECRET environment variable is required in production');
 }
+
+const prodOrigins = (process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()) || [
+  'https://namanx.vercel.app',
+]);
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://namanx.vercel.app']
+    ? (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const isAllowed = prodOrigins.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
+        if (isAllowed) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      }
     : ['http://localhost:5173', 'http://localhost:3000'],
 }))
 app.use(express.json({ limit: '4mb' }))
@@ -48,7 +61,7 @@ app.use('/api/chat', chatRoutes)
  */
 app.use(
   '/api/health',
-  (_req: Request, res: Response, _next: NextFunction): void => {
+  (_req: Request, res: Response): void => {
     res.status(200).json({
       success: true,
       message: 'ok',
@@ -59,6 +72,7 @@ app.use(
 /**
  * error handler middleware
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(error);
 

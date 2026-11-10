@@ -13,7 +13,7 @@ const AdminModal = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'P') {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toUpperCase() === 'P') {
         e.preventDefault();
         setIsOpen(true);
         checkStatus();

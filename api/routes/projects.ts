@@ -1,17 +1,23 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import prisma from '../lib/prisma.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = Router();
 
-const handlePrismaError = (error: any, res: any, fallback: string) => {
-  if (error?.code === 'P2002') {
+interface PrismaErrorLike {
+  code?: string;
+  message?: string;
+}
+
+const handlePrismaError = (error: unknown, res: Response, fallback: string) => {
+  const err = error as PrismaErrorLike;
+  if (err?.code === 'P2002') {
     return res.status(409).json({ success: false, error: 'Slug already exists' });
   }
-  if (error?.code === 'P2023') {
+  if (err?.code === 'P2023') {
     return res.status(400).json({ success: false, error: 'Invalid ID format' });
   }
-  if (error?.code === 'P2025') {
+  if (err?.code === 'P2025') {
     return res.status(404).json({ success: false, error: 'Resource not found' });
   }
   console.error(fallback, error);
@@ -40,7 +46,7 @@ router.get('/', async (req, res) => {
       take,
     });
     res.json(projects);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch projects' });
   }
 });
@@ -85,7 +91,7 @@ router.get('/:slug', async (req, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
     res.json(project);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch project' });
   }
 });
@@ -125,7 +131,7 @@ router.post('/', authenticateToken, async (req, res) => {
       },
     });
     res.json(project);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handlePrismaError(error, res, 'Failed to create project');
   }
 });
@@ -160,7 +166,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
       },
     });
     res.json(project);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handlePrismaError(error, res, 'Failed to update project');
   }
 });
@@ -171,7 +177,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       where: { id: req.params.id },
     });
     res.json({ message: 'Project deleted' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return handlePrismaError(error, res, 'Failed to delete project');
   }
 });

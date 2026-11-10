@@ -117,7 +117,7 @@ const Contact = () => {
             from_email: formData.email,
             message: formData.message,
             to_name: 'Naman',
-            to_email: 'namanjainakt007@gmail.com',
+            to_email: 'namanjainakt@gmail.com',
           },
           PUBLIC_KEY
         );

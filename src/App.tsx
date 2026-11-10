@@ -9,6 +9,7 @@ import LoadingFallback from './components/LoadingFallback';
 import { PageTransition } from './components/PageTransition';
 
 const CommandPalette = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
+const ChatBot = lazy(() => import('./components/ChatBot').then(m => ({ default: m.ChatBot })));
 
 // Lazy load page components for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -66,6 +67,11 @@ function App() {
       <ScrollToTop />
       {!isAdmin && <Navbar />}
       <AdminModal />
+      {!isAdmin && (
+        <Suspense fallback={null}>
+          <ChatBot />
+        </Suspense>
+      )}
       <main id="main-content" className="flex-grow">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>

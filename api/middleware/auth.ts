@@ -1,7 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+export interface AuthUserPayload {
+  id: string;
+  role: string;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: AuthUserPayload;
+}
+
+export const getJwtSecret = (): string => {
+  return process.env.JWT_SECRET || 'dev-only-secret-change-in-production';
+};
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
@@ -11,15 +22,17 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }, (err, user) => {
+  const secret = getJwtSecret();
+
+  jwt.verify(token, secret, { algorithms: ['HS256'] }, (err, user) => {
     if (err) {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    const payload = user as any;
+    const payload = user as AuthUserPayload | undefined;
     if (!payload || payload.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden' });
     }
-    (req as any).user = payload;
+    (req as AuthenticatedRequest).user = payload;
     next();
   });
 };

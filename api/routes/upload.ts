@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 import { authenticateToken } from '../middleware/auth.js';
 import multer from 'multer';
 
@@ -61,18 +61,20 @@ router.post('/', authenticateToken, upload.single('file'), async (req, res) => {
     }
     
     // Upload to Cloudinary using buffer
-    const result = await new Promise((resolve, reject) => {
+    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: folder,
           resource_type: 'image',
         },
-        (error, result) => {
+        (error, uploadResponse) => {
           if (error) {
             console.error('[Cloudinary] Upload error:', error);
             reject(error);
+          } else if (uploadResponse) {
+            resolve(uploadResponse);
           } else {
-            resolve(result);
+            reject(new Error('Cloudinary returned empty response'));
           }
         }
       );
@@ -80,18 +82,16 @@ router.post('/', authenticateToken, upload.single('file'), async (req, res) => {
       uploadStream.end(req.file!.buffer);
     });
 
-    const uploadResult = result as any;
-    
     console.log('[Cloudinary] Upload successful:', {
-      public_id: uploadResult.public_id,
-      url: uploadResult.secure_url,
+      public_id: result.public_id,
+      url: result.secure_url,
     });
 
     res.json({
-      url: uploadResult.secure_url,
-      public_id: uploadResult.public_id,
+      url: result.secure_url,
+      public_id: result.public_id,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Cloudinary] Server upload error:', error);
     res.status(500).json({
       error: 'Failed to upload image'

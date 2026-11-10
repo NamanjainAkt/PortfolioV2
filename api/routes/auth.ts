@@ -3,9 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import prisma from '../lib/prisma.js';
+import { getJwtSecret } from '../middleware/auth.js';
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-only-secret-change-in-production';
 
 const statusLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -44,6 +44,8 @@ router.post('/setup', async (req, res) => {
       if (provided !== setupToken) {
         return res.status(403).json({ error: 'Setup is not authorized' });
       }
+    } else if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ error: 'ADMIN_SETUP_TOKEN must be configured in production' });
     }
 
     const existingAdmin = await prisma.adminAuth.findFirst();
@@ -62,7 +64,7 @@ router.post('/setup', async (req, res) => {
     });
 
     res.json({ message: 'Admin initialized' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Setup failed' });
   }
 });
@@ -87,9 +89,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: admin.id, role: 'admin' }, JWT_SECRET, { expiresIn: '1d', algorithm: 'HS256' });
+    const token = jwt.sign({ id: admin.id, role: 'admin' }, getJwtSecret(), { expiresIn: '1d', algorithm: 'HS256' });
     res.json({ token });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Login failed' });
   }
 });

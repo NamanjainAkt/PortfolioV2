@@ -57,7 +57,7 @@ export const useDynamicLoadingConfig = () => {
     const detectInitialQuality = (): QualityLevel => {
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const cpuCores = navigator.hardwareConcurrency || 4;
-      const deviceMemory = (navigator as any).deviceMemory || 4;
+      const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory || 4;
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // High-end mobile detection (iPhone 15 Pro, Galaxy S24, etc.)

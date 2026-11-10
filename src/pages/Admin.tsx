@@ -68,6 +68,15 @@ interface AdminEntry {
   createdAt?: string;
   images?: string[];
   featuredImage?: string;
+  content?: string;
+  overview?: string;
+  problem?: string;
+  solution?: string;
+  techStack?: string[];
+  category?: string;
+  githubUrl?: string;
+  liveUrl?: string;
+  displayOrder?: number;
 }
 
 const Admin = () => {
