@@ -5,8 +5,6 @@
       "maxDuration": 30
     }
   },
-  "cleanUrls": true,
-  "trailingSlash": false,
   "headers": [
     {
       "source": "/sitemap.xml",
@@ -33,7 +31,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]
