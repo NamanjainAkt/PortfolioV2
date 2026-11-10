@@ -10,6 +10,7 @@ import { PageTransition } from './components/PageTransition';
 
 const CommandPalette = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
 const ChatBot = lazy(() => import('./components/ChatBot').then(m => ({ default: m.ChatBot })));
+const SnowfallEffect = lazy(() => import('./components/SnowfallEffect').then(m => ({ default: m.SnowfallEffect })));
 
 // Lazy load page components for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -67,6 +68,11 @@ function App() {
       <ScrollToTop />
       {!isAdmin && <Navbar />}
       <AdminModal />
+      {!isAdmin && (
+        <Suspense fallback={null}>
+          <SnowfallEffect />
+        </Suspense>
+      )}
       {!isAdmin && (
         <Suspense fallback={null}>
           <ChatBot />
