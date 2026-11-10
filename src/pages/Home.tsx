@@ -34,7 +34,7 @@ const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/namanjainakt/', icon: Github },
   { label: 'LinkedIn', href: 'https://linkedin.com/in/naman-jain-akt/', icon: Linkedin },
   { label: 'LeetCode', href: 'https://leetcode.com/u/namanjainakt/', icon: LeetCodeIcon },
-  { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
+  { label: 'Email', href: 'mailto:namanjainakt007@gmail.com', icon: Mail },
 ] as const;
 
 const formatDate = (value: string) => {
@@ -224,10 +224,10 @@ const Home = () => {
                 <div className="meta-row">
                   <span className="mono-label">Email</span>
                   <a
-                    href="mailto:namanjainakt@gmail.com"
+                    href="mailto:namanjainakt007@gmail.com"
                     className="link-underline break-all text-right text-[13px] text-secondary hover:text-primary"
                   >
-                    namanjainakt@gmail.com
+                    namanjainakt007@gmail.com
                   </a>
                 </div>
               </div>
@@ -448,7 +448,7 @@ const Home = () => {
             <h2 className="max-w-2xl text-3xl font-medium tracking-tightest sm:text-5xl">
               Let&apos;s build something <span className="text-tertiary">worth keeping.</span>
             </h2>
-            <a href="mailto:namanjainakt@gmail.com" className="btn-solid shrink-0">
+            <a href="mailto:namanjainakt007@gmail.com" className="btn-solid shrink-0">
               Say hello
               <ArrowUpRight size={14} />
             </a>

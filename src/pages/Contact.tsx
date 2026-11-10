@@ -13,8 +13,8 @@ const CONTACT_CHANNELS = [
   {
     icon: Mail,
     name: 'Email',
-    value: 'namanjainakt@gmail.com',
-    href: 'mailto:namanjainakt@gmail.com',
+    value: 'namanjainakt007@gmail.com',
+    href: 'mailto:namanjainakt007@gmail.com',
   },
   {
     icon: Github,
@@ -117,7 +117,7 @@ const Contact = () => {
             from_email: formData.email,
             message: formData.message,
             to_name: 'Naman',
-            to_email: 'namanjainakt@gmail.com',
+            to_email: 'namanjainakt007@gmail.com',
           },
           PUBLIC_KEY
         );

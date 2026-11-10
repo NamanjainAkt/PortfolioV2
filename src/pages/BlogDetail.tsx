@@ -262,7 +262,7 @@ const BlogDetail = () => {
                   Back to writing
                 </Link>
                 <a
-                  href={`mailto:namanjainakt@gmail.com?subject=${encodeURIComponent(`Re: ${blog.title}`)}`}
+                  href={`mailto:namanjainakt007@gmail.com?subject=${encodeURIComponent(`Re: ${blog.title}`)}`}
                   className="link-underline inline-flex items-center gap-1 text-[12px] text-secondary hover:text-primary"
                 >
                   Reply

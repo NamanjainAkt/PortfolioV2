@@ -12,7 +12,7 @@ const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/namanjainakt/', icon: Github },
   { label: 'LinkedIn', href: 'https://linkedin.com/in/naman-jain-akt/', icon: Linkedin },
   { label: 'LeetCode', href: 'https://leetcode.com/u/namanjainakt/', icon: LeetCodeIcon },
-  { label: 'Email', href: 'mailto:namanjainakt@gmail.com', icon: Mail },
+  { label: 'Email', href: 'mailto:namanjainakt007@gmail.com', icon: Mail },
 ] as const;
 
 const FooterLink = ({ to, label }: { to: string; label: string }) => (
@@ -43,10 +43,10 @@ const Footer = () => {
                 Have a project in mind? Let&apos;s build something dependable.
               </h2>
               <a
-                href="mailto:namanjainakt@gmail.com"
+                href="mailto:namanjainakt007@gmail.com"
                 className="group/mail link-underline mt-5 inline-flex items-center gap-1 text-sm text-secondary transition-colors duration-200 hover:text-primary"
               >
-                namanjainakt@gmail.com
+                namanjainakt007@gmail.com
                 <ArrowUpRight
                   size={14}
                   aria-hidden="true"
