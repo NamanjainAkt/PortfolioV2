@@ -58,6 +58,46 @@ const buildWeeks = (days: Activity[]) => {
   return weeks;
 };
 
+const buildMonthLabels = (weeks: Array<Array<Activity | undefined>>) => {
+  const labels: Array<{ label: string; weekIndex: number }> = [];
+  let lastMonth = -1;
+
+  weeks.forEach((week, weekIndex) => {
+    const first = week.find((day): day is Activity => Boolean(day));
+    if (!first) return;
+    const month = parseDay(first.date).getMonth();
+    if (month === lastMonth) return;
+
+    const previous = labels[labels.length - 1];
+    if (!previous || weekIndex - previous.weekIndex >= 3) {
+      labels.push({ label: MONTHS[month], weekIndex });
+    }
+    lastMonth = month;
+  });
+
+  return labels;
+};
+
+// A full year of cells is ~634px wide; on a phone that means a hidden
+// horizontal scroll. Show the last six months instead so it fits.
+const COMPACT_WEEKS = 26;
+
+const useCompact = () => {
+  const query = '(max-width: 640px)';
+  const [compact, setCompact] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(query).matches
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const onChange = () => setCompact(media.matches);
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, []);
+
+  return compact;
+};
+
 const GitHubContributions = () => {
   const [days, setDays] = useState<Activity[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -108,32 +148,22 @@ const GitHubContributions = () => {
   }, []);
 
   const weeks = useMemo(() => buildWeeks(days ?? []), [days]);
+  const compact = useCompact();
+  const visibleWeeks = useMemo(
+    () => (compact ? weeks.slice(-COMPACT_WEEKS) : weeks),
+    [weeks, compact]
+  );
+  const monthLabels = useMemo(() => buildMonthLabels(visibleWeeks), [visibleWeeks]);
 
-  const monthLabels = useMemo(() => {
-    const labels: Array<{ label: string; weekIndex: number }> = [];
-    let lastMonth = -1;
-
-    weeks.forEach((week, weekIndex) => {
-      const first = week.find((day): day is Activity => Boolean(day));
-      if (!first) return;
-      const month = parseDay(first.date).getMonth();
-      if (month === lastMonth) return;
-
-      const previous = labels[labels.length - 1];
-      if (!previous || weekIndex - previous.weekIndex >= 3) {
-        labels.push({ label: MONTHS[month], weekIndex });
-      }
-      lastMonth = month;
-    });
-
-    return labels;
-  }, [weeks]);
-
-  const total = useMemo(() => (days ?? []).reduce((sum, day) => sum + day.count, 0), [days]);
+  const total = useMemo(
+    () => visibleWeeks.flat().reduce((sum, day) => sum + (day?.count ?? 0), 0),
+    [visibleWeeks]
+  );
+  const periodLabel = compact ? 'last 6 months' : 'last year';
 
   if (failed) {
     return (
-      <div className="flex flex-col items-start gap-3 border border-line bg-surface px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col items-start gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="flex items-center gap-2.5 text-sm text-secondary">
           <Github size={15} className="text-tertiary" aria-hidden="true" />
           Activity is unavailable right now.
@@ -154,16 +184,16 @@ const GitHubContributions = () => {
   if (!days) {
     return (
       <div
-        className="border border-line p-4 sm:p-5"
+        className="py-4"
         aria-busy="true"
         aria-label="Loading GitHub activity"
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 border-b border-line pb-3">
           <div className="h-3 w-44 animate-pulse rounded-sm bg-surface" />
           <div className="h-3 w-20 animate-pulse rounded-sm bg-surface" />
         </div>
         <div className="mt-4 h-[106px] animate-pulse rounded-sm bg-surface" />
-        <div className="mt-3 flex items-center justify-between gap-4">
+        <div className="mt-3 flex items-center justify-between gap-4 border-t border-line pt-3">
           <div className="h-2.5 w-24 animate-pulse rounded-sm bg-surface" />
           <div className="h-2.5 w-28 animate-pulse rounded-sm bg-surface" />
         </div>
@@ -171,7 +201,7 @@ const GitHubContributions = () => {
     );
   }
 
-  const width = weeks.length * (BLOCK + GAP) - GAP;
+  const width = visibleWeeks.length * (BLOCK + GAP) - GAP;
   const height = LABEL_HEIGHT + 7 * (BLOCK + GAP) - GAP;
   const tooltipAbove = (hover?.dayIndex ?? 0) >= 2;
   const tooltipLeft = hover
@@ -182,11 +212,11 @@ const GitHubContributions = () => {
     : 0;
 
   return (
-    <div className="border border-line">
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
         <p className="text-[13px] text-secondary">
           <span className="font-mono tabular-nums text-primary">{total.toLocaleString('en-US')}</span>{' '}
-          contributions in the last year
+          contributions in the {periodLabel}
         </p>
         <a
           href={PROFILE_URL}
@@ -199,7 +229,7 @@ const GitHubContributions = () => {
         </a>
       </div>
 
-      <div className="relative px-4 py-4 sm:px-5">
+      <div className="relative py-4">
         <div className="no-scrollbar relative overflow-x-auto overflow-y-hidden">
           <div className="relative" style={{ width }}>
             <svg
@@ -224,7 +254,7 @@ const GitHubContributions = () => {
                 ))}
               </g>
 
-              {weeks.map((week, weekIndex) =>
+              {visibleWeeks.map((week, weekIndex) =>
                 week.map((day, dayIndex) => {
                   if (!day) return null;
                   return (
@@ -237,7 +267,7 @@ const GitHubContributions = () => {
                       rx={2}
                       data-level={day.level}
                       className="contrib-cell"
-                      style={{ animationDelay: `${Math.min(weekIndex * 8, 420)}ms` }}
+                      style={{ animationDelay: `${Math.min(weekIndex * 4, 240)}ms` }}
                       onMouseEnter={() => setHover({ activity: day, weekIndex, dayIndex })}
                       onMouseLeave={() => setHover(null)}
                     >
@@ -268,8 +298,8 @@ const GitHubContributions = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-tertiary sm:px-5">
-        <span>Last 12 months</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 font-mono text-[9px] uppercase tracking-[0.14em] text-tertiary">
+        <span>{compact ? 'Last 6 months' : 'Last 12 months'}</span>
         <span className="flex items-center gap-1.5">
           Less
           {[0, 1, 2, 3, 4].map((level) => (

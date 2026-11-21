@@ -124,7 +124,7 @@ export const ChatBot: React.FC = () => {
         whileTap={{ scale: 0.98 }}
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          'fixed bottom-6 right-6 z-[60] flex items-center gap-2.5 rounded-full border px-4 py-2.5 font-mono text-xs shadow-xl backdrop-blur-md transition-colors duration-200',
+          'fixed bottom-6 right-6 z-[60] flex min-h-11 items-center gap-2.5 rounded-full border px-3 py-2.5 font-mono text-xs shadow-xl backdrop-blur-md transition-colors duration-200 sm:px-4',
           isOpen
             ? 'border-line bg-primary text-background'
             : 'border-line bg-surface/90 text-primary hover:border-primary hover:bg-elevated'
@@ -135,7 +135,7 @@ export const ChatBot: React.FC = () => {
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
         </span>
-        <span className="tracking-wide">{isOpen ? 'Close' : 'Ask Ava'}</span>
+        <span className="hidden tracking-wide sm:inline">{isOpen ? 'Close' : 'Ask Ava'}</span>
         <Sparkles size={13} className={isOpen ? 'text-background' : 'text-secondary'} />
       </motion.button>
 

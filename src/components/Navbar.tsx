@@ -115,7 +115,7 @@ const Navbar = () => {
 
           <button
             onClick={openPalette}
-            className="grid h-8 w-8 place-items-center rounded-full text-secondary transition-colors hover:text-primary sm:hidden"
+            className="grid h-11 w-11 place-items-center rounded-full text-secondary transition-colors hover:text-primary sm:hidden md:h-8 md:w-8"
             aria-label="Search"
           >
             <Search size={16} />
@@ -125,7 +125,7 @@ const Navbar = () => {
             href="https://github.com/namanjainakt/"
             target="_blank"
             rel="noopener noreferrer"
-            className="grid h-8 w-8 place-items-center rounded-full text-secondary transition-colors hover:text-primary"
+            className="grid h-11 w-11 place-items-center rounded-full text-secondary transition-colors hover:text-primary md:h-8 md:w-8"
             aria-label="GitHub"
           >
             <Github size={16} strokeWidth={1.6} />
@@ -133,7 +133,7 @@ const Navbar = () => {
 
           <button
             onClick={toggleTheme}
-            className="grid h-8 w-8 place-items-center rounded-full text-secondary transition-colors hover:text-primary"
+            className="grid h-11 w-11 place-items-center rounded-full text-secondary transition-colors hover:text-primary md:h-8 md:w-8"
             aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
           >
             {isDark ? <Sun size={16} strokeWidth={1.6} /> : <Moon size={16} strokeWidth={1.6} />}
@@ -141,7 +141,7 @@ const Navbar = () => {
 
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className="grid h-8 w-8 place-items-center rounded-full text-secondary transition-colors hover:text-primary md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-full text-secondary transition-colors hover:text-primary md:hidden md:h-8 md:w-8"
             aria-label={isOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isOpen}
           >

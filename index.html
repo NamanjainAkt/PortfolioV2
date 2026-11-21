@@ -37,15 +37,15 @@
       (function () {
         try {
           var saved = localStorage.getItem('theme');
-          document.documentElement.classList.toggle('dark', saved === 'dark');
+          var isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.toggle('dark', isDark);
         } catch (e) {}
       })();
     </script>
 
-    <!-- Google Fonts (parallel, non-blocking - avoids CSS @import bottleneck) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
+    <!-- Self-hosted fonts: preloaded so text paints in the final face, no swap shift -->
+    <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/geist-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
 
     <!-- Structured Data -->
     <script type="application/ld+json">

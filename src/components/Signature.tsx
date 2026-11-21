@@ -2,12 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import { Pen } from 'lucide-react';
 
-const SIGNED_ON = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-}).format(new Date());
-
 const Signature = ({ className }: { className?: string }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [signed, setSigned] = useState(false);
@@ -59,12 +53,12 @@ const Signature = ({ className }: { className?: string }) => {
           </svg>
         </span>
 
-        <span className="signature-caption pb-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-tertiary">
-          Signed · {SIGNED_ON}
+        <span className="signature-caption pb-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-tertiary">
+          Naman Jain
         </span>
       </div>
 
-      <span className="sr-only">Signature: Njain, signed {SIGNED_ON}</span>
+      <span className="sr-only">Signature: Njain</span>
     </div>
   );
 };

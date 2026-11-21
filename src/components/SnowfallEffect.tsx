@@ -47,7 +47,10 @@ const LEAF_COLORS_LIGHT = [
 const PARTICLE_COUNT = 45;
 
 export const SnowfallEffect: React.FC = () => {
-  const [mode, setMode] = useState<EffectMode>('snow');
+  const [mode, setMode] = useState<EffectMode>(() => {
+    const currentMonth = new Date().getMonth();
+    return currentMonth === 11 ? 'snow' : currentMonth >= 8 && currentMonth <= 10 ? 'leaves' : 'snow';
+  });
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isControlsVisible, setIsControlsVisible] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -256,7 +259,7 @@ export const SnowfallEffect: React.FC = () => {
           onMouseEnter={() => setIsControlsVisible(true)}
           onMouseLeave={() => setIsControlsVisible(false)}
           className={cn(
-            'group flex h-8 items-center gap-1.5 rounded-full border border-line bg-surface/90 px-2.5 font-mono text-[11px] text-secondary shadow-lg backdrop-blur-md transition-all duration-200 hover:border-primary hover:bg-elevated hover:text-primary',
+            'group flex h-11 items-center gap-1.5 rounded-full border border-line bg-surface/90 px-3 font-mono text-[11px] text-secondary shadow-lg backdrop-blur-md transition-colors duration-200 hover:border-primary hover:bg-elevated hover:text-primary sm:h-9 sm:px-2.5',
             mode === 'off' && 'opacity-60 hover:opacity-100'
           )}
           title={`Seasonal ambient effect: currently ${mode}. Click to cycle.`}
@@ -271,7 +274,7 @@ export const SnowfallEffect: React.FC = () => {
 
         {isControlsVisible && (
           <span className="hidden sm:inline-block rounded border border-line bg-surface px-2 py-0.5 font-mono text-[10px] text-tertiary">
-            Click to switch ❄️ / 🍂 / off
+            Click to switch snow / leaves / off
           </span>
         )}
       </div>

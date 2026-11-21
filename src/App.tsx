@@ -33,6 +33,11 @@ const ScrollToTop = () => {
   return null;
 };
 
+// The seasonal ambient effect runs during autumn and winter (October through December).
+// It also floats particles over body copy on small screens, so keep it off the rest of the year.
+const month = new Date().getMonth();
+const SHOW_SNOWFALL = [9, 10, 11].includes(month);
+
 function App() {
   const location = useLocation();
 
@@ -68,7 +73,7 @@ function App() {
       <ScrollToTop />
       {!isAdmin && <Navbar />}
       <AdminModal />
-      {!isAdmin && (
+      {!isAdmin && SHOW_SNOWFALL && (
         <Suspense fallback={null}>
           <SnowfallEffect />
         </Suspense>

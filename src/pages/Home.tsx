@@ -121,6 +121,8 @@ const Home = () => {
     return () => controller.abort();
   }, []);
 
+  const [featuredProject, ...otherProjects] = projects;
+
   return (
     <div className="frame">
       <div className="hatch h-2.5 border-b border-line" aria-hidden="true" />
@@ -146,7 +148,7 @@ const Home = () => {
                   </picture>
                   <span
                     className="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-background bg-success"
-                    aria-label="Available for work"
+                    aria-hidden="true"
                     title="Available for work"
                   />
                 </div>
@@ -175,13 +177,15 @@ const Home = () => {
                   href="https://cal.com/naman-jain-akt/30min"
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-cal-link="naman-jain-akt/30min"
+                  data-cal-namespace="30min"
                   className="btn-outline"
                 >
                   <Calendar size={14} />
                   Book a call
                 </a>
 
-                <div className="ml-1 flex items-center gap-1.5">
+                <div className="ml-1 flex items-center gap-1">
                   {SOCIALS.map((social) => (
                     <a
                       key={social.label}
@@ -189,7 +193,7 @@ const Home = () => {
                       target={social.href.startsWith('mailto:') ? undefined : '_blank'}
                       rel="noopener noreferrer"
                       aria-label={social.label}
-                      className="grid h-9 w-9 place-items-center rounded-full border border-line text-secondary transition-colors duration-200 hover:border-primary hover:text-primary"
+                      className="grid h-11 w-11 place-items-center rounded-full border border-line text-secondary transition-colors duration-200 hover:border-primary hover:text-primary"
                     >
                       <social.icon size={15} strokeWidth={1.6} />
                     </a>
@@ -245,29 +249,17 @@ const Home = () => {
             label="About"
             title="I care about the parts users never see."
           />
-          <div className="mt-7 grid gap-8 sm:grid-cols-[1fr_1.35fr] sm:gap-12">
-            <div className="space-y-4">
-              <p className="text-sm leading-relaxed text-secondary">
-                I&apos;m a full-stack engineer based in Bhilai, Chhattisgarh. Most of my work lives at the
-                intersection of product thinking and implementation: shaping the data model, then
-                carrying it through the API and interface.
-              </p>
-              <p className="text-sm leading-relaxed text-secondary">
-                I prefer small systems with clear edges, readable code and interfaces that explain
-                themselves. When I&apos;m not shipping, I&apos;m usually reading about systems,
-                design or the web platform.
-              </p>
-            </div>
-            <ul className="space-y-4">
-              {ABOUT_POINTS.map((point, index) => (
-                <li key={point} className="flex gap-4 text-sm leading-relaxed text-secondary">
-                  <span className="select-none font-mono text-[11px] text-tertiary pt-0.5">
-                    0{index + 1}
-                  </span>
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
+          <p className="mt-6 max-w-xl text-sm leading-relaxed text-secondary">
+            Full-stack engineer in Bhilai, Chhattisgarh. Most of my work sits where product thinking meets
+            implementation — shaping the data model, then carrying it through the API and the interface.
+          </p>
+          <div className="mt-8 grid gap-x-10 gap-y-6 sm:grid-cols-3">
+            {ABOUT_POINTS.map((point, index) => (
+              <div key={point}>
+                <p className="font-mono text-[11px] tabular-nums text-tertiary">0{index + 1}</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-secondary">{point}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -278,9 +270,8 @@ const Home = () => {
           <SectionHeader
             label="Stack"
             title="Tools I reach for."
-            description="A pragmatic stack, chosen for speed of delivery and long-term maintainability."
           />
-          <div className="mt-7">
+          <div className="mt-6">
             <SkillSection />
           </div>
         </div>
@@ -292,9 +283,8 @@ const Home = () => {
           <SectionHeader
             label="Activity"
             title="Shipping, most days."
-            description="A year of public commits, pull requests and issues, plus the problem sets keeping the fundamentals sharp."
           />
-          <div className="mt-7 space-y-4">
+          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_190px] lg:gap-12">
             <GitHubContributions />
             <LeetCodeStats />
           </div>
@@ -322,54 +312,64 @@ const Home = () => {
 
           <div className="mt-6">
             {loadingProjects ? (
-              <div className="space-y-4" aria-label="Loading projects">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="flex animate-pulse items-center gap-4 border-b border-line py-4">
-                    <div className="h-12 w-16 bg-surface" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3 w-1/3 bg-surface" />
-                      <div className="h-2.5 w-2/3 bg-surface" />
-                    </div>
+              <div aria-label="Loading projects">
+                <div className="animate-pulse border border-line">
+                  <div className="aspect-[16/9] bg-surface" />
+                  <div className="space-y-3 p-5">
+                    <div className="h-4 w-1/3 bg-surface" />
+                    <div className="h-3 w-2/3 bg-surface" />
                   </div>
-                ))}
+                </div>
+                <div className="mt-4 space-y-4 border-t border-line pt-4">
+                  {[0, 1].map((i) => (
+                    <div key={i} className="flex animate-pulse items-center gap-4">
+                      <div className="h-12 w-16 bg-surface" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-1/3 bg-surface" />
+                        <div className="h-2.5 w-2/3 bg-surface" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ) : projects.length === 0 ? (
+            ) : projects.length === 0 || !featuredProject ? (
               <p className="border-b border-line py-8 text-sm text-tertiary">
                 No projects published yet.
               </p>
             ) : (
-              <div className="border-t border-line">
-                {projects.map((project) => (
-                  <Link
-                    key={project.id}
-                    to={`/projects/${project.slug}`}
-                    className="group grid grid-cols-[64px_1fr_auto] items-center gap-4 border-b border-line py-4 transition-colors last:border-b-0 hover:bg-surface sm:grid-cols-[96px_1fr_auto] sm:gap-5"
-                  >
-                    <div className="h-11 w-16 overflow-hidden border border-line bg-surface sm:h-14 sm:w-24">
-                      {project.images[0] ? (
-                        <img
-                          src={getOptimizedImageUrl(project.images[0], { width: ImageSizes.thumbnail })}
-                          alt=""
-                          loading="lazy"
-                          className="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
-                        />
-                      ) : (
-                        <div className="grid h-full w-full place-items-center font-mono text-[9px] text-tertiary">
-                          {project.title.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+              <>
+                <Link
+                  to={`/projects/${featuredProject.slug}`}
+                  className="group block border border-line"
+                >
+                  <div className="relative aspect-[16/9] overflow-hidden bg-surface">
+                    {featuredProject.images?.[0] ? (
+                      <img
+                        src={getOptimizedImageUrl(featuredProject.images[0], {
+                          width: ImageSizes.medium,
+                        })}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover grayscale transition-[filter] duration-300 group-hover:grayscale-0"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center font-mono text-[10px] uppercase tracking-[0.14em] text-tertiary">
+                        {featuredProject.title}
+                      </div>
+                    )}
+                  </div>
 
+                  <div className="flex items-start justify-between gap-6 p-5">
                     <div className="min-w-0">
-                      <h3 className="truncate text-[15px] font-medium tracking-tight text-primary">
-                        {project.title}
+                      <h3 className="text-lg font-medium tracking-tight text-primary">
+                        {featuredProject.title}
                       </h3>
-                      <p className="mt-0.5 line-clamp-1 text-[13px] text-secondary">
-                        {project.overview}
+                      <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-secondary">
+                        {featuredProject.overview}
                       </p>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[9px] uppercase tracking-[0.12em] text-tertiary">
-                        <span>{project.category || 'Development'}</span>
-                        {project.techStack.slice(0, 3).map((tech) => (
+                      <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-mono text-[10px] uppercase tracking-[0.14em] text-tertiary">
+                        <span>{featuredProject.category || 'Development'}</span>
+                        {featuredProject.techStack?.slice(0, 4).map((tech) => (
                           <span key={tech} className="flex items-center gap-1">
                             <span aria-hidden="true">·</span>
                             {tech}
@@ -377,14 +377,58 @@ const Home = () => {
                         ))}
                       </div>
                     </div>
-
                     <ArrowUpRight
-                      size={16}
-                      className="text-tertiary transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                      size={18}
+                      aria-hidden="true"
+                      className="mt-1 shrink-0 text-tertiary transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
                     />
-                  </Link>
-                ))}
-              </div>
+                  </div>
+                </Link>
+
+                {otherProjects.length > 0 && (
+                  <div className="mt-4 border-t border-line">
+                    {otherProjects.map((project) => (
+                      <Link
+                        key={project.id}
+                        to={`/projects/${project.slug}`}
+                        className="group grid grid-cols-[56px_1fr_auto] items-center gap-4 border-b border-line py-3.5 transition-colors last:border-b-0 hover:bg-surface sm:grid-cols-[72px_1fr_auto] sm:gap-5"
+                      >
+                        <div className="h-9 w-14 overflow-hidden border border-line bg-surface sm:h-10 sm:w-[72px]">
+                          {project.images?.[0] ? (
+                            <img
+                              src={getOptimizedImageUrl(project.images[0], {
+                                width: ImageSizes.thumbnail,
+                              })}
+                              alt=""
+                              loading="lazy"
+                              className="h-full w-full object-cover grayscale transition-[filter] duration-300 group-hover:grayscale-0"
+                            />
+                          ) : (
+                            <div className="grid h-full w-full place-items-center font-mono text-[9px] text-tertiary">
+                              {project.title.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0">
+                          <h3 className="truncate text-[15px] font-medium tracking-tight text-primary">
+                            {project.title}
+                          </h3>
+                          <p className="mt-0.5 line-clamp-1 text-[13px] text-secondary">
+                            {project.overview}
+                          </p>
+                        </div>
+
+                        <ArrowUpRight
+                          size={16}
+                          aria-hidden="true"
+                          className="text-tertiary transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                        />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -446,12 +490,24 @@ const Home = () => {
           <p className="mono-label">Next</p>
           <div className="mt-4 flex flex-col items-start gap-7 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="max-w-2xl text-3xl font-medium tracking-tightest sm:text-5xl">
-              Let&apos;s build something <span className="text-tertiary">worth keeping.</span>
+              Let&apos;s build something worth keeping.
             </h2>
-            <a href="mailto:namanjainakt007@gmail.com" className="btn-solid shrink-0">
-              Say hello
-              <ArrowUpRight size={14} />
-            </a>
+            <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+              <a
+                href="https://cal.com/naman-jain-akt/30min"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cal-link="naman-jain-akt/30min"
+                data-cal-namespace="30min"
+                className="btn-solid"
+              >
+                Book a call
+                <ArrowUpRight size={14} />
+              </a>
+              <a href="mailto:namanjainakt007@gmail.com" className="btn-outline">
+                Email
+              </a>
+            </div>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.16em] text-tertiary">
             <span className="flex items-center gap-1.5">

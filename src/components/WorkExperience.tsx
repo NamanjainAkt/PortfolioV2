@@ -5,7 +5,6 @@ interface Experience {
   location: string;
   period: string;
   isCurrent: boolean;
-  description: string;
   achievements: string[];
   technologies: string[];
   type: string;
@@ -20,12 +19,10 @@ const experiences: Experience[] = [
     period: 'Nov 2025 — Present',
     isCurrent: true,
     type: 'Internship',
-    description:
-      'Building and maintaining scalable MERN applications in a remote, agile team.',
     achievements: [
-      'Shipped full-stack features across React, Node.js, Express and MongoDB.',
-      'Implemented REST APIs and connected them to responsive interfaces.',
-      'Worked with cross-functional teams on performance and maintainability.',
+      'Ship features end to end — React and TypeScript on the client, Node, Express and MongoDB behind it.',
+      'Build the REST endpoints, then wire them into the interfaces that consume them.',
+      'Work in a remote team with review on every change.',
     ],
     technologies: ['React', 'Node.js', 'Express.js', 'MongoDB', 'JavaScript'],
   },
@@ -37,12 +34,10 @@ const experiences: Experience[] = [
     period: 'Nov 2025',
     isCurrent: false,
     type: 'Internship',
-    description:
-      'Focused on full-stack development and API-driven applications for internal products.',
     achievements: [
-      'Built end-to-end MERN features and designed MongoDB schemas.',
-      'Integrated REST APIs with responsive React interfaces.',
-      'Worked in a remote workflow with version control and code review.',
+      'Built MERN features end to end and designed the MongoDB schemas behind them.',
+      'Integrated REST APIs with responsive React interfaces across internal products.',
+      'Worked remotely with version control and code review.',
     ],
     technologies: ['MongoDB', 'Express.js', 'React', 'Node.js'],
   },
@@ -76,10 +71,10 @@ const WorkExperience = () => {
               )}
             </div>
 
-            <p className="mt-2 text-sm leading-relaxed text-secondary">{exp.description}</p>
+            <p className="mt-3 text-sm leading-relaxed text-secondary">{exp.achievements[0]}</p>
 
             <ul className="mt-3 space-y-1.5">
-              {exp.achievements.map((achievement) => (
+              {exp.achievements.slice(1).map((achievement) => (
                 <li key={achievement} className="flex gap-2.5 text-[13px] leading-relaxed text-secondary">
                   <span className="mt-[7px] h-1 w-1 shrink-0 bg-tertiary" aria-hidden="true" />
                   <span>{achievement}</span>

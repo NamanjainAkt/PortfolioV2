@@ -39,7 +39,6 @@ const normalize = (payload: Record<string, unknown>): LeetCodeData => ({
 const LeetCodeStats = () => {
   const [data, setData] = useState<LeetCodeData | null>(null);
   const [failed, setFailed] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,12 +82,6 @@ const LeetCodeStats = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!data) return;
-    const frame = requestAnimationFrame(() => setMounted(true));
-    return () => cancelAnimationFrame(frame);
-  }, [data]);
-
   const rows = useMemo(
     () =>
       data
@@ -103,7 +96,7 @@ const LeetCodeStats = () => {
 
   if (failed) {
     return (
-      <div className="flex flex-col items-start gap-3 border border-line bg-surface px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col items-start gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="flex items-center gap-2.5 text-sm text-secondary">
           <LeetCodeIcon size={14} className="text-tertiary" />
           LeetCode stats are unavailable right now.
@@ -123,36 +116,31 @@ const LeetCodeStats = () => {
 
   if (!data) {
     return (
-      <div
-        className="border border-line p-4 sm:p-5"
-        aria-busy="true"
-        aria-label="Loading LeetCode stats"
-      >
-        <div className="flex items-center justify-between gap-4">
+      <div className="py-4" aria-busy="true" aria-label="Loading LeetCode stats">
+        <div className="flex items-center justify-between gap-4 border-b border-line pb-3">
           <div className="h-3 w-40 animate-pulse rounded-sm bg-surface" />
           <div className="h-3 w-16 animate-pulse rounded-sm bg-surface" />
         </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+        <div className="mt-2 divide-y divide-line">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="space-y-2">
+            <div key={i} className="flex items-center justify-between gap-4 py-2.5">
+              <div className="h-2.5 w-16 animate-pulse rounded-sm bg-surface" />
               <div className="h-2.5 w-20 animate-pulse rounded-sm bg-surface" />
-              <div className="h-1 w-full animate-pulse rounded-sm bg-surface" />
             </div>
           ))}
         </div>
-        <div className="mt-5 h-2.5 w-32 animate-pulse rounded-sm bg-surface" />
+        <div className="mt-1 h-2.5 w-32 animate-pulse rounded-sm bg-surface" />
       </div>
     );
   }
 
   return (
-    <div className="border border-line">
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
-        <p className="flex items-center gap-2.5 text-[13px] text-secondary">
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
+        <p className="flex items-center gap-2 text-[13px] text-secondary">
           <LeetCodeIcon size={14} className="text-tertiary" />
           <span>
-            <span className="font-mono tabular-nums text-primary">{data.totalSolved}</span> problems
-            solved
+            <span className="font-mono tabular-nums text-primary">{data.totalSolved}</span> solved
           </span>
         </p>
         <a
@@ -166,35 +154,24 @@ const LeetCodeStats = () => {
         </a>
       </div>
 
-      <div className="grid gap-x-8 gap-y-4 px-4 py-4 sm:grid-cols-3 sm:px-5">
-        {rows.map((row) => {
-          const pct = row.total > 0 ? (row.solved / row.total) * 100 : 0;
-          return (
-            <div key={row.label}>
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="mono-label">{row.label}</span>
-                <span className="font-mono text-[11px] tabular-nums text-secondary">
-                  <span className="text-primary">{row.solved}</span>
-                  <span className="text-tertiary"> / {row.total.toLocaleString('en-US')}</span>
-                </span>
-              </div>
-              <div className="mt-2 h-1 w-full overflow-hidden bg-surface">
-                <div
-                  className="h-full bg-primary transition-[width] duration-700 ease-smooth"
-                  style={{ width: mounted ? `${Math.max(pct, row.solved > 0 ? 2 : 0)}%` : 0 }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <dl className="divide-y divide-line">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-baseline justify-between gap-3 py-2.5">
+            <dt className="mono-label">{row.label}</dt>
+            <dd className="font-mono text-[13px] tabular-nums">
+              <span className="text-primary">{row.solved}</span>
+              <span className="text-tertiary"> / {row.total.toLocaleString('en-US')}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-tertiary sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line pt-3 font-mono text-[9px] uppercase tracking-[0.14em] text-tertiary">
         <span>
-          Global rank{' '}
+          Rank{' '}
           <span className="tabular-nums text-secondary">{data.ranking.toLocaleString('en-US')}</span>
         </span>
-        <span>{data.totalQuestions.toLocaleString('en-US')} problems on LeetCode</span>
+        <span>{data.totalQuestions.toLocaleString('en-US')} total</span>
       </div>
     </div>
   );
