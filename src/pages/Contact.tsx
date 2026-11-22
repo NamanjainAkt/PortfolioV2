@@ -115,6 +115,9 @@ const Contact = () => {
           {
             from_name: formData.name,
             from_email: formData.email,
+            name: formData.name,
+            email: formData.email,
+            title: `New message from ${formData.name}`,
             message: formData.message,
             to_name: 'Naman',
             to_email: 'namanjainakt007@gmail.com',
@@ -125,8 +128,15 @@ const Contact = () => {
         setSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
         setTouched({});
-      } catch {
-        setErrors((prev) => ({ ...prev, message: 'Message failed to send. Please try again.' }));
+      } catch (err) {
+        const reason =
+          err instanceof Error
+            ? err.message
+            : (err as { text?: string } | null)?.text;
+        setErrors((prev) => ({
+          ...prev,
+          message: reason || 'Message failed to send. Please try again.',
+        }));
       } finally {
         setIsSubmitting(false);
       }
